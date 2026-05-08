@@ -58,7 +58,8 @@
       "Bash(dotnet --version)",
       "Bash(dotnet fsi *)",
       "Bash(dotnet publish *)",
-      "Bash(dotnet pack *)"
+      "Bash(dotnet pack *)",
+      "Bash(docfx docfx.json)"
     ]
   }
 }
