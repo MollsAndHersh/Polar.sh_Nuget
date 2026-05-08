@@ -50,7 +50,7 @@ app.MapGet("/orders", async (PolarClient polar, CancellationToken ct) =>
 - [Multi-Tenancy](articles/multi-tenancy.md)
 - [NuGet Deployment](articles/nuget-deployment.md)
 - [Security](articles/security.md)
-- [API Reference](api/index.md)
+- **API Reference** — use the _API Reference_ link in the top navigation bar
 
 ## Features
 

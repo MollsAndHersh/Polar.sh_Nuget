@@ -34,8 +34,8 @@ jobs:
       - name: Build solution (generates XML doc files)
         run: dotnet build --configuration Release
 
-      - name: Build DocFX site
-        run: docfx build docfx.json
+      - name: Build DocFX site (metadata + build)
+        run: docfx docfx.json
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
