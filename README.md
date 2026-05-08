@@ -2,11 +2,14 @@
 
 > A .NET 10 Native AOT-compatible SDK for [Polar.sh](https://polar.sh) — the open-source Merchant of Record payment and monetization platform.
 
-[![NuGet](https://img.shields.io/nuget/v/PolarSharp?label=PolarSharp)](https://www.nuget.org/packages/PolarSharp)
-[![NuGet](https://img.shields.io/nuget/v/PolarSharp.Webhooks?label=PolarSharp.Webhooks)](https://www.nuget.org/packages/PolarSharp.Webhooks)
-[![NuGet](https://img.shields.io/nuget/v/PolarSharp.MultiTenant?label=PolarSharp.MultiTenant)](https://www.nuget.org/packages/PolarSharp.MultiTenant)
+[![PolarSharp](https://img.shields.io/github/v/release/mollsandhersh/Polar.sh_Nuget?label=PolarSharp&color=blue)](https://github.com/mollsandhersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp)
+[![PolarSharp.Webhooks](https://img.shields.io/github/v/release/mollsandhersh/Polar.sh_Nuget?label=PolarSharp.Webhooks&color=blue)](https://github.com/mollsandhersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Webhooks)
+[![PolarSharp.MultiTenant](https://img.shields.io/github/v/release/mollsandhersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant&color=blue)](https://github.com/mollsandhersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant)
+[![PolarSharp.Templates](https://img.shields.io/github/v/release/mollsandhersh/Polar.sh_Nuget?label=PolarSharp.Templates&color=blue)](https://github.com/mollsandhersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Templates)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-github.io-informational)](https://mollsandhersh.github.io/Polar.sh_Nuget/)
+
+> **Distributed via [GitHub Packages](https://github.com/mollsandhersh/Polar.sh_Nuget/packages).** See [Installing from GitHub Packages](#installing-from-github-packages) below.
 
 ---
 
@@ -29,6 +32,7 @@ Three focused NuGet packages that cover every operational concern a serious .NET
 | `PolarSharp` | Full Polar.sh API client — 25+ resource areas, enterprise resilience, observability, AOT |
 | `PolarSharp.Webhooks` | HMAC-verified event handling, toast notifications, background queues, reconciliation |
 | `PolarSharp.MultiTenant` | Per-tenant client isolation with independent circuit breakers and connection pools |
+| `PolarSharp.Templates` | `dotnet new` template pack — scaffold any webhook handler in one command |
 
 ---
 
@@ -94,9 +98,27 @@ Every API call emits an `ActivitySource("PolarSharp")` span, compatible with any
 
 ---
 
-## Installation
+## Installing from GitHub Packages
 
-Install the core package. Add the optional packages only if you need them.
+PolarSharp is distributed via [GitHub Packages](https://github.com/mollsandhersh/Polar.sh_Nuget/packages), not NuGet.org. Add the feed to your project's `NuGet.config` first (create this file at your solution root if it doesn't exist):
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
+    <add key="PolarSharp" value="https://nuget.pkg.github.com/mollsandhersh/index.json" />
+  </packageSources>
+  <packageSourceCredentials>
+    <PolarSharp>
+      <add key="Username" value="YOUR_GITHUB_USERNAME" />
+      <add key="ClearTextPassword" value="YOUR_GITHUB_PAT" />
+    </PolarSharp>
+  </packageSourceCredentials>
+</configuration>
+```
+
+The `YOUR_GITHUB_PAT` is a [GitHub Personal Access Token](https://github.com/settings/tokens) with the `read:packages` scope — a read-only token is sufficient and safe to commit to CI secrets. Then install the packages:
 
 ```bash
 # Core SDK — required
