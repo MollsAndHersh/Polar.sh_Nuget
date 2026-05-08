@@ -78,6 +78,7 @@ See the [full configuration reference](https://markchipman.github.io/PolarSharp/
 - [Webhooks](https://markchipman.github.io/PolarSharp/articles/webhooks.html)
 - [Multi-Tenancy](https://markchipman.github.io/PolarSharp/articles/multi-tenancy.html)
 - [Security](https://markchipman.github.io/PolarSharp/articles/security.html)
+- [NuGet Deployment](https://markchipman.github.io/PolarSharp/articles/nuget-deployment.html)
 
 ## License
 
