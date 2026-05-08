@@ -1,0 +1,7 @@
+﻿{
+  "id": "ben_01jf4g9h3k2m",
+  "type": "license_keys",
+  "description": "Access to license key vault",
+  "organization_id": "org_01",
+  "created_at": "2025-01-01T00:00:00+00:00"
+}

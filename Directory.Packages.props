@@ -1,0 +1,37 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Kiota runtime -->
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Kiota.Abstractions" Version="2.0.0" />
+    <PackageVersion Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="2.0.0" />
+    <PackageVersion Include="Microsoft.Kiota.Serialization.Json" Version="2.0.0" />
+    <PackageVersion Include="Microsoft.Kiota.Serialization.Text" Version="2.0.0" />
+    <PackageVersion Include="Microsoft.Kiota.Serialization.Form" Version="2.0.0" />
+    <PackageVersion Include="Microsoft.Kiota.Serialization.Multipart" Version="2.0.0" />
+    <!-- Resilience -->
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.5.0" />
+    <!-- Health checks -->
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.7" />
+    <!-- Multi-tenancy -->
+    <PackageVersion Include="Finbuckle.MultiTenant.AspNetCore" Version="10.0.7" />
+    <!-- Source link + analyzers -->
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.203" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" />
+    <!-- Test app -->
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.14.11" />
+    <!-- Test projects -->
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.0" />
+    <!-- Snapshot / property-based testing -->
+    <PackageVersion Include="Verify.Xunit" Version="31.12.5" />
+    <PackageVersion Include="PublicApiGenerator" Version="11.5.4" />
+    <PackageVersion Include="FsCheck.Xunit" Version="3.3.3" />
+    <!-- Benchmarks -->
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <!-- Core API errors -->
+  <data name="Error_Unauthorized" xml:space="preserve">
+    <value>Authentication failed. Verify your Polar access token.</value>
+  </data>
+  <data name="Error_Forbidden" xml:space="preserve">
+    <value>Access denied. Your token does not have permission for this operation.</value>
+  </data>
+  <data name="Error_NotFound" xml:space="preserve">
+    <value>The requested resource was not found.</value>
+  </data>
+  <data name="Error_RateLimit" xml:space="preserve">
+    <value>Rate limit exceeded. Retry after {0} seconds.</value>
+  </data>
+  <data name="Error_Validation" xml:space="preserve">
+    <value>Validation failed: {0}</value>
+  </data>
+  <data name="Error_ServerError" xml:space="preserve">
+    <value>A Polar server error occurred. Please try again.</value>
+  </data>
+  <data name="Error_Timeout" xml:space="preserve">
+    <value>The request to Polar timed out.</value>
+  </data>
+  <data name="Error_NetworkFailure" xml:space="preserve">
+    <value>A network error occurred while connecting to Polar.</value>
+  </data>
+
+  <!-- Webhook errors -->
+  <data name="Webhook_SignatureInvalid" xml:space="preserve">
+    <value>Webhook signature verification failed.</value>
+  </data>
+  <data name="Webhook_TimestampExpired" xml:space="preserve">
+    <value>Webhook timestamp is outside the acceptable tolerance window.</value>
+  </data>
+  <data name="Webhook_UnknownEventType" xml:space="preserve">
+    <value>Unknown webhook event type: {0}</value>
+  </data>
+
+  <!-- Multi-tenant errors -->
+  <data name="Tenant_NotResolved" xml:space="preserve">
+    <value>Could not determine the current tenant from the request context.</value>
+  </data>
+  <data name="Tenant_NotConfigured" xml:space="preserve">
+    <value>No Polar configuration found for tenant '{0}'.</value>
+  </data>
+  <data name="Tenant_NoActiveContext" xml:space="preserve">
+    <value>No active multi-tenant context is available.</value>
+  </data>
+</root>

@@ -1,0 +1,4 @@
+apiRules:
+- exclude:
+    uidRegex: ^PolarSharp\.Generated\.
+    comment: Exclude Kiota-generated code from API reference — not hand-maintained.

@@ -1,0 +1,43 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": ["src/**/*.csproj"],
+          "exclude": ["**/obj/**", "**/bin/**"]
+        }
+      ],
+      "dest": "docs/api",
+      "globalNamespaceId": "PolarSharp",
+      "filter": "docfx-filter.yml",
+      "properties": {
+        "TargetFramework": "net10.0"
+      }
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": ["docs/articles/**/*.md", "docs/toc.yml"]
+      },
+      {
+        "files": ["docs/api/**.yml", "docs/api/toc.yml"]
+      }
+    ],
+    "resource": [
+      {
+        "files": ["docs/images/**"]
+      }
+    ],
+    "dest": "docs/_site",
+    "globalMetadata": {
+      "_appName": "PolarSharp",
+      "_appTitle": "PolarSharp — .NET SDK for Polar.sh",
+      "_enableSearch": true,
+      "_disableContribution": false,
+      "_gitUrlPattern": "auto"
+    },
+    "template": ["default"],
+    "postProcessors": []
+  }
+}

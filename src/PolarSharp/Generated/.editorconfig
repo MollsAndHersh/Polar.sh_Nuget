@@ -1,0 +1,14 @@
+# Kiota-generated code — suppress all diagnostics.
+# This folder is auto-generated and is not hand-maintained.
+root = false
+
+[*.cs]
+generated_code = true
+dotnet_diagnostic.CS1591.severity = none
+dotnet_diagnostic.CS1574.severity = none
+dotnet_diagnostic.CS1580.severity = none
+dotnet_diagnostic.CS1581.severity = none
+dotnet_diagnostic.CS1584.severity = none
+dotnet_diagnostic.CS0618.severity = none
+dotnet_diagnostic.CS0108.severity = none
+dotnet_diagnostic.CS8073.severity = none

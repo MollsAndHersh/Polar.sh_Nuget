@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PolarSharp.MultiTenant/PolarSharp.MultiTenant.csproj" />
+    <Project Path="src/PolarSharp.Webhooks/PolarSharp.Webhooks.csproj" />
+    <Project Path="src/PolarSharp/PolarSharp.csproj" />
+  </Folder>
+  <Folder Name="/templates/">
+    <Project Path="templates/PolarSharp.Templates/PolarSharp.Templates.csproj" />
+  </Folder>
+  <Folder Name="/testapp/">
+    <Project Path="testapp/PolarTestApp/PolarTestApp.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PolarSharp.Benchmarks/PolarSharp.Benchmarks.csproj" />
+    <Project Path="tests/PolarSharp.IntegrationTests/PolarSharp.IntegrationTests.csproj" />
+    <Project Path="tests/PolarSharp.Tests/PolarSharp.Tests.csproj" />
+    <Project Path="tests/PolarSharp.Webhooks.Tests/PolarSharp.Webhooks.Tests.csproj" />
+  </Folder>
+</Solution>

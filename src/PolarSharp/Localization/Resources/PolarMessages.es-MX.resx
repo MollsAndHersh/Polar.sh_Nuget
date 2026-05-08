@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <!-- Core API errors (es-MX) -->
+  <data name="Error_Unauthorized" xml:space="preserve">
+    <value>Error de autenticación. Verifique su token de acceso de Polar.</value>
+  </data>
+  <data name="Error_Forbidden" xml:space="preserve">
+    <value>Acceso denegado. Su token no tiene permiso para esta operación.</value>
+  </data>
+  <data name="Error_NotFound" xml:space="preserve">
+    <value>El recurso solicitado no fue encontrado.</value>
+  </data>
+  <data name="Error_RateLimit" xml:space="preserve">
+    <value>Límite de solicitudes excedido. Reintente después de {0} segundos.</value>
+  </data>
+  <data name="Error_Validation" xml:space="preserve">
+    <value>Error de validación: {0}</value>
+  </data>
+  <data name="Error_ServerError" xml:space="preserve">
+    <value>Ocurrió un error en el servidor de Polar. Por favor intente de nuevo.</value>
+  </data>
+  <data name="Error_Timeout" xml:space="preserve">
+    <value>La solicitud a Polar excedió el tiempo de espera.</value>
+  </data>
+  <data name="Error_NetworkFailure" xml:space="preserve">
+    <value>Ocurrió un error de red al conectar con Polar.</value>
+  </data>
+
+  <!-- Webhook errors (es-MX) -->
+  <data name="Webhook_SignatureInvalid" xml:space="preserve">
+    <value>La verificación de firma del webhook falló.</value>
+  </data>
+  <data name="Webhook_TimestampExpired" xml:space="preserve">
+    <value>La marca de tiempo del webhook está fuera de la ventana de tolerancia aceptable.</value>
+  </data>
+  <data name="Webhook_UnknownEventType" xml:space="preserve">
+    <value>Tipo de evento de webhook desconocido: {0}</value>
+  </data>
+
+  <!-- Multi-tenant errors (es-MX) -->
+  <data name="Tenant_NotResolved" xml:space="preserve">
+    <value>No se pudo determinar el inquilino actual del contexto de la solicitud.</value>
+  </data>
+  <data name="Tenant_NotConfigured" xml:space="preserve">
+    <value>No se encontró configuración de Polar para el inquilino '{0}'.</value>
+  </data>
+  <data name="Tenant_NoActiveContext" xml:space="preserve">
+    <value>No hay un contexto multi-inquilino activo disponible.</value>
+  </data>
+</root>

@@ -1,0 +1,8 @@
+﻿{
+  "id": "bg_01jf4g9h3k2m",
+  "customer_id": "cus_01",
+  "benefit_id": "ben_01",
+  "benefit_type": "license_keys",
+  "is_granted": true,
+  "granted_at": "2025-01-01T00:00:00+00:00"
+}

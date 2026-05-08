@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>PolarSharp.Templates</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Title>PolarSharp dotnet new Templates</Title>
+    <Authors>Mark Chipman</Authors>
+    <Description>dotnet new template pack for PolarSharp — scaffold a Polar.sh webhook handler in one command: dotnet new polar-handler --event OrderCreatedEvent --name OrderCreatedHandler</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>polar;polarsharp;webhooks;dotnet-new;template</PackageTags>
+    <PackageType>Template</PackageType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- Template packs have no compile output -->
+    <TargetFramework>net10.0</TargetFramework>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <!-- Suppress CS1591 — this project has no C# source files of its own -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Include the template content; exclude compiled artifacts -->
+    <Content Include="polar-handler\**\*"
+             Exclude="polar-handler\**\bin\**;polar-handler\**\obj\**" />
+    <Compile Remove="**\*" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

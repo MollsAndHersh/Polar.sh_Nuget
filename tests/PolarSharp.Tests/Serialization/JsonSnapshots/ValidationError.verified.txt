@@ -1,0 +1,14 @@
+﻿{
+  "Fields": [
+    {
+      "Field": "email",
+      "Message": "must be a valid email address"
+    },
+    {
+      "Field": "amount",
+      "Message": "must be greater than zero"
+    }
+  ],
+  "Message": "Validation failed.",
+  "RequestId": "req_fff"
+}

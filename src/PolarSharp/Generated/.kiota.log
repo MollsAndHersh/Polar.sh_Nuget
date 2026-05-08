@@ -1,0 +1,985 @@
+Warning: KiotaBuilder OpenAPI warning: #/ - Multiple servers entries were found in the OpenAPI description. Only the first one will be used. The root URL can be set manually with the request adapter.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema CustomerPaymentMethod is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema CustomerCreate is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema CheckoutForbiddenError is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema Discount is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema CustomerSubscriptionUpdate is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema Payment is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema BenefitGrantWebhook is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema CheckoutLinkCreate is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema ProductCreate is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema SubscriptionUpdate is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema CustomerBenefitGrant is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema /v1/events/ is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/ - The schema /v1/oauth2/userinfo is a polymorphic type but does not define a discriminator. This will result in serialization errors.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1organizations~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1organizations~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1/get/parameters/2/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1/get/parameters/2/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1/get/parameters/4/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1/get/parameters/4/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1export/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1export/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1subscriptions~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1oauth2~1token/post - The operation #/paths/~1v1~1oauth2~1token/post has a request body which is not an object type. This is not supported by Kiota and serialization will fail.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1/get/parameters/2/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1/get/parameters/2/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1/get/parameters/3/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1/get/parameters/3/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1{id}~1grants/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1{id}~1grants/get/parameters/2/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1{id}~1grants/get/parameters/2/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1{id}~1grants/get/parameters/3/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefits~1{id}~1grants/get/parameters/3/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefit-grants~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefit-grants~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefit-grants~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1benefit-grants~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1webhooks~1endpoints/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1webhooks~1endpoints/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1webhooks~1endpoints~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1webhooks~1endpoints~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1webhooks~1endpoints~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1webhooks~1endpoints~1{id}~1secret/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1webhooks~1deliveries/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1webhooks~1deliveries/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1webhooks~1events~1{id}~1redeliver/post/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1products~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1products~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1products~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1products~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1products~1/get/parameters/5/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1products~1/get/parameters/5/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1products~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1products~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1products~1{id}~1benefits/post/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/3/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/3/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/4/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/4/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/6/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/6/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/7/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1/get/parameters/7/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1export/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1export/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1export/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1export/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1{id}~1invoice/post/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1{id}~1invoice/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1orders~1{id}~1receipt/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1refunds~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1refunds~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1refunds~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1refunds~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1refunds~1/get/parameters/2/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1refunds~1/get/parameters/2/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1refunds~1/get/parameters/3/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1refunds~1/get/parameters/3/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1refunds~1/get/parameters/4/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1refunds~1/get/parameters/4/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1disputes~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1disputes~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1disputes~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1disputes~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1disputes~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkouts~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkouts~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkouts~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkouts~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkouts~1/get/parameters/2/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkouts~1/get/parameters/2/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkouts~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkouts~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1files~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1files~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1files~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1files~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1files~1{id}~1uploaded/post/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1files~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1files~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1/get/parameters/4/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1/get/parameters/4/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1/get/parameters/5/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1/get/parameters/5/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1/get/parameters/7/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1/get/parameters/7/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1export/get/parameters/4/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1export/get/parameters/4/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1export/get/parameters/5/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1export/get/parameters/5/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1export/get/parameters/7/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1export/get/parameters/7/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1dashboards/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1dashboards/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1dashboards~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1dashboards~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1metrics~1dashboards~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1license-keys~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1license-keys~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1license-keys~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1license-keys~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1license-keys~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1license-keys~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1license-keys~1{id}~1activations~1{activation_id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1license-keys~1{id}~1activations~1{activation_id}/get/parameters/1/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkout-links~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkout-links~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkout-links~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkout-links~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkout-links~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkout-links~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1checkout-links~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1custom-fields~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1custom-fields~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1custom-fields~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1custom-fields~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1custom-fields~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1discounts~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1discounts~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1discounts~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1discounts~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1discounts~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customers~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customers~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customers~1export/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customers~1export/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customers~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customers~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customers~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customers~1{id}~1state/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1/get/parameters/2/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1/get/parameters/2/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1/get/parameters/3/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1/get/parameters/3/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1/get/parameters/4/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1/get/parameters/4/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1/get/parameters/5/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1/get/parameters/5/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1/get/parameters/6/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1/get/parameters/6/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1benefit-grants~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1customers~1me~1payment-methods~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1meters~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1meters~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1meters~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1seats/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1seats/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1seats~1{seat_id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1seats~1{seat_id}~1resend/post/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1downloadables~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1downloadables~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1license-keys~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1license-keys~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1orders~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1orders~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1orders~1/get/parameters/2/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1orders~1/get/parameters/2/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1orders~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1orders~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1orders~1{id}~1invoice/post/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1orders~1{id}~1invoice/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1orders~1{id}~1receipt/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1orders~1{id}~1payment-status/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1orders~1{id}~1confirm-payment/post/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1subscriptions~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1subscriptions~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1subscriptions~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1subscriptions~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1subscriptions~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-portal~1wallets~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-seats/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-seats/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-seats~1{seat_id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-seats~1{seat_id}~1resend/post/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1events~1/get/parameters/3/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1events~1/get/parameters/3/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1events~1/get/parameters/4/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1events~1/get/parameters/4/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1events~1/get/parameters/6/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1events~1/get/parameters/10/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1events~1names/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1events~1names/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1events~1names/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1events~1names/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1events~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1event-types~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1event-types~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1event-types~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1event-types~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1event-types~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1meters~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1meters~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1meters~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1meters~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1meters~1{id}~1quantities/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1meters~1{id}~1quantities/get/parameters/5/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1meters~1{id}~1quantities/get/parameters/5/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1organization-access-tokens~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1organization-access-tokens~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1organization-access-tokens~1{id}/patch/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1organization-access-tokens~1{id}/delete/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-meters~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-meters~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-meters~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-meters~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-meters~1/get/parameters/3/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-meters~1/get/parameters/3/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1customer-meters~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1payments~1/get/parameters/0/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1payments~1/get/parameters/0/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1payments~1/get/parameters/1/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1payments~1/get/parameters/1/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1payments~1/get/parameters/2/schema/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1payments~1/get/parameters/2/schema/anyOf/1/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/paths/~1v1~1payments~1{id}/get/parameters/0/schema - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/AttachedCustomField/properties/custom_field_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/AttachedCustomFieldCreate/properties/custom_field_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/AuthorizeOrganization/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/AuthorizeUser/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/AuthorizeUser/properties/email - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceCreditOrderEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceCreditOrderEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceCreditOrderEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceCreditOrderEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceCreditOrderEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceDisputeEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceDisputeEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceDisputeEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceDisputeEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceDisputeEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceDisputeReversalEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceDisputeReversalEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceDisputeReversalEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceDisputeReversalEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceDisputeReversalEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceOrderEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceOrderEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceOrderEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceOrderEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceOrderEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceRefundEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceRefundEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceRefundEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceRefundEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceRefundEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceRefundReversalEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceRefundReversalEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceRefundReversalEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceRefundReversalEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BalanceRefundReversalEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitCustom/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitCustom/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitCustomCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitCustomSubscriber/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitCustomSubscriber/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitCycledEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitCycledEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitCycledEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitCycledEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitCycledEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDiscord/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDiscord/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDiscordCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDiscordSubscriber/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDiscordSubscriber/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDownloadables/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDownloadables/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDownloadablesCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDownloadablesCreateProperties/properties/files/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDownloadablesProperties/properties/files/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDownloadablesSubscriber/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDownloadablesSubscriber/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitDownloadablesSubscriberProperties/properties/active_files/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitFeatureFlag/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitFeatureFlag/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitFeatureFlagCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitFeatureFlagSubscriber/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitFeatureFlagSubscriber/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGitHubRepository/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGitHubRepository/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGitHubRepositoryCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGitHubRepositorySubscriber/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGitHubRepositorySubscriber/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrant/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrant/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrant/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrant/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrant/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrant/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantCustomWebhook/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantCustomWebhook/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantCustomWebhook/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantCustomWebhook/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantCustomWebhook/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantCustomWebhook/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDiscordWebhook/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDiscordWebhook/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDiscordWebhook/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDiscordWebhook/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDiscordWebhook/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDiscordWebhook/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDownloadablesWebhook/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDownloadablesWebhook/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDownloadablesWebhook/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDownloadablesWebhook/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDownloadablesWebhook/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantDownloadablesWebhook/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantFeatureFlagWebhook/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantFeatureFlagWebhook/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantFeatureFlagWebhook/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantFeatureFlagWebhook/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantFeatureFlagWebhook/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantFeatureFlagWebhook/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantGitHubRepositoryWebhook/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantGitHubRepositoryWebhook/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantGitHubRepositoryWebhook/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantGitHubRepositoryWebhook/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantGitHubRepositoryWebhook/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantGitHubRepositoryWebhook/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantLicenseKeysWebhook/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantLicenseKeysWebhook/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantLicenseKeysWebhook/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantLicenseKeysWebhook/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantLicenseKeysWebhook/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantLicenseKeysWebhook/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantMeterCreditWebhook/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantMeterCreditWebhook/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantMeterCreditWebhook/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantMeterCreditWebhook/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantMeterCreditWebhook/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantMeterCreditWebhook/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitGrantedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitLicenseKeys/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitLicenseKeys/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitLicenseKeysCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitLicenseKeysSubscriber/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitLicenseKeysSubscriber/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitMeterCredit/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitMeterCredit/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitMeterCreditCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitMeterCreditCreateProperties/properties/meter_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitMeterCreditProperties/properties/meter_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitMeterCreditSubscriber/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitMeterCreditSubscriber/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitMeterCreditSubscriberProperties/properties/meter_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitPublic/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitPublic/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitRevokedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitRevokedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitRevokedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitRevokedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitRevokedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitSubscriberOrganization/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitUpdatedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitUpdatedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitUpdatedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitUpdatedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/BenefitUpdatedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CardPayment/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CardPayment/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CardPayment/properties/checkout_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CardPayment/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Checkout/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Checkout/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Checkout/properties/product_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Checkout/properties/product_price_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Checkout/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Checkout/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Checkout/properties/customer_ip_address/anyOf/0 - The format ipvanyaddress is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Checkout/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutConfirmStripe/properties/product_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutConfirmStripe/properties/product_price_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutConfirmStripe/properties/customer_email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutCreatedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutCreatedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutCreatedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutCreatedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutCreatedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutDiscountFixedOnceForeverDuration/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutDiscountFixedRepeatDuration/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutDiscountPercentageOnceForeverDuration/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutDiscountPercentageRepeatDuration/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLink/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLink/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLink/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProduct/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProduct/properties/success_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProduct/properties/return_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProduct/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProductPrice/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProductPrice/properties/success_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProductPrice/properties/return_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProductPrice/properties/product_price_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProducts/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProducts/properties/success_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProducts/properties/return_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkCreateProducts/properties/products/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkProduct/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkProduct/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkUpdate/properties/products/anyOf/0/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkUpdate/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkUpdate/properties/success_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutLinkUpdate/properties/return_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutOrganization/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPriceCreate/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPriceCreate/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPriceCreate/properties/customer_email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPriceCreate/properties/customer_ip_address/anyOf/0 - The format ipvanyaddress is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPriceCreate/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPriceCreate/properties/success_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPriceCreate/properties/return_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPriceCreate/properties/product_price_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProduct/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProduct/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductCreate/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductCreate/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductCreate/properties/customer_email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductCreate/properties/customer_ip_address/anyOf/0 - The format ipvanyaddress is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductCreate/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductCreate/properties/success_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductCreate/properties/return_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductCreate/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductsCreate/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductsCreate/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductsCreate/properties/customer_email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductsCreate/properties/customer_ip_address/anyOf/0 - The format ipvanyaddress is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductsCreate/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductsCreate/properties/success_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductsCreate/properties/return_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutProductsCreate/properties/products/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublic/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublic/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublic/properties/product_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublic/properties/product_price_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublic/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublic/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublic/properties/customer_ip_address/anyOf/0 - The format ipvanyaddress is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublicConfirmed/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublicConfirmed/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublicConfirmed/properties/product_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublicConfirmed/properties/product_price_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublicConfirmed/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublicConfirmed/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutPublicConfirmed/properties/customer_ip_address/anyOf/0 - The format ipvanyaddress is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutUpdate/properties/product_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutUpdate/properties/product_price_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutUpdate/properties/customer_email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutUpdate/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutUpdate/properties/customer_ip_address/anyOf/0 - The format ipvanyaddress is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutUpdate/properties/success_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutUpdate/properties/return_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutUpdatePublic/properties/product_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutUpdatePublic/properties/product_price_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CheckoutUpdatePublic/properties/customer_email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldCheckbox/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldCheckbox/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldCreateCheckbox/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldCreateDate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldCreateNumber/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldCreateSelect/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldCreateText/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldDate/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldDate/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldNumber/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldNumber/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldSelect/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldSelect/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldText/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomFieldText/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantCustom/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantCustom/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantCustom/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantCustom/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantCustom/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantCustom/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDiscord/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDiscord/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDiscord/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDiscord/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDiscord/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDiscord/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDownloadables/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDownloadables/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDownloadables/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDownloadables/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDownloadables/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantDownloadables/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantFeatureFlag/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantFeatureFlag/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantFeatureFlag/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantFeatureFlag/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantFeatureFlag/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantFeatureFlag/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantGitHubRepository/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantGitHubRepository/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantGitHubRepository/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantGitHubRepository/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantGitHubRepository/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantGitHubRepository/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantLicenseKeys/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantLicenseKeys/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantLicenseKeys/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantLicenseKeys/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantLicenseKeys/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantLicenseKeys/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantMeterCredit/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantMeterCredit/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantMeterCredit/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantMeterCredit/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantMeterCredit/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerBenefitGrantMeterCredit/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerCreatedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerCreatedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerCreatedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerCreatedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerCreatedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerCustomerMeter/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerCustomerMeter/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerCustomerMeter/properties/meter_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerCustomerMeterMeter/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerDeletedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerDeletedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerDeletedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerDeletedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerDeletedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerEmailUpdateRequest/properties/email - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerIndividual/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerIndividual/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerIndividualCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerIndividualCreate/properties/email - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerMeter/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerMeter/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerMeter/properties/meter_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrder/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrder/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrder/properties/product_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrder/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrder/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrder/properties/checkout_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrderConfirmPayment/properties/payment_method_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrderProduct/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrderProduct/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrderSubscription/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrderSubscription/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrderSubscription/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrderSubscription/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrderSubscription/properties/checkout_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerOrganization/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerPortalCustomer/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerPortalCustomer/properties/default_payment_method_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerPortalMember/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerPortalMemberCreate/properties/email - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerProduct/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerProduct/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSession/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSession/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSessionCustomerExternalIDCreate/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSessionCustomerExternalIDCreate/properties/return_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSessionCustomerIDCreate/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSessionCustomerIDCreate/properties/return_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSessionCustomerIDCreate/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateBenefitGrant/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateBenefitGrant/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateIndividual/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateIndividual/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateMeter/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateMeter/properties/meter_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateSubscription/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateSubscription/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateSubscription/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateSubscriptionMeter/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateSubscriptionMeter/properties/meter_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateTeam/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerStateTeam/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSubscription/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSubscription/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSubscription/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSubscription/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSubscription/properties/checkout_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSubscriptionMeter/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSubscriptionMeter/properties/meter_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSubscriptionMeterMeter/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSubscriptionProduct/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSubscriptionProduct/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerSubscriptionUpdateProduct/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerTeam/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerTeam/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerTeamCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerTeamCreate/properties/email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerUpdate/properties/email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerUpdateExternalID/properties/email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerUpdatedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerUpdatedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerUpdatedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerUpdatedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerUpdatedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerWallet/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/CustomerWallet/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountFixedCreate/properties/products/anyOf/0/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountFixedCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountFixedOnceForeverDuration/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountFixedOnceForeverDuration/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountFixedOnceForeverDurationBase/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountFixedOnceForeverDurationBase/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountFixedRepeatDuration/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountFixedRepeatDuration/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountFixedRepeatDurationBase/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountFixedRepeatDurationBase/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountPercentageCreate/properties/products/anyOf/0/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountPercentageCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountPercentageOnceForeverDuration/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountPercentageOnceForeverDuration/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountPercentageOnceForeverDurationBase/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountPercentageOnceForeverDurationBase/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountPercentageRepeatDuration/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountPercentageRepeatDuration/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountPercentageRepeatDurationBase/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountPercentageRepeatDurationBase/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountProduct/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountProduct/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DiscountUpdate/properties/products/anyOf/0/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Dispute/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Dispute/properties/order_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Dispute/properties/payment_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DownloadableFileCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DownloadableFileRead/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DownloadableFileRead/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DownloadableRead/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/DownloadableRead/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/EventCreateCustomer/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/EventCreateCustomer/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/EventCreateCustomer/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/EventCreateExternalCustomer/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/EventType/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/EventType/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/EventTypeWithStats/properties/id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/EventTypeWithStats/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ExistingProductPrice/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/FileDownload/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/FileDownload/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/FileUpload/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/FileUpload/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/GenericPayment/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/GenericPayment/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/GenericPayment/properties/checkout_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/GenericPayment/properties/order_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LegacyRecurringProductPriceCustom/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LegacyRecurringProductPriceCustom/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LegacyRecurringProductPriceFixed/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LegacyRecurringProductPriceFixed/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LegacyRecurringProductPriceFree/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LegacyRecurringProductPriceFree/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyActivate/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyActivationBase/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyActivationBase/properties/license_key_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyActivationRead/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyActivationRead/properties/license_key_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyCustomer/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyCustomer/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyDeactivate/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyDeactivate/properties/activation_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyRead/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyRead/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyRead/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyRead/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyUser/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyValidate/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyValidate/properties/activation_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyValidate/properties/benefit_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyValidate/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyWithActivations/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyWithActivations/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyWithActivations/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/LicenseKeyWithActivations/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Member/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Member/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MemberCreate/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MemberCreate/properties/email - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MemberOwnerCreate/properties/email - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Meter/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Meter/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MeterCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MeterCreditEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MeterCreditEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MeterCreditEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MeterCreditEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MeterCreditEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MeterResetEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MeterResetEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MeterResetEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MeterResetEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MeterResetEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MetricDashboardCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MetricDashboardSchema/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/MetricDashboardSchema/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OAuth2ClientConfiguration/properties/redirect_uris/items - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OAuth2ClientConfiguration/properties/logo_uri/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OAuth2ClientConfiguration/properties/tos_uri/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OAuth2ClientConfiguration/properties/policy_uri/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OAuth2ClientConfigurationUpdate/properties/redirect_uris/items - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OAuth2ClientConfigurationUpdate/properties/logo_uri/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OAuth2ClientConfigurationUpdate/properties/tos_uri/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OAuth2ClientConfigurationUpdate/properties/policy_uri/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Order/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Order/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Order/properties/product_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Order/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Order/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Order/properties/checkout_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderCustomer/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderCustomer/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderItemSchema/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderItemSchema/properties/product_price_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderPaidEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderPaidEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderPaidEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderPaidEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderPaidEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderProduct/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderProduct/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderRefundedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderRefundedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderRefundedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderRefundedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderRefundedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderSubscription/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderSubscription/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderSubscription/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderSubscription/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderSubscription/properties/checkout_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderUser/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderVoidedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderVoidedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderVoidedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderVoidedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrderVoidedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Organization/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Organization/properties/account_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Organization/properties/payout_account_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationAccessToken/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationAccessToken/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationAccessTokenCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationAvatarFileCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationAvatarFileRead/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationAvatarFileRead/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationCreate/properties/avatar_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationCreate/properties/email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationCreate/properties/website/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationSocialLink/properties/url - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationUpdate/properties/avatar_url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationUpdate/properties/email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/OrganizationUpdate/properties/website/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/PaymentMethodCard/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/PaymentMethodCard/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/PaymentMethodGeneric/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/PaymentMethodGeneric/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/PendingSubscriptionUpdate/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/PendingSubscriptionUpdate/properties/product_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/PortalAuthenticatedUser/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/PortalAuthenticatedUser/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Product/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Product/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductBenefitsUpdate/properties/benefits/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductCreateOneTime/properties/medias/anyOf/0/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductCreateOneTime/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductCreateRecurring/properties/medias/anyOf/0/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductCreateRecurring/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductMediaFileCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductMediaFileRead/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductMediaFileRead/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceCustom/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceCustom/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceFixed/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceFixed/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceFree/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceFree/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceMeter/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceMeteredUnit/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceMeteredUnit/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceMeteredUnit/properties/meter_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceMeteredUnitCreate/properties/meter_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceSeatBased/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductPriceSeatBased/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ProductUpdate/properties/medias/anyOf/0/items - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Refund/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Refund/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Refund/properties/order_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Refund/properties/subscription_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Refund/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/RefundCreate/properties/order_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/RefundDispute/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/RefundDispute/properties/order_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/RefundDispute/properties/payment_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SeatAssign/properties/email/anyOf/0 - The format email is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Subscription/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Subscription/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Subscription/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Subscription/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/Subscription/properties/checkout_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionBillingPeriodUpdatedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionBillingPeriodUpdatedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionBillingPeriodUpdatedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionBillingPeriodUpdatedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionBillingPeriodUpdatedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCanceledEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCanceledEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCanceledEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCanceledEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCanceledEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCreateCustomer/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCreateCustomer/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCreateExternalCustomer/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCreatedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCreatedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCreatedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCreatedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCreatedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCustomer/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCustomer/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCycledEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCycledEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCycledEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCycledEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionCycledEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionMeter/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionMeter/properties/meter_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionPastDueEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionPastDueEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionPastDueEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionPastDueEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionPastDueEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionProductUpdatedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionProductUpdatedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionProductUpdatedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionProductUpdatedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionProductUpdatedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionReactivatedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionReactivatedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionReactivatedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionReactivatedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionReactivatedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionRevokedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionRevokedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionRevokedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionRevokedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionRevokedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionSeatsUpdatedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionSeatsUpdatedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionSeatsUpdatedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionSeatsUpdatedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionSeatsUpdatedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUncanceledEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUncanceledEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUncanceledEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUncanceledEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUncanceledEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdateClearedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdateClearedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdateClearedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdateClearedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdateClearedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdateDiscount/properties/discount_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdateProduct/properties/product_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdatedEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdatedEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdatedEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdatedEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUpdatedEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/SubscriptionUser/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/UserEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/UserEvent/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/UserEvent/properties/customer_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/UserEvent/properties/member_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/UserEvent/properties/parent_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ValidatedLicenseKey/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ValidatedLicenseKey/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ValidatedLicenseKey/properties/customer_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/ValidatedLicenseKey/properties/benefit_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/WebhookDelivery/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/WebhookEndpoint/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/WebhookEndpoint/properties/url - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/WebhookEndpoint/properties/organization_id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/WebhookEndpointCreate/properties/url - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/WebhookEndpointCreate/properties/organization_id/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/WebhookEndpointUpdate/properties/url/anyOf/0 - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/WebhookEvent/properties/id - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/AuthorizationCodeTokenRequest/properties/redirect_uri - The format uri is not supported by Kiota and the string type will be used.
+Warning: KiotaBuilder OpenAPI warning: #/components/schemas/WebTokenRequest/properties/sub/anyOf/0 - The format uuid4 is not supported by Kiota for the type String and the string type will be used.
+Warning: KiotaBuilder Discriminator ProductPriceCustom is not inherited from ProductPrice.
+Warning: KiotaBuilder Discriminator ProductPriceFixed is not inherited from ProductPrice.
+Warning: KiotaBuilder Discriminator ProductPriceFree is not inherited from ProductPrice.
+Warning: KiotaBuilder Discriminator LegacyRecurringProductPriceCustom is not inherited from LegacyRecurringProductPrice.
+Warning: KiotaBuilder Discriminator LegacyRecurringProductPriceCustom is not inherited from LegacyRecurringProductPrice.
+Warning: KiotaBuilder Discriminator ProductPriceMeteredUnit is not inherited from ProductPrice.
+Warning: KiotaBuilder Discriminator LegacyRecurringProductPriceCustom is not inherited from LegacyRecurringProductPrice.
+Warning: KiotaBuilder Discriminator LegacyRecurringProductPriceFixed is not inherited from LegacyRecurringProductPrice.
+Warning: KiotaBuilder Discriminator LegacyRecurringProductPriceFixed is not inherited from LegacyRecurringProductPrice.
+Warning: KiotaBuilder Discriminator ProductPriceSeatBased is not inherited from ProductPrice.
+Warning: KiotaBuilder Discriminator LegacyRecurringProductPriceFixed is not inherited from LegacyRecurringProductPrice.
+Warning: KiotaBuilder Discriminator LegacyRecurringProductPriceFree is not inherited from LegacyRecurringProductPrice.
+Warning: KiotaBuilder Discriminator LegacyRecurringProductPriceFree is not inherited from LegacyRecurringProductPrice.
+Warning: KiotaBuilder Discriminator LegacyRecurringProductPriceFree is not inherited from LegacyRecurringProductPrice.
+Warning: KiotaBuilder Could not create error type for 422 in orders:generate_invoice
+Warning: KiotaBuilder Discriminator CustomerIndividual is not inherited from Customer.
+Warning: KiotaBuilder Discriminator CustomerTeam is not inherited from Customer.
+Warning: KiotaBuilder Could not create error type for 403 in checkouts:update
+Warning: KiotaBuilder Could not create error type for 403 in checkouts:client_update
+Warning: KiotaBuilder Could not create error type for 422 in customer_portal:orders:generate_invoice
+Warning: KiotaBuilder Could not create error type for 403 in checkouts:client_confirm
+Warning: KiotaBuilder Discriminator SystemEvent is not a valid model and points to a union type.
+Warning: KiotaBuilder Discriminator BalanceCreditOrderEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator BalanceDisputeEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator BalanceDisputeReversalEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator BalanceOrderEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator BalanceRefundEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator BalanceRefundReversalEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator BenefitCycledEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator BenefitGrantedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator BenefitRevokedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator BenefitUpdatedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SystemEvent is not a valid model and points to a union type.
+Warning: KiotaBuilder Discriminator CheckoutCreatedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator CustomerCreatedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator CustomerDeletedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator CustomerUpdatedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator MeterCreditEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator MeterResetEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator OrderPaidEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator OrderRefundedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator OrderVoidedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionBillingPeriodUpdatedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionCanceledEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionCreatedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionCycledEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionPastDueEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionProductUpdatedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionReactivatedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionRevokedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionSeatsUpdatedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionUncanceledEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionUpdateClearedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SubscriptionUpdatedEvent is not inherited from SystemEvent.
+Warning: KiotaBuilder Discriminator SystemEvent is not a valid model and points to a union type.

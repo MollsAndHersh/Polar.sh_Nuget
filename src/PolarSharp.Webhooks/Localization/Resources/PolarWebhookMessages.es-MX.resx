@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <!-- Errores de webhook -->
+  <data name="Webhook_SignatureInvalid" xml:space="preserve"><value>La verificación de firma del webhook falló.</value></data>
+  <data name="Webhook_TimestampExpired" xml:space="preserve"><value>La marca de tiempo del webhook está fuera de la ventana de tolerancia aceptable.</value></data>
+  <data name="Webhook_UnknownEventType" xml:space="preserve"><value>Tipo de evento de webhook desconocido: {0}</value></data>
+
+  <!-- Títulos de notificaciones -->
+  <data name="Toast_order_created_Title" xml:space="preserve"><value>Nuevo Pedido</value></data>
+  <data name="Toast_order_paid_Title" xml:space="preserve"><value>Pedido Pagado</value></data>
+  <data name="Toast_order_refunded_Title" xml:space="preserve"><value>Pedido Reembolsado</value></data>
+  <data name="Toast_subscription_created_Title" xml:space="preserve"><value>Nueva Suscripción</value></data>
+  <data name="Toast_subscription_active_Title" xml:space="preserve"><value>Suscripción Activada</value></data>
+  <data name="Toast_subscription_canceled_Title" xml:space="preserve"><value>Suscripción Cancelada</value></data>
+  <data name="Toast_subscription_revoked_Title" xml:space="preserve"><value>Suscripción Revocada</value></data>
+  <data name="Toast_checkout_created_Title" xml:space="preserve"><value>Pago Iniciado</value></data>
+  <data name="Toast_checkout_updated_Title" xml:space="preserve"><value>Pago Actualizado</value></data>
+  <data name="Toast_customer_created_Title" xml:space="preserve"><value>Nuevo Cliente</value></data>
+  <data name="Toast_customer_updated_Title" xml:space="preserve"><value>Cliente Actualizado</value></data>
+  <data name="Toast_benefit_grant_created_Title" xml:space="preserve"><value>Beneficio Otorgado</value></data>
+  <data name="Toast_benefit_grant_revoked_Title" xml:space="preserve"><value>Beneficio Revocado</value></data>
+  <data name="Toast_refund_created_Title" xml:space="preserve"><value>Reembolso Iniciado</value></data>
+  <data name="Toast_refund_updated_Title" xml:space="preserve"><value>Reembolso Actualizado</value></data>
+
+  <!-- Plantillas de mensajes -->
+  <data name="Toast_order_created_MessageTemplate" xml:space="preserve"><value>Pedido #{OrderNumber} realizado por {CustomerEmail} — {TotalAmount}</value></data>
+  <data name="Toast_order_paid_MessageTemplate" xml:space="preserve"><value>Pago del pedido #{OrderNumber} confirmado ({TotalAmount})</value></data>
+  <data name="Toast_order_refunded_MessageTemplate" xml:space="preserve"><value>Reembolso emitido para el pedido #{OrderNumber} — {TotalAmount}</value></data>
+  <data name="Toast_subscription_created_MessageTemplate" xml:space="preserve"><value>{CustomerEmail} inició una suscripción a {ProductName}</value></data>
+  <data name="Toast_subscription_active_MessageTemplate" xml:space="preserve"><value>{CustomerEmail} se suscribió a {ProductName} ({PlanName})</value></data>
+  <data name="Toast_subscription_canceled_MessageTemplate" xml:space="preserve"><value>{CustomerEmail} canceló su suscripción a {ProductName}</value></data>
+  <data name="Toast_subscription_revoked_MessageTemplate" xml:space="preserve"><value>Suscripción a {ProductName} revocada para {CustomerEmail}</value></data>
+  <data name="Toast_checkout_created_MessageTemplate" xml:space="preserve"><value>Nuevo pago iniciado por {CustomerEmail} — {TotalAmount}</value></data>
+  <data name="Toast_checkout_updated_MessageTemplate" xml:space="preserve"><value>Pago actualizado para {CustomerEmail} — {TotalAmount}</value></data>
+  <data name="Toast_customer_created_MessageTemplate" xml:space="preserve"><value>Nuevo cliente registrado: {CustomerEmail}</value></data>
+  <data name="Toast_customer_updated_MessageTemplate" xml:space="preserve"><value>Perfil del cliente {CustomerEmail} actualizado</value></data>
+  <data name="Toast_benefit_grant_created_MessageTemplate" xml:space="preserve"><value>Beneficio {BenefitType} otorgado (cliente {CustomerId})</value></data>
+  <data name="Toast_benefit_grant_revoked_MessageTemplate" xml:space="preserve"><value>Beneficio {BenefitType} revocado (cliente {CustomerId})</value></data>
+  <data name="Toast_refund_created_MessageTemplate" xml:space="preserve"><value>Reembolso de {TotalAmount} iniciado para el pedido #{OrderId}</value></data>
+  <data name="Toast_refund_updated_MessageTemplate" xml:space="preserve"><value>Reembolso para el pedido #{OrderId} actualizado — estado: {RefundStatus}</value></data>
+</root>

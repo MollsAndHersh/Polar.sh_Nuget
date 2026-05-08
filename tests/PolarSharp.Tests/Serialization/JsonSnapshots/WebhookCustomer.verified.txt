@@ -1,0 +1,5 @@
+﻿{
+  "id": "cus_01jf4g9h3k2m",
+  "email": "test@example.com",
+  "name": "Test User"
+}

@@ -1,0 +1,5 @@
+﻿{
+  "RetryAfter": "00:00:30",
+  "Message": "Rate limit exceeded.",
+  "RequestId": "req_ddd"
+}

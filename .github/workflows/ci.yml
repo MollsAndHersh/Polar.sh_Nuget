@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build, Test & AOT
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build (CS1591 WarningsAsErrors enforced)
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Unit tests (no network required)
+        run: dotnet test --configuration Release --no-build --filter "Category!=Integration"
+
+      - name: Vulnerability scan
+        run: |
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee vuln.log
+          if grep -q "has the following vulnerable" vuln.log; then
+            echo "::error::Vulnerable packages detected. Review vuln.log for details."
+            exit 1
+          fi
+
+      - name: AOT publish smoke test
+        run: dotnet publish testapp/PolarTestApp -c Release -p:PublishAot=true
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+  integration-test:
+    name: Integration Tests (sandbox)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build-test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Integration tests (live Polar sandbox)
+        run: dotnet test tests/PolarSharp.IntegrationTests --configuration Release --no-build --filter "Category=Integration"
+        env:
+          POLAR_SANDBOX_TOKEN: ${{ secrets.POLAR_SANDBOX_TOKEN }}
+
+  publish:
+    name: Publish NuGet packages
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build Release
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Pack PolarSharp
+        run: dotnet pack src/PolarSharp -c Release --no-build -o artifacts/
+
+      - name: Pack PolarSharp.Webhooks
+        run: dotnet pack src/PolarSharp.Webhooks -c Release --no-build -o artifacts/
+
+      - name: Pack PolarSharp.MultiTenant
+        run: dotnet pack src/PolarSharp.MultiTenant -c Release --no-build -o artifacts/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: artifacts/*.nupkg
+
+      - name: Push to NuGet.org
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

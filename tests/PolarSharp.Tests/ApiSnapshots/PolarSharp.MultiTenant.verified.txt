@@ -1,0 +1,63 @@
+﻿namespace PolarSharp.MultiTenant.Extensions
+{
+    public static class MultiTenantBuilderExtensions
+    {
+        public static PolarSharp.PolarInfrastructureBuilder AddPolarMultiTenant(this PolarSharp.PolarInfrastructureBuilder builder, System.Action<PolarSharp.MultiTenant.PolarMultiTenantOptions>? configure = null) { }
+    }
+}
+namespace PolarSharp.MultiTenant
+{
+    public interface IMultiTenantPolarClientFactory
+    {
+        PolarSharp.PolarClient GetClientForCurrentTenant();
+    }
+    public class PolarMultiTenantOptions
+    {
+        public PolarMultiTenantOptions() { }
+        public PolarSharp.MultiTenant.StrategyOptions.ClaimStrategyOptions Claim { get; set; }
+        public PolarSharp.MultiTenant.StrategyOptions.HeaderStrategyOptions Header { get; set; }
+        public PolarSharp.MultiTenant.StrategyOptions.HostnameStrategyOptions Hostname { get; set; }
+        public PolarSharp.MultiTenant.StrategyOptions.RouteStrategyOptions Route { get; set; }
+        public PolarSharp.MultiTenant.TenantStrategy Strategy { get; set; }
+        public System.Collections.Generic.List<PolarSharp.MultiTenant.PolarTenantInfo> Tenants { get; set; }
+    }
+    public sealed class PolarTenantInfo : Finbuckle.MultiTenant.Abstractions.ITenantInfo
+    {
+        public PolarTenantInfo() { }
+        public string Id { get; set; }
+        public string Identifier { get; set; }
+        public string? Name { get; set; }
+        public string PolarAccessToken { get; set; }
+        public PolarSharp.PolarServer Server { get; set; }
+    }
+    public enum TenantStrategy
+    {
+        Header = 0,
+        Route = 1,
+        Hostname = 2,
+        Claim = 3,
+    }
+}
+namespace PolarSharp.MultiTenant.StrategyOptions
+{
+    public class ClaimStrategyOptions
+    {
+        public ClaimStrategyOptions() { }
+        public string Type { get; set; }
+    }
+    public class HeaderStrategyOptions
+    {
+        public HeaderStrategyOptions() { }
+        public string Name { get; set; }
+    }
+    public class HostnameStrategyOptions
+    {
+        public HostnameStrategyOptions() { }
+        public string Template { get; set; }
+    }
+    public class RouteStrategyOptions
+    {
+        public RouteStrategyOptions() { }
+        public string Parameter { get; set; }
+    }
+}

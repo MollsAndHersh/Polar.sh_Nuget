@@ -1,0 +1,40 @@
+# Build output
+bin/
+obj/
+artifacts/
+
+# NuGet restore
+*.user
+.nuget/
+packages/
+
+# User secrets
+appsettings.Development.json
+
+# DocFX generated output (committed: docfx.json, docs/articles/, docs/toc.yml)
+docs/api/
+docs/_site/
+
+# Doxygen generated output
+docs/doxygen/
+
+# IDE
+.vs/
+.vscode/
+*.suo
+*.user
+.idea/
+*.DotSettings.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Benchmarks output
+BenchmarkDotNet.Artifacts/

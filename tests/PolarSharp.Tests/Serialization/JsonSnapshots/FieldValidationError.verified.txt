@@ -1,0 +1,4 @@
+﻿{
+  "Field": "email",
+  "Message": "must be a valid email address"
+}

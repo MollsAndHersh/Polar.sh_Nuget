@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsLibrary>true</IsLibrary>
+    <PackageId>PolarSharp</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Mark Chipman</Authors>
+    <Description>A .NET 10 AOT-compatible SDK for Polar.sh — open source Merchant of Record payment and monetization platform.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/markchipman/PolarSharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/markchipman/PolarSharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>polar;payments;monetization;saas;sdk;http-client;aot;nuget</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>PolarSharp</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ASP.NET Core framework reference — gives access to IApplicationBuilder, IHealthCheck, etc. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Kiota.Abstractions" />
+    <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Json" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Text" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Form" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Multipart" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+  </ItemGroup>
+
+  <!-- Grant internal visibility to optional packages and test projects -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="PolarSharp.Webhooks" />
+    <InternalsVisibleTo Include="PolarSharp.MultiTenant" />
+    <InternalsVisibleTo Include="PolarSharp.Tests" />
+    <InternalsVisibleTo Include="PolarSharp.Webhooks.Tests" />
+    <InternalsVisibleTo Include="PolarSharp.IntegrationTests" />
+    <InternalsVisibleTo Include="PolarSharp.Benchmarks" />
+  </ItemGroup>
+
+  <!-- Suppress warnings only on Kiota-generated code (not hand-maintained) -->
+  <ItemGroup>
+    <Compile Update="Generated/**/*.cs">
+      <WarningLevel>0</WarningLevel>
+      <NoWarn>CS1591;CS1574;CS1580;CS1581;CS1584;CS0618;CS0108;CS0105</NoWarn>
+    </Compile>
+  </ItemGroup>
+
+</Project>
