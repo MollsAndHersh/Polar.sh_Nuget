@@ -1,7 +1,3 @@
----
-_layout: landing
----
-
 # PolarSharp
 
 A .NET 10 Native AOT-compatible SDK for [Polar.sh](https://polar.sh) — the open-source Merchant of Record payment and monetization platform.
