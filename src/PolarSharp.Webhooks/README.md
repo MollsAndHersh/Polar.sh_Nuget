@@ -65,10 +65,10 @@ dotnet new polar-handler --event OrderCreatedEvent --name OrderCreatedHandler
 
 ## Documentation
 
-- [Webhook Setup](https://markchipman.github.io/PolarSharp/articles/webhooks.html)
-- [Handler Patterns](https://markchipman.github.io/PolarSharp/articles/webhook-handlers.html)
-- [Toast Notifications](https://markchipman.github.io/PolarSharp/articles/toast-notifications.html)
-- [Security Hardening](https://markchipman.github.io/PolarSharp/articles/security.html)
+- [Webhook Setup](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/webhooks.html)
+- [Handler Patterns](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/webhook-handlers.html)
+- [Toast Notifications](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/toast-notifications.html)
+- [Security Hardening](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/security.html)
 
 ## License
 

@@ -22,20 +22,20 @@ All three are versioned together and published atomically via a CI workflow trig
 
 ```bash
 # From the repo root
-git remote add origin https://github.com/markchipman/PolarSharp.git
+git remote add origin https://github.com/mollsandhersh/Polar.sh_Nuget.git
 git branch -M main
 git push -u origin main
 ```
 
-The `RepositoryUrl` in all three library `.csproj` files already points to `https://github.com/markchipman/PolarSharp`, so SourceLink will resolve correctly after this push.
+The `RepositoryUrl` in all three library `.csproj` files already points to `https://github.com/mollsandhersh/Polar.sh_Nuget`, so SourceLink will resolve correctly after this push.
 
 ### 2. Enable GitHub Pages
 
-1. Go to **Settings → Pages** in the `markchipman/PolarSharp` repository.
+1. Go to **Settings → Pages** in the `mollsandhersh/Polar.sh_Nuget` repository.
 2. Set **Source** to **GitHub Actions**.
 3. Leave everything else at defaults.
 
-The `docs.yml` workflow will deploy the site on the very next push to `main`. The URL will be `https://markchipman.github.io/PolarSharp/`.
+The `docs.yml` workflow will deploy the site on the very next push to `main`. The URL will be `https://mollsandhersh.github.io/Polar.sh_Nuget/`.
 
 ### 3. Add the NuGet API key secret
 
@@ -163,9 +163,9 @@ If your organization needs a private pre-release feed (e.g., for internal beta t
 ```bash
 # Authenticate
 dotnet nuget add source \
-    "https://nuget.pkg.github.com/markchipman/index.json" \
+    "https://nuget.pkg.github.com/mollsandhersh/index.json" \
     --name "PolarSharp-GitHub" \
-    --username markchipman \
+    --username mollsandhersh \
     --password $GITHUB_TOKEN \
     --store-password-in-clear-text
 
@@ -181,7 +181,7 @@ Consumers install from GitHub Packages by adding the feed in their `NuGet.config
 <configuration>
   <packageSources>
     <add key="PolarSharp-GitHub"
-         value="https://nuget.pkg.github.com/markchipman/index.json" />
+         value="https://nuget.pkg.github.com/mollsandhersh/index.json" />
   </packageSources>
 </configuration>
 ```
@@ -224,7 +224,7 @@ After a release tag is pushed and CI completes (~3–5 minutes):
 
 ## Documentation Website
 
-The documentation site at `https://markchipman.github.io/PolarSharp/` is built and deployed by the `docs.yml` workflow on every push to `main`. To preview locally:
+The documentation site at `https://mollsandhersh.github.io/Polar.sh_Nuget/` is built and deployed by the `docs.yml` workflow on every push to `main`. To preview locally:
 
 ```bash
 # Install DocFX (one-time)

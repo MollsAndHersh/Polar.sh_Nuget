@@ -7,8 +7,8 @@
     <Authors>Mark Chipman</Authors>
     <Description>A .NET 10 AOT-compatible SDK for Polar.sh — open source Merchant of Record payment and monetization platform.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/markchipman/PolarSharp</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/markchipman/PolarSharp</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>polar;payments;monetization;saas;sdk;http-client;aot;nuget</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>

@@ -65,8 +65,8 @@ app.MapGet("/orders", async (IMultiTenantPolarClientFactory factory, Cancellatio
 
 ## Documentation
 
-- [Multi-Tenancy Guide](https://markchipman.github.io/PolarSharp/articles/multi-tenancy.html)
-- [API Reference](https://markchipman.github.io/PolarSharp/api/)
+- [Multi-Tenancy Guide](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/multi-tenancy.html)
+- [API Reference](https://mollsandhersh.github.io/Polar.sh_Nuget/api/)
 
 ## License
 

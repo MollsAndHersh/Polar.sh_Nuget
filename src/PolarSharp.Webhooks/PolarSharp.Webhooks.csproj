@@ -7,8 +7,8 @@
     <Authors>Mark Chipman</Authors>
     <Description>Webhook integration package for PolarSharp — HMAC verification, typed event handlers, toast notifications, and reconciliation for Polar.sh.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/markchipman/PolarSharp</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/markchipman/PolarSharp</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>polar;webhooks;payments;sdk;aot</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>

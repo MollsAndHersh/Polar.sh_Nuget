@@ -7,8 +7,8 @@
     <Authors>Mark Chipman</Authors>
     <Description>Multi-tenant integration package for PolarSharp — per-tenant Polar.sh clients with Finbuckle.MultiTenant and full request isolation.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/markchipman/PolarSharp</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/markchipman/PolarSharp</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>polar;multi-tenant;payments;sdk;finbuckle;aot</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>

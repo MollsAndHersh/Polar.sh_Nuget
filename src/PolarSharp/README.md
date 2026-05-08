@@ -69,16 +69,16 @@ app.MapGet("/orders", async (PolarClient polar, CancellationToken ct) =>
 }
 ```
 
-See the [full configuration reference](https://markchipman.github.io/PolarSharp/articles/configuration.html) for all options.
+See the [full configuration reference](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/configuration.html) for all options.
 
 ## Documentation
 
-- [Getting Started](https://markchipman.github.io/PolarSharp/articles/getting-started.html)
-- [API Reference](https://markchipman.github.io/PolarSharp/api/)
-- [Webhooks](https://markchipman.github.io/PolarSharp/articles/webhooks.html)
-- [Multi-Tenancy](https://markchipman.github.io/PolarSharp/articles/multi-tenancy.html)
-- [Security](https://markchipman.github.io/PolarSharp/articles/security.html)
-- [NuGet Deployment](https://markchipman.github.io/PolarSharp/articles/nuget-deployment.html)
+- [Getting Started](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/getting-started.html)
+- [API Reference](https://mollsandhersh.github.io/Polar.sh_Nuget/api/)
+- [Webhooks](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/webhooks.html)
+- [Multi-Tenancy](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/multi-tenancy.html)
+- [Security](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/security.html)
+- [NuGet Deployment](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/nuget-deployment.html)
 
 ## License
 

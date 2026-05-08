@@ -18,15 +18,25 @@
   "build": {
     "content": [
       {
-        "files": ["docs/articles/**/*.md", "docs/toc.yml"]
+        "files": ["index.md", "toc.yml"],
+        "src": "docs",
+        "dest": "."
       },
       {
-        "files": ["docs/api/**.yml", "docs/api/toc.yml"]
+        "files": ["**/*.md", "toc.yml"],
+        "src": "docs/articles",
+        "dest": "articles"
+      },
+      {
+        "files": ["**/*.yml"],
+        "src": "docs/api",
+        "dest": "api"
       }
     ],
     "resource": [
       {
-        "files": ["docs/images/**"]
+        "files": ["images/**"],
+        "src": "docs"
       }
     ],
     "dest": "docs/_site",
