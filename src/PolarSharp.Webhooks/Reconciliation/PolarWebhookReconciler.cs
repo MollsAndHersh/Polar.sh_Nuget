@@ -1,8 +1,8 @@
-using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Kiota.Serialization.Json;
 
 namespace PolarSharp.Webhooks.Reconciliation;
 
@@ -163,9 +163,22 @@ internal sealed class PolarWebhookReconciler(
         if (payload is null)
             return null;
 
+        // Fast path: Polar may return the payload as a JSON string literal.
+        // WebhookEvent_payload is a Kiota union type (string | object); when the raw
+        // JSON value is a string, Kiota populates String directly — no serialization needed.
+        if (payload.String is { Length: > 0 } json)
+            return json;
+
+        // Object path: use JsonSerializationWriter directly — AOT-safe, reflection-free.
+        // Calls payload.Serialize(writer) which is hand-written Kiota-generated code,
+        // not bare JsonSerializer.Serialize which requires a registered JsonTypeInfo.
         try
         {
-            return JsonSerializer.Serialize(payload);
+            using var writer = new JsonSerializationWriter();
+            payload.Serialize(writer);
+            using var stream = writer.GetSerializedContent();
+            using var reader = new System.IO.StreamReader(stream);
+            return reader.ReadToEnd();
         }
         catch (Exception)
         {

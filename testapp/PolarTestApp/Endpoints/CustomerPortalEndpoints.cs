@@ -114,5 +114,6 @@ internal static class CustomerPortalEndpoints
         return $"{token[..6]}...{token[^4..]}";
     }
 
-    private sealed record CreateSessionRequest(string CustomerId);
 }
+
+internal sealed record CreateSessionRequest(string CustomerId);

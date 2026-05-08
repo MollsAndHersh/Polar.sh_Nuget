@@ -9,6 +9,7 @@ namespace PolarSharp.Webhooks.Serialization;
 /// STJ source-generated serialization context for all PolarSharp.Webhooks types.
 /// Required for Native AOT and IL trimming compatibility.
 /// </summary>
+[JsonSerializable(typeof(WebhookEvent))]
 [JsonSerializable(typeof(OrderCreatedEvent))]
 [JsonSerializable(typeof(OrderUpdatedEvent))]
 [JsonSerializable(typeof(OrderPaidEvent))]

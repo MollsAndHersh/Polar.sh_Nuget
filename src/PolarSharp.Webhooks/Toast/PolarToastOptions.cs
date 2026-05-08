@@ -48,7 +48,7 @@ public class PolarToastEventConfig
     /// <value>
     /// Must match Polar's event type exactly, e.g. <c>"order.created"</c>.
     /// </value>
-    public required string EventType { get; set; }
+    public string EventType { get; set; } = "";
 
     /// <summary>
     /// Gets or sets the notification title displayed in the UI.
@@ -57,7 +57,7 @@ public class PolarToastEventConfig
     /// A short, static title string. May be overridden at render time via
     /// <c>PolarToastNotification.Localize(localizer)</c>.
     /// </value>
-    public required string Title { get; set; }
+    public string Title { get; set; } = "";
 
     /// <summary>
     /// Gets or sets the notification message template.
@@ -67,7 +67,7 @@ public class PolarToastEventConfig
     /// with values extracted from the event payload. Available tokens differ by event type —
     /// see the toast-notifications article for the full token reference.
     /// </value>
-    public required string MessageTemplate { get; set; }
+    public string MessageTemplate { get; set; } = "";
 
     /// <summary>
     /// Gets or sets the visual severity of the notification.

@@ -27,7 +27,7 @@ internal sealed class FileCheckpointStore(
         try
         {
             var json = await File.ReadAllTextAsync(path, ct).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize<WebhookInternalCheckpointData>(json, WebhookJsonContext.Default.Options);
+            var data = JsonSerializer.Deserialize(json, WebhookJsonContext.Default.WebhookInternalCheckpointData);
             return data?.LastProcessed;
         }
         catch (Exception ex) when (ex is IOException or JsonException)
@@ -48,7 +48,7 @@ internal sealed class FileCheckpointStore(
             if (!string.IsNullOrEmpty(dir))
                 Directory.CreateDirectory(dir);
 
-            var json = JsonSerializer.Serialize(new WebhookInternalCheckpointData(checkpoint), WebhookJsonContext.Default.Options);
+            var json = JsonSerializer.Serialize(new WebhookInternalCheckpointData(checkpoint), WebhookJsonContext.Default.WebhookInternalCheckpointData);
             await File.WriteAllTextAsync(path, json, ct).ConfigureAwait(false);
         }
         catch (IOException ex)

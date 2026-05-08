@@ -15,17 +15,18 @@ namespace PolarSharp.Concurrency;
 /// factories (e.g., creating a <c>PolarClient</c> with its own <see cref="HttpClient"/> and
 /// resilience pipeline), this waste — and potential resource leak — is unacceptable.
 /// <para>
-/// This class wraps each value in <see cref="Lazy{T}"/> with
-/// <see cref="LazyThreadSafetyMode.ExecutionAndPublication"/>, which uses double-checked locking
-/// to guarantee a single factory execution per key regardless of concurrent access patterns.
+/// This class uses a two-dictionary design with per-key guard objects: values are stored in one
+/// <see cref="ConcurrentDictionary{TKey,TValue}"/> while lightweight sentinel objects provide
+/// per-key mutual exclusion, guaranteeing the factory executes exactly once per key.
 /// </para>
-/// <para>Thread-safe: all operations use lock-free concurrent primitives.</para>
+/// <para>Thread-safe: all operations use lock-free concurrent primitives or per-key locks.</para>
 /// </remarks>
 internal sealed class LazyConcurrentDictionary<TKey, TValue>
     where TKey : notnull
     where TValue : class
 {
-    private readonly ConcurrentDictionary<TKey, Lazy<TValue>> _inner = new();
+    private readonly ConcurrentDictionary<TKey, TValue> _values = new();
+    private readonly ConcurrentDictionary<TKey, object> _guards = new();
 
     /// <summary>
     /// Returns the value for <paramref name="key"/>, creating it via <paramref name="factory"/>
@@ -44,32 +45,42 @@ internal sealed class LazyConcurrentDictionary<TKey, TValue>
     {
         ArgumentNullException.ThrowIfNull(factory);
 
-        return _inner
-            .GetOrAdd(
-                key,
-                k => new Lazy<TValue>(
-                    () => factory(k),
-                    LazyThreadSafetyMode.ExecutionAndPublication))
-            .Value;
+        // Fast path — already created.
+        if (_values.TryGetValue(key, out var existing))
+            return existing;
+
+        // Slow path — acquire a per-key guard to ensure single factory execution.
+        // Multiple threads may create guard objects; all but one are discarded (cheap).
+        var guard = _guards.GetOrAdd(key, static _ => new object());
+        lock (guard)
+        {
+            // Double-check after acquiring the lock.
+            if (_values.TryGetValue(key, out existing))
+                return existing;
+
+            var created = factory(key);
+            _values.TryAdd(key, created);
+            return created;
+        }
     }
 
     /// <summary>
-    /// Gets all values whose <see cref="Lazy{T}"/> has already been evaluated (i.e., whose
-    /// factory has already run). Does not trigger factory execution.
+    /// Gets all values currently stored in the dictionary.
     /// </summary>
-    public IEnumerable<TValue> Values =>
-        _inner.Values
-            .Where(lazy => lazy.IsValueCreated)
-            .Select(lazy => lazy.Value);
+    public IEnumerable<TValue> Values => _values.Values;
 
-    /// <summary>Gets the number of keys in the dictionary (including unevaluated lazy entries).</summary>
-    public int Count => _inner.Count;
+    /// <summary>Gets the number of keys in the dictionary.</summary>
+    public int Count => _values.Count;
 
     /// <summary>
     /// Removes all entries from the dictionary.
     /// </summary>
     /// <remarks>Does not dispose the values — the caller is responsible for disposal.</remarks>
-    public void Clear() => _inner.Clear();
+    public void Clear()
+    {
+        _values.Clear();
+        _guards.Clear();
+    }
 
     /// <summary>
     /// Attempts to remove and return the value for <paramref name="key"/>.
@@ -80,14 +91,5 @@ internal sealed class LazyConcurrentDictionary<TKey, TValue>
     /// otherwise the default for <typeparamref name="TValue"/>.
     /// </param>
     /// <returns><see langword="true"/> if the key was found and removed; otherwise <see langword="false"/>.</returns>
-    public bool TryRemove(TKey key, out TValue? value)
-    {
-        if (_inner.TryRemove(key, out var lazy) && lazy.IsValueCreated)
-        {
-            value = lazy.Value;
-            return true;
-        }
-        value = default;
-        return false;
-    }
+    public bool TryRemove(TKey key, out TValue? value) => _values.TryRemove(key, out value);
 }

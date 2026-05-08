@@ -56,7 +56,9 @@
       "Bash(/tmp/audit_check.sh)",
       "Bash(dotnet new console *)",
       "Bash(dotnet --version)",
-      "Bash(dotnet fsi *)"
+      "Bash(dotnet fsi *)",
+      "Bash(dotnet publish *)",
+      "Bash(dotnet pack *)"
     ]
   }
 }

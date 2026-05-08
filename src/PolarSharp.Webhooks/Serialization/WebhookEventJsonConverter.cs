@@ -26,42 +26,41 @@ internal sealed class WebhookEventJsonConverter : JsonConverter<WebhookEvent>
             : "";
 
         var json = root.GetRawText();
+
+        // Use the (string, JsonTypeInfo<T>) overload for each branch — AOT-safe, no reflection.
         return eventType switch
         {
-            "order.created"              => Deserialize<OrderCreatedEvent>(json),
-            "order.updated"              => Deserialize<OrderUpdatedEvent>(json),
-            "order.paid"                 => Deserialize<OrderPaidEvent>(json),
-            "order.refunded"             => Deserialize<OrderRefundedEvent>(json),
-            "subscription.created"       => Deserialize<SubscriptionCreatedEvent>(json),
-            "subscription.active"        => Deserialize<SubscriptionActiveEvent>(json),
-            "subscription.updated"       => Deserialize<SubscriptionUpdatedEvent>(json),
-            "subscription.canceled"      => Deserialize<SubscriptionCanceledEvent>(json),
-            "subscription.uncanceled"    => Deserialize<SubscriptionUncanceledEvent>(json),
-            "subscription.past_due"      => Deserialize<SubscriptionPastDueEvent>(json),
-            "subscription.revoked"       => Deserialize<SubscriptionRevokedEvent>(json),
-            "checkout.created"           => Deserialize<CheckoutCreatedEvent>(json),
-            "checkout.updated"           => Deserialize<CheckoutUpdatedEvent>(json),
-            "checkout.expired"           => Deserialize<CheckoutExpiredEvent>(json),
-            "customer.created"           => Deserialize<CustomerCreatedEvent>(json),
-            "customer.updated"           => Deserialize<CustomerUpdatedEvent>(json),
-            "customer.state_changed"     => Deserialize<CustomerStateChangedEvent>(json),
-            "customer.deleted"           => Deserialize<CustomerDeletedEvent>(json),
-            "product.created"            => Deserialize<ProductCreatedEvent>(json),
-            "product.updated"            => Deserialize<ProductUpdatedEvent>(json),
-            "benefit.created"            => Deserialize<BenefitCreatedEvent>(json),
-            "benefit.updated"            => Deserialize<BenefitUpdatedEvent>(json),
-            "benefit_grant.created"      => Deserialize<BenefitGrantCreatedEvent>(json),
-            "benefit_grant.updated"      => Deserialize<BenefitGrantUpdatedEvent>(json),
-            "benefit_grant.cycled"       => Deserialize<BenefitGrantCycledEvent>(json),
-            "benefit_grant.revoked"      => Deserialize<BenefitGrantRevokedEvent>(json),
-            "refund.created"             => Deserialize<RefundCreatedEvent>(json),
-            "refund.updated"             => Deserialize<RefundUpdatedEvent>(json),
+            "order.created"              => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.OrderCreatedEvent),
+            "order.updated"              => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.OrderUpdatedEvent),
+            "order.paid"                 => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.OrderPaidEvent),
+            "order.refunded"             => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.OrderRefundedEvent),
+            "subscription.created"       => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.SubscriptionCreatedEvent),
+            "subscription.active"        => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.SubscriptionActiveEvent),
+            "subscription.updated"       => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.SubscriptionUpdatedEvent),
+            "subscription.canceled"      => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.SubscriptionCanceledEvent),
+            "subscription.uncanceled"    => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.SubscriptionUncanceledEvent),
+            "subscription.past_due"      => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.SubscriptionPastDueEvent),
+            "subscription.revoked"       => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.SubscriptionRevokedEvent),
+            "checkout.created"           => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.CheckoutCreatedEvent),
+            "checkout.updated"           => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.CheckoutUpdatedEvent),
+            "checkout.expired"           => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.CheckoutExpiredEvent),
+            "customer.created"           => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.CustomerCreatedEvent),
+            "customer.updated"           => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.CustomerUpdatedEvent),
+            "customer.state_changed"     => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.CustomerStateChangedEvent),
+            "customer.deleted"           => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.CustomerDeletedEvent),
+            "product.created"            => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.ProductCreatedEvent),
+            "product.updated"            => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.ProductUpdatedEvent),
+            "benefit.created"            => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.BenefitCreatedEvent),
+            "benefit.updated"            => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.BenefitUpdatedEvent),
+            "benefit_grant.created"      => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.BenefitGrantCreatedEvent),
+            "benefit_grant.updated"      => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.BenefitGrantUpdatedEvent),
+            "benefit_grant.cycled"       => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.BenefitGrantCycledEvent),
+            "benefit_grant.revoked"      => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.BenefitGrantRevokedEvent),
+            "refund.created"             => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.RefundCreatedEvent),
+            "refund.updated"             => JsonSerializer.Deserialize(json, WebhookJsonContext.Default.RefundUpdatedEvent),
             _                            => new UnknownWebhookEvent { Type = eventType, WebhookId = "", Timestamp = DateTimeOffset.UtcNow },
         };
     }
-
-    private static T Deserialize<T>(string json) where T : WebhookEvent
-        => JsonSerializer.Deserialize<T>(json, WebhookJsonContext.Default.Options)!;
 
     /// <inheritdoc/>
     public override void Write(Utf8JsonWriter writer, WebhookEvent value, JsonSerializerOptions options)

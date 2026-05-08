@@ -33,13 +33,11 @@ public sealed class WebhookValidator(
     IOptionsMonitor<PolarWebhookOptions> options,
     ILogger<WebhookValidator> logger)
 {
-    private static readonly JsonSerializerOptions DeserializeOptions = new()
-    {
-        MaxDepth = 32,
-        AllowTrailingCommas = false,
-        ReadCommentHandling = JsonCommentHandling.Disallow,
-        PropertyNameCaseInsensitive = true,
-    };
+    // AOT-safe: uses the (string, JsonTypeInfo<T>) overload, not (string, JsonSerializerOptions).
+    // WebhookJsonContext.Default.WebhookEvent resolves to the source-generated JsonTypeInfo<WebhookEvent>,
+    // which uses WebhookEventJsonConverter (declared via [JsonConverter] on WebhookEvent) to dispatch.
+    private static readonly System.Text.Json.Serialization.Metadata.JsonTypeInfo<WebhookEvent>
+        EventTypeInfo = WebhookJsonContext.Default.WebhookEvent;
 
     private const string OpaqueError = "Webhook verification failed.";
 
@@ -147,7 +145,7 @@ public sealed class WebhookValidator(
         try
         {
             var bodyText = Encoding.UTF8.GetString(body);
-            var evt = JsonSerializer.Deserialize<WebhookEvent>(bodyText, DeserializeOptions);
+            var evt = JsonSerializer.Deserialize(bodyText, EventTypeInfo);
             if (evt is null)
                 return Result<WebhookEvent, WebhookVerificationError>.Failure(new WebhookVerificationError(OpaqueError));
 
@@ -188,7 +186,7 @@ public sealed class WebhookValidator(
 
         try
         {
-            var evt = JsonSerializer.Deserialize<WebhookEvent>(payloadJson, DeserializeOptions);
+            var evt = JsonSerializer.Deserialize(payloadJson, EventTypeInfo);
             if (evt is null)
                 return Result<WebhookEvent, WebhookVerificationError>.Failure(
                     new WebhookVerificationError("Event deserialization produced null."));

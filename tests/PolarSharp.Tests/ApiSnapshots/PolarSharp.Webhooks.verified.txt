@@ -422,7 +422,7 @@ namespace PolarSharp.Webhooks.Extensions
         public static PolarSharp.PolarInfrastructureBuilder AddPolarWebhookInMemoryDedup(this PolarSharp.PolarInfrastructureBuilder builder, System.Action<PolarSharp.Webhooks.Dedup.PolarWebhookInMemoryDedupOptions>? configure = null) { }
         public static PolarSharp.PolarInfrastructureBuilder AddPolarWebhookReconciliation(this PolarSharp.PolarInfrastructureBuilder builder, System.Action<PolarSharp.Webhooks.Reconciliation.PolarReconciliationOptions>? configure = null) { }
         public static PolarSharp.PolarInfrastructureBuilder AddPolarWebhooks(this PolarSharp.PolarInfrastructureBuilder builder, System.Action<PolarSharp.Webhooks.PolarWebhookOptions>? configure = null) { }
-        public static PolarSharp.PolarInfrastructureBuilder AddWebhookHandler<TEvent, THandler>(this PolarSharp.PolarInfrastructureBuilder builder, bool enqueue = false)
+        public static PolarSharp.PolarInfrastructureBuilder AddWebhookHandler<TEvent, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]  THandler>(this PolarSharp.PolarInfrastructureBuilder builder, bool enqueue = false)
             where TEvent : PolarSharp.Webhooks.Events.WebhookEvent
             where THandler :  class, PolarSharp.Webhooks.IPolarWebhookHandler<TEvent> { }
     }
@@ -536,10 +536,10 @@ namespace PolarSharp.Webhooks.Toast
     {
         public PolarToastEventConfig() { }
         public int DurationSeconds { get; set; }
-        public required string EventType { get; set; }
-        public required string MessageTemplate { get; set; }
+        public string EventType { get; set; }
+        public string MessageTemplate { get; set; }
         public PolarSharp.Webhooks.Toast.ToastSeverity Severity { get; set; }
-        public required string Title { get; set; }
+        public string Title { get; set; }
     }
     public sealed class PolarToastLineItem : System.IEquatable<PolarSharp.Webhooks.Toast.PolarToastLineItem>
     {

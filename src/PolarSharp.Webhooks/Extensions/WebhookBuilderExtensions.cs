@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -134,7 +135,7 @@ public static class WebhookBuilderExtensions
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="builder"/> is <see langword="null"/>.
     /// </exception>
-    public static PolarInfrastructureBuilder AddWebhookHandler<TEvent, THandler>(
+    public static PolarInfrastructureBuilder AddWebhookHandler<TEvent, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(
         this PolarInfrastructureBuilder builder,
         bool enqueue = false)
         where TEvent : WebhookEvent

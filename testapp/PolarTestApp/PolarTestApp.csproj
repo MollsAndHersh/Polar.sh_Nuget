@@ -6,6 +6,10 @@
     <!-- Disable doc requirement for test app -->
     <WarningsAsErrors />
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Suppress IL2104 rollup errors from third-party assemblies (Finbuckle.MultiTenant,
+         Microsoft.IO.RecyclableMemoryStream) that are not fully NativeAOT-annotated.
+         PolarSharp library code itself produces zero ILC warnings. -->
+    <NoWarn>$(NoWarn);IL2104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

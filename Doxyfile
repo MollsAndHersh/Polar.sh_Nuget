@@ -1,0 +1,110 @@
+# Doxyfile for PolarSharp — .NET SDK for Polar.sh
+# Secondary documentation toolchain (DocFX is primary).
+# Run: doxygen Doxyfile
+# Output: docs/doxygen/html/ and docs/doxygen/xml/
+
+#---------------------------------------------------------------------------
+# Project metadata
+#---------------------------------------------------------------------------
+
+PROJECT_NAME           = "PolarSharp"
+PROJECT_NUMBER         = 1.0
+PROJECT_BRIEF          = ".NET 10 Native AOT SDK for Polar.sh — MOR payment and monetization platform"
+PROJECT_LOGO           =
+OUTPUT_DIRECTORY       = docs/doxygen
+
+#---------------------------------------------------------------------------
+# Input sources — hand-authored library code only; Generated/ is excluded.
+#---------------------------------------------------------------------------
+
+INPUT                  = src/PolarSharp \
+                         src/PolarSharp.Webhooks \
+                         src/PolarSharp.MultiTenant
+RECURSIVE              = YES
+FILE_PATTERNS          = *.cs
+EXCLUDE_PATTERNS       = */Generated/* \
+                         */obj/* \
+                         */bin/*
+
+#---------------------------------------------------------------------------
+# C# / XML-doc settings
+#---------------------------------------------------------------------------
+
+OPTIMIZE_OUTPUT_FOR_CSHARP = YES
+JAVADOC_AUTOBRIEF      = NO
+QT_AUTOBRIEF           = NO
+MULTILINE_CPP_IS_BRIEF = NO
+
+# Parse /// XML doc comments
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+EXTRACT_ANON_NSPACES   = NO
+HIDE_UNDOC_MEMBERS     = YES
+HIDE_UNDOC_CLASSES     = YES
+HIDE_IN_BODY_DOCS      = NO
+INTERNAL_DOCS          = NO
+
+#---------------------------------------------------------------------------
+# Output formats
+#---------------------------------------------------------------------------
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_FILE_EXTENSION    = .html
+GENERATE_LATEX         = NO
+GENERATE_RTF           = NO
+GENERATE_MAN           = NO
+GENERATE_XML           = YES
+XML_OUTPUT             = xml
+XML_PROGRAMLISTING     = NO
+GENERATE_DOCBOOK       = NO
+GENERATE_AUTOGEN_DEF   = NO
+GENERATE_PERLMOD       = NO
+
+#---------------------------------------------------------------------------
+# Diagrams and graphs
+#---------------------------------------------------------------------------
+
+HAVE_DOT               = NO
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+INCLUDE_GRAPH          = NO
+INCLUDED_BY_GRAPH      = NO
+GRAPHICAL_HIERARCHY    = YES
+DIRECTORY_GRAPH        = NO
+
+#---------------------------------------------------------------------------
+# Build configuration
+#---------------------------------------------------------------------------
+
+QUIET                  = NO
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
+WARN_FORMAT            = "$file:$line: $text"
+
+#---------------------------------------------------------------------------
+# Miscellaneous
+#---------------------------------------------------------------------------
+
+FULL_PATH_NAMES        = NO
+SHORT_NAMES            = NO
+INLINE_INHERITED_MEMB  = YES
+INHERIT_DOCS           = YES
+SEPARATE_MEMBER_PAGES  = NO
+TAB_SIZE               = 4
+ALIASES                =
+MARKDOWN_SUPPORT       = YES
+TOC_INCLUDE_HEADINGS   = 4
+AUTOLINK_SUPPORT       = YES
+BUILTIN_STL_SUPPORT    = NO
+CASE_SENSE_NAMES       = NO
+
+# Sort members alphabetically within their section
+SORT_MEMBER_DOCS       = YES
+SORT_BRIEF_DOCS        = NO
+SORT_MEMBERS_CTORS_1ST = YES
+SORT_GROUP_NAMES       = NO
+SORT_BY_SCOPE_NAME     = NO

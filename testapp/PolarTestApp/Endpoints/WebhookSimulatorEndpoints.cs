@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Options;
 using PolarSharp.Webhooks;
 
@@ -36,7 +37,7 @@ internal static class WebhookSimulatorEndpoints
             var webhookId = $"wh_{Guid.NewGuid():N}";
             var webhookTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
             var payload = BuildSamplePayload(eventType, webhookId);
-            var payloadJson = JsonSerializer.Serialize(payload);
+            var payloadJson = payload.ToJsonString();
 
             // Compute HMAC-SHA256 per Standard Webhooks spec:
             // sign("{webhook-id}.{webhook-timestamp}.{body}")
@@ -104,72 +105,72 @@ internal static class WebhookSimulatorEndpoints
         return app;
     }
 
-    private static object BuildSamplePayload(string eventType, string webhookId) => new
+    private static JsonObject BuildSamplePayload(string eventType, string webhookId) => new()
     {
-        type = eventType,
-        webhook_id = webhookId,
-        created_at = DateTimeOffset.UtcNow.ToString("O"),
-        data = BuildSampleData(eventType),
+        ["type"] = eventType,
+        ["webhook_id"] = webhookId,
+        ["created_at"] = DateTimeOffset.UtcNow.ToString("O"),
+        ["data"] = BuildSampleData(eventType),
     };
 
-    private static object BuildSampleData(string eventType) => eventType switch
+    private static JsonObject BuildSampleData(string eventType) => eventType switch
     {
-        "order.created" or "order.updated" or "order.paid" or "order.fulfilled" => new
+        "order.created" or "order.updated" or "order.paid" or "order.fulfilled" => new()
         {
-            id = $"ord_{Guid.NewGuid():N}",
-            status = "confirmed",
-            amount = 2999,
-            currency = "usd",
-            customer = new { id = $"cus_{Guid.NewGuid():N}", email = "test@example.com" },
-            items = new[] { new { product_name = "Sample Product", quantity = 1, unit_price = 2999 } },
-            created_at = DateTimeOffset.UtcNow.ToString("O"),
+            ["id"] = $"ord_{Guid.NewGuid():N}",
+            ["status"] = "confirmed",
+            ["amount"] = 2999,
+            ["currency"] = "usd",
+            ["customer"] = new JsonObject { ["id"] = $"cus_{Guid.NewGuid():N}", ["email"] = "test@example.com" },
+            ["items"] = new JsonArray(new JsonObject { ["product_name"] = "Sample Product", ["quantity"] = 1, ["unit_price"] = 2999 }),
+            ["created_at"] = DateTimeOffset.UtcNow.ToString("O"),
         },
-        "subscription.created" or "subscription.active" or "subscription.canceled" or "subscription.revoked" => new
+        "subscription.created" or "subscription.active" or "subscription.canceled" or "subscription.revoked" => new()
         {
-            id = $"sub_{Guid.NewGuid():N}",
-            status = "active",
-            customer = new { id = $"cus_{Guid.NewGuid():N}", email = "test@example.com" },
-            product = new { id = $"prod_{Guid.NewGuid():N}", name = "Sample Plan" },
-            price = new { id = $"price_{Guid.NewGuid():N}", name = "Monthly" },
-            created_at = DateTimeOffset.UtcNow.ToString("O"),
+            ["id"] = $"sub_{Guid.NewGuid():N}",
+            ["status"] = "active",
+            ["customer"] = new JsonObject { ["id"] = $"cus_{Guid.NewGuid():N}", ["email"] = "test@example.com" },
+            ["product"] = new JsonObject { ["id"] = $"prod_{Guid.NewGuid():N}", ["name"] = "Sample Plan" },
+            ["price"] = new JsonObject { ["id"] = $"price_{Guid.NewGuid():N}", ["name"] = "Monthly" },
+            ["created_at"] = DateTimeOffset.UtcNow.ToString("O"),
         },
-        "customer.created" or "customer.updated" => new
+        "customer.created" or "customer.updated" => new()
         {
-            id = $"cus_{Guid.NewGuid():N}",
-            email = "test@example.com",
-            name = "Test Customer",
-            created_at = DateTimeOffset.UtcNow.ToString("O"),
+            ["id"] = $"cus_{Guid.NewGuid():N}",
+            ["email"] = "test@example.com",
+            ["name"] = "Test Customer",
+            ["created_at"] = DateTimeOffset.UtcNow.ToString("O"),
         },
-        "checkout.created" or "checkout.updated" => new
+        "checkout.created" or "checkout.updated" => new()
         {
-            id = $"chk_{Guid.NewGuid():N}",
-            status = "open",
-            amount = 2999,
-            currency = "usd",
-            customer_email = "test@example.com",
-            created_at = DateTimeOffset.UtcNow.ToString("O"),
+            ["id"] = $"chk_{Guid.NewGuid():N}",
+            ["status"] = "open",
+            ["amount"] = 2999,
+            ["currency"] = "usd",
+            ["customer_email"] = "test@example.com",
+            ["created_at"] = DateTimeOffset.UtcNow.ToString("O"),
         },
-        "benefit.grant.created" or "benefit.grant.updated" or "benefit.grant.revoked" => new
+        "benefit.grant.created" or "benefit.grant.updated" or "benefit.grant.revoked" => new()
         {
-            id = $"bg_{Guid.NewGuid():N}",
-            benefit_type = "file_download",
-            customer = new { id = $"cus_{Guid.NewGuid():N}", email = "test@example.com" },
-            granted_at = DateTimeOffset.UtcNow.ToString("O"),
+            ["id"] = $"bg_{Guid.NewGuid():N}",
+            ["benefit_type"] = "file_download",
+            ["customer"] = new JsonObject { ["id"] = $"cus_{Guid.NewGuid():N}", ["email"] = "test@example.com" },
+            ["granted_at"] = DateTimeOffset.UtcNow.ToString("O"),
         },
-        "refund.created" or "refund.updated" => new
+        "refund.created" or "refund.updated" => new()
         {
-            id = $"ref_{Guid.NewGuid():N}",
-            status = "pending",
-            amount = 2999,
-            currency = "usd",
-            order = new { id = $"ord_{Guid.NewGuid():N}" },
-            created_at = DateTimeOffset.UtcNow.ToString("O"),
+            ["id"] = $"ref_{Guid.NewGuid():N}",
+            ["status"] = "pending",
+            ["amount"] = 2999,
+            ["currency"] = "usd",
+            ["order"] = new JsonObject { ["id"] = $"ord_{Guid.NewGuid():N}" },
+            ["created_at"] = DateTimeOffset.UtcNow.ToString("O"),
         },
-        _ => new
+        _ => new()
         {
-            id = $"evt_{Guid.NewGuid():N}",
-            event_type = eventType,
-            created_at = DateTimeOffset.UtcNow.ToString("O"),
+            ["id"] = $"evt_{Guid.NewGuid():N}",
+            ["event_type"] = eventType,
+            ["created_at"] = DateTimeOffset.UtcNow.ToString("O"),
         },
     };
 }
