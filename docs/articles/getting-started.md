@@ -86,6 +86,7 @@ Pattern-match the result with `.Match(onSuccess, onFailure)`.
 
 ## Next steps
 
+- [Local Development Setup](local-development.md) — sandbox token, user-secrets, ngrok tunnel, webhook testing
 - [Configuration reference](configuration.md) — all `appsettings.json` options
 - [Test vs. Live Mode](test-vs-live-mode.md) — sandbox vs. production
 - [Webhooks](webhooks.md) — receive and verify Polar events

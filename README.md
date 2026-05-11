@@ -237,6 +237,65 @@ Generates a complete, XML-documented, compilable handler class with all availabl
 
 ---
 
+## Local Development Setup
+
+Before running PolarTestApp you need three things: a Polar sandbox token, a webhook secret, and a tunnel so Polar can reach your localhost.
+
+### 1 — Get a Polar sandbox access token
+
+Sign in at [polar.sh](https://polar.sh) → **Settings → Developers → Access Tokens** → create a token. Sandbox tokens start with `polar_oat_`.
+
+### 2 — Store credentials via user-secrets
+
+Run these from inside `testapp/PolarTestApp/`:
+
+```bash
+dotnet user-secrets set "PolarSharp:AccessToken" "polar_oat_***"
+dotnet user-secrets set "PolarSharp:Webhooks:Secret" "whsec_placeholder"
+```
+
+Secrets are stored in `~/.microsoft/usersecrets/` and are never committed to the repo.
+
+### 3 — Install and configure ngrok
+
+Polar's servers cannot reach `localhost` directly — you need a public tunnel.
+
+```bash
+brew install ngrok/ngrok/ngrok
+```
+
+ngrok requires a free account. Sign up at [dashboard.ngrok.com/signup](https://dashboard.ngrok.com/signup), then configure your authtoken (one-time setup):
+
+```bash
+ngrok config add-authtoken YOUR_AUTHTOKEN_HERE
+```
+
+Start the tunnel (keep this terminal open):
+
+```bash
+ngrok http 5115
+```
+
+ngrok prints a public URL like `https://a1b2c3.ngrok-free.app`. This URL changes each time you restart ngrok on the free tier.
+
+### 4 — Register the webhook endpoint in Polar
+
+In the Polar dashboard go to **Settings → Webhooks → Add endpoint**. Set the URL to:
+
+```
+https://YOUR-NGROK-URL.ngrok-free.app/hooks/polar
+```
+
+Polar generates a `whsec_` secret — copy it and update your user-secret:
+
+```bash
+dotnet user-secrets set "PolarSharp:Webhooks:Secret" "whsec_***"
+```
+
+Then restart the app. See the full guide — [Local Development Setup](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/local-development.html) — for a complete step-by-step walkthrough including how to send test events.
+
+---
+
 ## Documentation
 
 Full documentation — conceptual articles, configuration reference, and complete API reference — is published at:
@@ -248,6 +307,7 @@ The site covers:
 | Article | What it answers |
 |---|---|
 | [Getting Started](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/getting-started.html) | Full annotated `Program.cs` and first API call |
+| [Local Development Setup](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/local-development.html) | Sandbox token, user-secrets, ngrok tunnel, webhook testing |
 | [Configuration](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/configuration.html) | Every `appsettings.json` field with valid values and defaults |
 | [Webhooks](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/webhooks.html) | HMAC verification, event types, handler registration |
 | [Webhook Handlers](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/webhook-handlers.html) | `PolarWebhookHandlerBase<T>`, background queues, idempotency |

@@ -108,3 +108,12 @@ The event is queued in a bounded `Channel<T>` and processed by a background `IHo
 ## Testing with the simulator
 
 `PolarTestApp` includes `POST /test/webhook/simulate/{eventType}` — constructs a real HMAC-signed payload and posts it to the app's own webhook endpoint, proving the full verification pipeline without needing an external sender.
+
+## Local development — receiving webhooks from Polar
+
+Polar's servers cannot reach `localhost` directly. During development you need a tunnel that gives your machine a public HTTPS URL. See [Local Development Setup](local-development.md) for the full step-by-step guide covering:
+
+- Getting a Polar sandbox access token and storing it via `dotnet user-secrets`
+- Installing ngrok and configuring the required authtoken (free account needed)
+- Registering your tunnel URL as a webhook endpoint in the Polar dashboard
+- Getting and storing the real `whsec_` secret Polar generates for that endpoint

@@ -1,5 +1,7 @@
 - name: Getting Started
   href: getting-started.md
+- name: Local Development Setup
+  href: local-development.md
 - name: NuGet Deployment
   href: nuget-deployment.md
 - name: Configuration
