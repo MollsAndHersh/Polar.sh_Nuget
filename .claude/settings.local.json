@@ -59,7 +59,9 @@
       "Bash(dotnet fsi *)",
       "Bash(dotnet publish *)",
       "Bash(dotnet pack *)",
-      "Bash(docfx docfx.json)"
+      "Bash(docfx docfx.json)",
+      "WebFetch(domain:docs.github.com)",
+      "Bash(dotnet nuget list *)"
     ]
   }
 }
