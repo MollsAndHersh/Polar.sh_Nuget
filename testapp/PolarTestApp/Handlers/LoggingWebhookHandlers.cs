@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PolarSharp.Webhooks;
 using PolarSharp.Webhooks.Events;
@@ -8,15 +7,12 @@ namespace PolarTestApp.Handlers;
 // ── Base ────────────────────────────────────────────────────────────────────
 
 /// <summary>
-/// Generic base handler that logs every incoming webhook event as formatted JSON.
+/// Generic base handler that logs every incoming webhook event.
 /// Used by all 28 concrete handlers registered in PolarTestApp.
 /// </summary>
 internal abstract class LoggingHandlerBase<TEvent> : PolarWebhookHandlerBase<TEvent>
     where TEvent : WebhookEvent
 {
-    private static readonly JsonSerializerOptions PrettyPrint =
-        new() { WriteIndented = true };
-
     private readonly ILogger _log;
 
     protected LoggingHandlerBase(ILogger logger) : base(logger)
@@ -26,10 +22,9 @@ internal abstract class LoggingHandlerBase<TEvent> : PolarWebhookHandlerBase<TEv
 
     protected override Task HandleCoreAsync(TEvent @event, CancellationToken ct)
     {
-        var json = JsonSerializer.Serialize(@event, PrettyPrint);
         _log.LogInformation(
-            "Webhook: {EventType} callback received the following details:\n{Payload}",
-            @event.Type, json);
+            "Webhook {EventType} received (id={WebhookId})",
+            @event.Type, @event.WebhookId);
         return Task.CompletedTask;
     }
 }

@@ -43,6 +43,7 @@
     "globalMetadata": {
       "_appName": "PolarSharp",
       "_appTitle": "PolarSharp — .NET SDK for Polar.sh",
+      "_appLogoPath": "images/polar-logo.png",
       "_enableSearch": true,
       "_disableContribution": false,
       "_gitUrlPattern": "auto"
