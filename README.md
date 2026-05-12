@@ -2,10 +2,10 @@
 
 > A .NET 10 Native AOT-compatible SDK for [Polar.sh](https://polar.sh) — the open-source Merchant of Record payment and monetization platform.
 
-[![PolarSharp](https://img.shields.io/github/v/release/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp&color=blue&include_prereleases)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp)
-[![PolarSharp.Webhooks](https://img.shields.io/github/v/release/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Webhooks&color=blue&include_prereleases)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Webhooks)
-[![PolarSharp.MultiTenant](https://img.shields.io/github/v/release/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant&color=blue&include_prereleases)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant)
-[![PolarSharp.Templates](https://img.shields.io/github/v/release/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Templates&color=blue&include_prereleases)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Templates)
+[![PolarSharp](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp)
+[![PolarSharp.Webhooks](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Webhooks&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Webhooks)
+[![PolarSharp.MultiTenant](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant)
+[![PolarSharp.Templates](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Templates&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Templates)
 [![CI](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/ci.yml/badge.svg)](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-github.io-informational)](https://mollsandhersh.github.io/Polar.sh_Nuget/)

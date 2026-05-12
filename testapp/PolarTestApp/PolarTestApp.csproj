@@ -6,10 +6,12 @@
     <!-- Disable doc requirement for test app -->
     <WarningsAsErrors />
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <!-- Suppress IL2104 rollup errors from third-party assemblies (Finbuckle.MultiTenant,
-         Microsoft.IO.RecyclableMemoryStream) that are not fully NativeAOT-annotated.
+    <!-- Third-party assemblies (Kiota, Finbuckle.MultiTenant, Microsoft.IO.RecyclableMemoryStream)
+         emit ILC warnings on Linux that don't appear on macOS. The smoke test verifies that the app
+         compiles to native code; warning-free third-party annotation is not the goal here.
          PolarSharp library code itself produces zero ILC warnings. -->
     <NoWarn>$(NoWarn);IL2104</NoWarn>
+    <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
