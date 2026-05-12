@@ -53,9 +53,9 @@ public static class ApplicationBuilderExtensions
     /// </list>
     /// </para>
     /// <para>
-    /// All feature middleware is guarded by <see cref="PolarInfrastructureMarker"/> flags
-    /// so that calling <c>UsePolarInfrastructure</c> is always safe even when only the
-    /// core package is installed.
+    /// All feature middleware is discovered via keyed DI services and is safe to call
+    /// even when only the core package is installed — missing services are treated as
+    /// disabled features and silently skipped.
     /// </para>
     /// </remarks>
     public static IApplicationBuilder UsePolarInfrastructure(this IApplicationBuilder app)
@@ -69,13 +69,10 @@ public static class ApplicationBuilderExtensions
         if (marker.MultiTenantRegistered)
             UseMultiTenancyIfAvailable(app);
 
-        if (marker.WebhooksRegistered)
-        {
-            // Activate rate limiter middleware BEFORE endpoint mapping so that
-            // RequireRateLimiting("polar-webhooks") on the webhook route takes effect.
-            ActivateWebhookRateLimiterIfAvailable(app);
-            MapWebhookRouteIfAvailable(app);
-        }
+        // Always attempt webhook middleware discovery — keyed services return null when
+        // PolarSharp.Webhooks is not installed, so both calls are safe no-ops without it.
+        ActivateWebhookRateLimiterIfAvailable(app);
+        MapWebhookRouteIfAvailable(app);
 
         return app;
     }

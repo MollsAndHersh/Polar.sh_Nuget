@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using PolarSharp.Webhooks;
 
 namespace PolarSharp.MultiTenant.Extensions;
 
@@ -98,6 +99,13 @@ public static class MultiTenantBuilderExtensions
         // MultiTenantPolarClientFactory. No shared named HttpClient is needed here.
         builder.Services.TryAddSingleton<IMultiTenantPolarClientFactory, MultiTenantPolarClientFactory>();
         builder.Services.AddTransient<IStartupFilter, PolarMultiTenantStartupFilter>();
+
+        // Webhook multi-tenant routing: resolve per-tenant HMAC secrets and set tenant context.
+        // Build the resolver with a snapshot of the final opts (after configure delegate applied).
+        var resolverOpts = opts;
+        builder.Services.TryAddSingleton<IWebhookTenantResolver>(
+            _ => new PolarMultiTenantWebhookResolver(resolverOpts));
+        builder.Services.TryAddScoped<IWebhookTenantScopeInitializer, FinbuckleTenantScopeInitializer>();
 
         // Register the middleware hook under a well-known key so that UsePolarInfrastructure()
         // (in core, which has no reference to this package) can activate UseMultiTenancy()

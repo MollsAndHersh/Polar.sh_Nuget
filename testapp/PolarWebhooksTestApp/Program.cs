@@ -1,19 +1,20 @@
-using PolarSharp.Extensions;
 using PolarSharp.Webhooks.Events;
 using PolarSharp.Webhooks.Extensions;
-using PolarSharp.MultiTenant.Extensions;
-using PolarTestApp.Endpoints;
-using PolarTestApp.Handlers;
-using Scalar.AspNetCore;
+using PolarWebhooksTestApp.Handlers;
+
+// ── PolarWebhooksTestApp ─────────────────────────────────────────────────────
+// Standalone demo application that depends ONLY on PolarSharp.Webhooks.
+// No PolarSharp core, no PolarSharp.MultiTenant — zero extra packages required.
+//
+// Run with: dotnet run --project testapp/PolarWebhooksTestApp
+// Webhook endpoint: POST /hooks/polar
+// Diagnostic endpoint: GET /
+// ─────────────────────────────────────────────────────────────────────────────
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Core infrastructure + multi-tenant (PolarSharp + PolarSharp.MultiTenant)
-builder.Services
-    .AddPolarInfrastructure(builder.Configuration)
-    .AddPolarMultiTenant();
-
-// Webhook handlers (PolarSharp.Webhooks — standalone; no core package required)
+// Standalone PolarSharp.Webhooks registration.
+// IServiceCollection.AddPolarWebhooks() returns PolarWebhooksBuilder for fluent chaining.
 builder.Services
     .AddPolarWebhooks()
     // Orders
@@ -53,34 +54,23 @@ builder.Services
     .AddWebhookHandler<RefundCreatedEvent, RefundCreatedHandler>()
     .AddWebhookHandler<RefundUpdatedEvent, RefundUpdatedHandler>();
 
-builder.Services.AddOpenApi();
-
 var app = builder.Build();
 
-app.UseRequestLocalization(opts =>
-    opts.SetDefaultCulture("en-US")
-        .AddSupportedCultures("en-US", "es-MX")
-        .AddSupportedUICultures("en-US", "es-MX"));
+// Standalone endpoint mapping — replaces UsePolarInfrastructure() from the core package.
+app.MapPolarWebhooks();
 
-app.UsePolarInfrastructure();
-
-app.MapOpenApi();
-app.MapScalarApiReference();
-
-app.MapOrderEndpoints()
-   .MapSubscriptionEndpoints()
-   .MapCustomerEndpoints()
-   .MapProductEndpoints()
-   .MapCheckoutEndpoints()
-   .MapBenefitEndpoints()
-   .MapLicenseKeyEndpoints()
-   .MapMeterEndpoints()
-   .MapDiscountEndpoints()
-   .MapRefundEndpoints()
-   .MapWebhookSimulatorEndpoints()
-   .MapMultiTenantEndpoints()
-   .MapLocalizationEndpoints()
-   .MapDiagnosticsEndpoints()
-   .MapCustomerPortalEndpoints();
+// Minimal diagnostic endpoint for manual smoke testing.
+app.MapGet("/", () => Results.Ok(new
+{
+    Service      = "PolarWebhooksTestApp",
+    Description  = "Standalone PolarSharp.Webhooks demo — no core package required.",
+    WebhookPath  = "/hooks/polar",
+    AllHandlers  = "28 handlers registered (Orders, Subscriptions, Checkouts, Customers, Products, Benefits, Benefit Grants, Refunds)",
+    Instructions = "POST a Polar-signed webhook payload to /hooks/polar to exercise the full pipeline."
+}));
 
 app.Run();
+
+// Expose Program as a partial class so WebApplicationFactory<Program> can reference it
+// from the PolarSharp.IntegrationTests project without additional configuration.
+public partial class Program { }

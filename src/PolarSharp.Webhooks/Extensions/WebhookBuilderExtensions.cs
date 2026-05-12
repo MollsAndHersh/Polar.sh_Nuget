@@ -1,6 +1,9 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
@@ -10,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using PolarSharp.Telemetry;
 using PolarSharp.Webhooks.BackgroundQueue;
 using PolarSharp.Webhooks.Dedup;
 using PolarSharp.Webhooks.Events;
@@ -20,79 +22,101 @@ using PolarSharp.Webhooks.Toast;
 namespace PolarSharp.Webhooks.Extensions;
 
 /// <summary>
-/// Extension methods on <see cref="PolarInfrastructureBuilder"/> for registering
-/// PolarSharp.Webhooks services.
+/// Extension methods for registering PolarSharp.Webhooks services and middleware.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <c>PolarSharp.Webhooks</c> is a standalone NuGet package — it does not require the
+/// <c>PolarSharp</c> core package. Install it independently and call
+/// <see cref="AddPolarWebhooks(IServiceCollection, Action{PolarWebhookOptions}?)"/> on
+/// <see cref="IServiceCollection"/>, then map the webhook endpoint with
+/// <see cref="MapPolarWebhooks(IEndpointRouteBuilder)"/>.
+/// </para>
+/// <para>
+/// When both <c>PolarSharp</c> and <c>PolarSharp.Webhooks</c> are installed,
+/// <c>UsePolarInfrastructure()</c> from the core package auto-discovers and maps
+/// the webhook endpoint via keyed DI services — no separate
+/// <see cref="MapPolarWebhooks(IEndpointRouteBuilder)"/> call is needed.
+/// </para>
+/// </remarks>
 public static class WebhookBuilderExtensions
 {
     private const int AnomalyFailureThreshold = 10;
     private static readonly VerificationFailureTracker _failureTracker = new();
 
+    // ── Primary entry point ───────────────────────────────────────────────────────
+
     /// <summary>
     /// Registers the Polar webhook receiver, HMAC validator, dispatcher, startup validator,
     /// rate limiter, and security enforcement middleware.
     /// </summary>
-    /// <param name="builder">The infrastructure builder returned by <c>AddPolarInfrastructure</c>.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
     /// <param name="configure">Optional delegate for additional in-code configuration overrides.</param>
-    /// <returns>The same <see cref="PolarInfrastructureBuilder"/> for chaining.</returns>
+    /// <returns>A <see cref="PolarWebhooksBuilder"/> for fluent handler and feature registration.</returns>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="builder"/> is <see langword="null"/>.
+    /// Thrown when <paramref name="services"/> is <see langword="null"/>.
     /// </exception>
     /// <remarks>
     /// All webhook configuration is read from <c>PolarSharp:Webhooks</c> in
     /// <c>appsettings.json</c>. Use <paramref name="configure"/> only for values that
-    /// cannot be expressed in configuration (e.g., conditional logic).
+    /// cannot be expressed in configuration.
     /// <example>
+    /// Standalone (PolarSharp.Webhooks only):
     /// <code>
     /// builder.Services
-    ///     .AddPolarInfrastructure(builder.Configuration)
     ///     .AddPolarWebhooks()
-    ///     .AddWebhookHandler&lt;OrderCreatedEvent, OrderCreatedHandler&gt;()
-    ///     .AddWebhookHandler&lt;SubscriptionActiveEvent, SubscriptionActiveHandler&gt;();
+    ///     .AddWebhookHandler&lt;OrderCreatedEvent, OrderCreatedHandler&gt;();
+    ///
+    /// app.MapPolarWebhooks();
+    /// </code>
+    /// Full stack (PolarSharp + PolarSharp.Webhooks):
+    /// <code>
+    /// builder.Services.AddPolarInfrastructure(builder.Configuration);
+    /// builder.Services
+    ///     .AddPolarWebhooks()
+    ///     .AddWebhookHandler&lt;OrderCreatedEvent, OrderCreatedHandler&gt;();
+    ///
+    /// app.UsePolarInfrastructure();
     /// </code>
     /// </example>
     /// </remarks>
-    public static PolarInfrastructureBuilder AddPolarWebhooks(
-        this PolarInfrastructureBuilder builder,
+    public static PolarWebhooksBuilder AddPolarWebhooks(
+        this IServiceCollection services,
         Action<PolarWebhookOptions>? configure = null)
     {
-        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(services);
 
-        builder.Services
+        services
             .AddOptions<PolarWebhookOptions>()
             .BindConfiguration("PolarSharp:Webhooks");
 
         if (configure is not null)
-            builder.Services.Configure(configure);
+            services.Configure(configure);
 
-        builder.Services.AddSingleton<WebhookValidator>();
-        builder.Services.TryAddScoped<IPolarWebhookDispatcher, PolarWebhookDispatcher>();
-        builder.Services.AddHostedService<PolarWebhookStartupValidator>();
+        services.AddSingleton<WebhookValidator>();
+        services.TryAddScoped<IPolarWebhookDispatcher, PolarWebhookDispatcher>();
+        services.AddHostedService<PolarWebhookStartupValidator>();
 
-        // Register ASP.NET Core rate limiting infrastructure (zero external dependencies —
-        // Microsoft.AspNetCore.RateLimiting is part of the shared framework).
-        // The actual permit limit and window are read from PolarWebhookOptions at runtime
-        // via the IConfigureOptions<RateLimiterOptions> below.
-        builder.Services.AddRateLimiter(static _ => { });
-        builder.Services.AddTransient<IConfigureOptions<RateLimiterOptions>, PolarWebhookRateLimiterConfigurer>();
+        // Rate limiting — part of the shared ASP.NET Core framework, zero extra NuGet deps.
+        services.AddRateLimiter(static _ => { });
+        services.AddTransient<IConfigureOptions<RateLimiterOptions>, PolarWebhookRateLimiterConfigurer>();
 
-        // Rate limiter middleware activation — invoked by UsePolarInfrastructure() BEFORE
-        // endpoint mapping so that RequireRateLimiting on the webhook route takes effect.
-        builder.Services.AddKeyedSingleton<Action<IApplicationBuilder>>(
+        // Register rate-limiter activation under a well-known key so that
+        // UsePolarInfrastructure() in the core package (if installed) can invoke it.
+        services.AddKeyedSingleton<Action<IApplicationBuilder>>(
             "polar.webhooks.ratelimiter",
             static (sp, _) =>
             {
                 var opts = sp.GetRequiredService<IOptions<PolarWebhookOptions>>().Value;
-                // Only activate the middleware if rate limiting is enabled; otherwise no-op.
                 return opts.EnableRateLimiting
                     ? static app => app.UseRateLimiter()
                     : static _ => { };
             });
 
         // Register the endpoint mapping action under a well-known key so that
-        // UsePolarInfrastructure() (in core) can invoke it without a hard dependency
-        // on this package. Action<IEndpointRouteBuilder> is a public BCL type.
-        builder.Services.AddKeyedSingleton<Action<IEndpointRouteBuilder>>(
+        // UsePolarInfrastructure() can map the route without a hard compile-time
+        // dependency on this package.
+        services.AddKeyedSingleton<Action<IEndpointRouteBuilder>>(
             "polar.webhooks.mapper",
             static (sp, _) =>
             {
@@ -109,10 +133,10 @@ public static class WebhookBuilderExtensions
                 };
             });
 
-        SetMarkerFlag(builder.Services, m => m.WebhooksRegistered = true);
-
-        return builder;
+        return new PolarWebhooksBuilder(services);
     }
+
+    // ── Handler registration ──────────────────────────────────────────────────────
 
     /// <summary>
     /// Registers a typed webhook handler for the given Polar event type.
@@ -123,20 +147,20 @@ public static class WebhookBuilderExtensions
     /// for automatic structured logging, or implement <see cref="IPolarWebhookHandler{TEvent}"/>
     /// directly for maximum control.
     /// </typeparam>
-    /// <param name="builder">The infrastructure builder.</param>
+    /// <param name="builder">The webhooks builder.</param>
     /// <param name="enqueue">
     /// When <see langword="true"/>, the event is written to a bounded
     /// <see cref="IBackgroundPolarWebhookQueue{TEvent}"/> and processed asynchronously by
     /// <see cref="PolarWebhookBackgroundService{TEvent}"/>. The webhook endpoint returns
     /// HTTP 200 immediately, preventing Polar's 30-second timeout from triggering on slow
-    /// handlers. Default: <see langword="false"/> (synchronous processing).
+    /// handlers. Default: <see langword="false"/> (synchronous in-request processing).
     /// </param>
-    /// <returns>The same <see cref="PolarInfrastructureBuilder"/> for chaining.</returns>
+    /// <returns>The same <see cref="PolarWebhooksBuilder"/> for fluent chaining.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="builder"/> is <see langword="null"/>.
     /// </exception>
-    public static PolarInfrastructureBuilder AddWebhookHandler<TEvent, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(
-        this PolarInfrastructureBuilder builder,
+    public static PolarWebhooksBuilder AddWebhookHandler<TEvent, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(
+        this PolarWebhooksBuilder builder,
         bool enqueue = false)
         where TEvent : WebhookEvent
         where THandler : class, IPolarWebhookHandler<TEvent>
@@ -152,11 +176,17 @@ public static class WebhookBuilderExtensions
             builder.Services.AddSingleton<IBackgroundPolarWebhookQueue<TEvent>>(sp =>
             {
                 var queue = new PolarWebhookBackgroundQueue<TEvent>(capacity: 1000);
-                // Register depth gauge — polar.channel.depth with channel_name tag.
-                var polarMeter = sp.GetService<PolarMeter>();
-                polarMeter?.RegisterChannelDepthProvider(
-                    $"webhook-queue-{typeof(TEvent).Name}",
-                    () => queue.Count);
+                // Optional depth gauge — registers when IMeterFactory is available.
+                var factory = sp.GetService<IMeterFactory>();
+                if (factory is not null)
+                {
+                    var meter = factory.Create("PolarSharp.Webhooks");
+                    meter.CreateObservableGauge(
+                        "polar.channel.depth",
+                        observeValue: () => queue.Count,
+                        unit: "items",
+                        description: "Number of events queued in the background webhook queue.");
+                }
                 return queue;
             });
             builder.Services.AddHostedService<PolarWebhookBackgroundService<TEvent>>();
@@ -165,13 +195,15 @@ public static class WebhookBuilderExtensions
         return builder;
     }
 
+    // ── Toast notifications ───────────────────────────────────────────────────────
+
     /// <summary>
     /// Enables real-time toast notifications on <see cref="IPolarToastChannel"/> for
     /// configured Polar webhook event types.
     /// </summary>
-    /// <param name="builder">The infrastructure builder.</param>
+    /// <param name="builder">The webhooks builder.</param>
     /// <param name="configure">Optional delegate for in-code configuration overrides.</param>
-    /// <returns>The same <see cref="PolarInfrastructureBuilder"/> for chaining.</returns>
+    /// <returns>The same <see cref="PolarWebhooksBuilder"/> for fluent chaining.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="builder"/> is <see langword="null"/>.
     /// </exception>
@@ -181,14 +213,13 @@ public static class WebhookBuilderExtensions
     /// <example>
     /// <code>
     /// builder.Services
-    ///     .AddPolarInfrastructure(builder.Configuration)
     ///     .AddPolarWebhooks()
     ///     .AddPolarToastNotifications();
     /// </code>
     /// </example>
     /// </remarks>
-    public static PolarInfrastructureBuilder AddPolarToastNotifications(
-        this PolarInfrastructureBuilder builder,
+    public static PolarWebhooksBuilder AddPolarToastNotifications(
+        this PolarWebhooksBuilder builder,
         Action<PolarToastOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -209,21 +240,23 @@ public static class WebhookBuilderExtensions
             return new PolarToastChannel(capacity);
         });
 
-        // Register shutdown service that completes the writer on host stop and wires the depth gauge.
         builder.Services.AddSingleton<PolarToastChannelLifetime>();
         builder.Services.AddHostedService(sp => sp.GetRequiredService<PolarToastChannelLifetime>());
-
-        SetMarkerFlag(builder.Services, m => m.ToastNotificationsRegistered = true);
 
         return builder;
     }
 
+    // ── Deduplication ─────────────────────────────────────────────────────────────
+
     /// <summary>
     /// Registers an in-memory webhook event deduplication store.
     /// </summary>
-    /// <param name="builder">The <see cref="PolarInfrastructureBuilder"/> to extend.</param>
+    /// <param name="builder">The webhooks builder.</param>
     /// <param name="configure">Optional delegate to configure dedup options.</param>
-    /// <returns>The <paramref name="builder"/> for further chaining.</returns>
+    /// <returns>The same <see cref="PolarWebhooksBuilder"/> for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="builder"/> is <see langword="null"/>.
+    /// </exception>
     /// <remarks>
     /// <para>
     /// Registers <see cref="IWebhookIdempotencyStore"/> backed by a bounded
@@ -239,7 +272,6 @@ public static class WebhookBuilderExtensions
     /// <example>
     /// <code>
     /// builder.Services
-    ///     .AddPolarInfrastructure(builder.Configuration)
     ///     .AddPolarWebhooks()
     ///     .AddPolarWebhookInMemoryDedup(opts =>
     ///     {
@@ -248,8 +280,8 @@ public static class WebhookBuilderExtensions
     ///     });
     /// </code>
     /// </example>
-    public static PolarInfrastructureBuilder AddPolarWebhookInMemoryDedup(
-        this PolarInfrastructureBuilder builder,
+    public static PolarWebhooksBuilder AddPolarWebhookInMemoryDedup(
+        this PolarWebhooksBuilder builder,
         Action<PolarWebhookInMemoryDedupOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -265,42 +297,128 @@ public static class WebhookBuilderExtensions
         return builder;
     }
 
-    // ── Marker mutation ──────────────────────────────────────────────────────────
+    // ── Reconciliation ────────────────────────────────────────────────────────────
 
-    private static void SetMarkerFlag(
-        IServiceCollection services,
-        Action<PolarInfrastructureMarker> configure)
+    /// <summary>
+    /// Registers the Polar webhook reconciliation service, which periodically checks
+    /// the Polar Deliveries API for failed webhook deliveries and replays them through
+    /// the dispatcher.
+    /// </summary>
+    /// <param name="builder">The webhooks builder.</param>
+    /// <param name="configure">Optional delegate for code-level configuration overrides.</param>
+    /// <returns>The same <see cref="PolarWebhooksBuilder"/> for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="builder"/> is <see langword="null"/>.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// All settings are read from <c>PolarSharp:Webhooks:Reconciliation</c>. Defaults:
+    /// <c>Enabled=true</c>, <c>IntervalMinutes=15</c>, <c>MaxLookbackHours=24</c>,
+    /// <c>Storage=File</c>, <c>FilePath=polarsharp-checkpoint.json</c>.
+    /// </para>
+    /// <para>
+    /// Replayed events flow through the same <see cref="IPolarWebhookDispatcher"/> pipeline
+    /// as live webhooks. Handler implementations must be idempotent — the same
+    /// <c>webhook-id</c> may be dispatched more than once.
+    /// </para>
+    /// </remarks>
+    public static PolarWebhooksBuilder AddPolarWebhookReconciliation(
+        this PolarWebhooksBuilder builder,
+        Action<PolarReconciliationOptions>? configure = null)
     {
-        var descriptor = services.FirstOrDefault(
-            d => d.ServiceType == typeof(PolarInfrastructureMarker)
-              && d.ImplementationInstance is PolarInfrastructureMarker);
+        ArgumentNullException.ThrowIfNull(builder);
 
-        if (descriptor?.ImplementationInstance is PolarInfrastructureMarker marker)
-            configure(marker);
+        builder.Services
+            .AddOptions<PolarReconciliationOptions>()
+            .BindConfiguration("PolarSharp:Webhooks:Reconciliation");
+
+        if (configure is not null)
+            builder.Services.Configure(configure);
+
+        builder.Services.TryAddSingleton<IReconciliationCheckpointStore, FileCheckpointStore>();
+        builder.Services.AddHostedService<PolarWebhookReconciler>();
+
+        return builder;
     }
 
-    // ── Webhook request handler ──────────────────────────────────────────────────
+    // ── Standalone middleware mapping ─────────────────────────────────────────────
+
+    /// <summary>
+    /// Maps the Polar webhook receiver endpoint directly on the endpoint route builder.
+    /// </summary>
+    /// <param name="endpoints">The endpoint route builder.</param>
+    /// <returns>The <paramref name="endpoints"/> for further chaining.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="endpoints"/> is <see langword="null"/>.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Use this method in standalone webhook-only applications (those that have NOT installed
+    /// the <c>PolarSharp</c> core package and therefore cannot call
+    /// <c>app.UsePolarInfrastructure()</c>).
+    /// </para>
+    /// <para>
+    /// When the <c>PolarSharp</c> core package IS installed, <c>UsePolarInfrastructure()</c>
+    /// discovers and maps the webhook route automatically via a keyed DI service — do NOT
+    /// also call this method in that case, as it would register the route twice.
+    /// </para>
+    /// <example>
+    /// Standalone usage:
+    /// <code>
+    /// var app = builder.Build();
+    /// app.MapPolarWebhooks();
+    /// app.Run();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public static IEndpointRouteBuilder MapPolarWebhooks(this IEndpointRouteBuilder endpoints)
+    {
+        ArgumentNullException.ThrowIfNull(endpoints);
+
+        var mapper = endpoints.ServiceProvider
+            .GetKeyedService<Action<IEndpointRouteBuilder>>("polar.webhooks.mapper");
+
+        mapper?.Invoke(endpoints);
+
+        // Activate rate limiter middleware if enabled — must come before endpoint mapping.
+        // In standalone mode the IApplicationBuilder is the WebApplication itself.
+        if (endpoints is IApplicationBuilder app)
+        {
+            var rateLimiterAction = app.ApplicationServices
+                .GetKeyedService<Action<IApplicationBuilder>>("polar.webhooks.ratelimiter");
+            rateLimiterAction?.Invoke(app);
+        }
+
+        return endpoints;
+    }
+
+    // ── Webhook request handler ───────────────────────────────────────────────────
 
     private static async Task<IResult> HandleWebhookAsync(
         HttpContext context,
         WebhookValidator validator,
         IPolarWebhookDispatcher dispatcher,
         IOptionsMonitor<PolarWebhookOptions> optionsMonitor,
-        PolarMeter meter,
         ILogger<WebhookValidator> logger)
     {
+        // Resolved from DI rather than declared as a parameter — if declared as a parameter,
+        // ASP.NET Core's Minimal API binding engine attempts JSON deserialization for interface
+        // types that are not registered in DI (e.g., in standalone deployments without the
+        // PolarSharp.MultiTenant package), producing a 500 instead of binding null.
+        var tenantScopeInitializer = context.RequestServices.GetService<IWebhookTenantScopeInitializer>();
+
         var opts = optionsMonitor.CurrentValue;
 
         // HTTPS enforcement — returns 400, NOT a redirect.
-        // Polar's sender does not follow redirects; a redirect would cause Polar to mark
-        // the delivery as failed and retry indefinitely against the HTTP URL.
+        // Polar's sender does not follow redirects; a redirect causes Polar to mark the
+        // delivery as failed and retry indefinitely against the HTTP URL.
         if (opts.RequireHttps && !context.Request.IsHttps)
         {
             logger.LogWarning("Polar webhook rejected: non-HTTPS request.");
             return Results.BadRequest("HTTPS is required.");
         }
 
-        // Content-Type enforcement — prevents unexpected content types from reaching HMAC verify.
+        // Content-Type enforcement.
         var contentType = context.Request.ContentType;
         if (string.IsNullOrEmpty(contentType) ||
             !contentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
@@ -310,27 +428,21 @@ public static class WebhookBuilderExtensions
 
         // Resolve client IP (for allowlisting and anomaly-detection hashing).
         var clientIp = GetClientIp(context, opts.UseForwardedForHeader);
-        var clientIpHash = PolarPiiRedactor.HashIp(clientIp?.ToString()) ?? "unknown";
+        var clientIpHash = HashIp(clientIp?.ToString()) ?? "unknown";
 
         // IP allowlist — checked before body read to reject non-Polar senders cheaply.
         if (opts.EnableIpAllowlist && opts.AllowedSourceIpRanges.Count > 0)
         {
             if (clientIp is null || !IsIpAllowed(clientIp, opts.AllowedSourceIpRanges))
-            {
-                meter.IncrementWebhookRejectedIpNotAllowed(clientIpHash);
                 return Results.StatusCode(403);
-            }
         }
 
-        // Payload size limit — fast path via Content-Length header (avoids body allocation).
+        // Payload size limit — fast path via Content-Length header.
         var contentLength = context.Request.ContentLength;
         if (contentLength.HasValue && contentLength.Value > opts.MaxPayloadBytes)
-        {
-            meter.IncrementWebhookRejectedTooLarge();
             return Results.StatusCode(413);
-        }
 
-        // Read body, bounded to MaxPayloadBytes to guard against missing Content-Length.
+        // Read body, bounded to MaxPayloadBytes.
         var webhookId        = context.Request.Headers["webhook-id"].FirstOrDefault()        ?? "";
         var webhookTimestamp = context.Request.Headers["webhook-timestamp"].FirstOrDefault() ?? "";
         var webhookSignature = context.Request.Headers["webhook-signature"].FirstOrDefault() ?? "";
@@ -340,39 +452,31 @@ public static class WebhookBuilderExtensions
         await context.Request.Body.CopyToAsync(ms, context.RequestAborted).ConfigureAwait(false);
         var bodyBytes = ms.ToArray();
 
-        // Payload size limit — check actual body length when Content-Length is absent.
         if (bodyBytes.Length > opts.MaxPayloadBytes)
-        {
-            meter.IncrementWebhookRejectedTooLarge();
             return Results.StatusCode(413);
-        }
 
         var result = validator.Verify(webhookId, webhookTimestamp, webhookSignature, bodyBytes);
 
         return await result.MatchAsync<IResult>(
             async evt =>
             {
+                // Populate the multi-tenant context if a scope initializer is registered.
+                if (tenantScopeInitializer is not null && evt.ResolvedTenantId is not null)
+                    await tenantScopeInitializer.InitializeScopeAsync(context, evt.ResolvedTenantId).ConfigureAwait(false);
+
                 using var cts = new CancellationTokenSource();
                 await dispatcher.DispatchAsync(evt, cts.Token).ConfigureAwait(false);
                 return Results.Ok();
             },
             err =>
             {
-                // Record security metrics for the failure.
-                meter.IncrementWebhookRejectedInvalidSignature(clientIpHash);
-                meter.RecordVerificationFailure(clientIpHash);
-
-                // Anomaly detection — emit warning and set suspicious-activity gauge when
-                // a single IP hash accumulates >= 10 failures within a 60-second window.
+                // Anomaly detection — warn when one IP accumulates >= 10 failures in 60 s.
                 var failureCount = _failureTracker.RecordFailure(clientIpHash);
                 if (failureCount >= AnomalyFailureThreshold)
                 {
-                    meter.SignalSuspiciousActivity();
                     logger.LogWarning(
                         "PolarSharp Webhooks: Elevated verification failure rate detected. " +
-                        "Source IP hash: {IpHash}. Failures: {Count} in last 60 s. " +
-                        "Automatic rate limiter already applied; no additional action needed. " +
-                        "If unexpected, investigate the source IP.",
+                        "Source IP hash: {IpHash}. Failures: {Count} in last 60 s.",
                         clientIpHash, failureCount);
                 }
 
@@ -383,7 +487,7 @@ public static class WebhookBuilderExtensions
         ).ConfigureAwait(false);
     }
 
-    // ── IP helper methods ────────────────────────────────────────────────────────
+    // ── IP helper methods ─────────────────────────────────────────────────────────
 
     private static IPAddress? GetClientIp(HttpContext context, bool useForwardedFor)
     {
@@ -407,13 +511,11 @@ public static class WebhookBuilderExtensions
             var slash = range.IndexOf('/', StringComparison.Ordinal);
             if (slash < 0)
             {
-                // Exact IP match
                 if (IPAddress.TryParse(range, out var exactIp) && ip.Equals(exactIp))
                     return true;
             }
             else
             {
-                // CIDR notation — parse prefix length
                 if (!int.TryParse(range.AsSpan(slash + 1), out var prefix))
                     continue;
                 if (IsInCidr(ip, range[..slash], prefix))
@@ -428,7 +530,6 @@ public static class WebhookBuilderExtensions
         if (!IPAddress.TryParse(networkStr, out var network))
             return false;
 
-        // Map both to IPv4 for comparison; handles IPv4-mapped IPv6 addresses from Kestrel.
         var ipBytes      = ip.MapToIPv4().GetAddressBytes();
         var networkBytes = network.MapToIPv4().GetAddressBytes();
 
@@ -448,13 +549,28 @@ public static class WebhookBuilderExtensions
         return true;
     }
 
-    // ── Anomaly detection — per-IP failure tracking ──────────────────────────────
+    /// <summary>
+    /// Hashes a source IP address string for privacy-preserving logging (GDPR compliance).
+    /// The raw IP is never stored; the hash prefix enables cross-entry correlation.
+    /// </summary>
+    /// <param name="ipAddress">The raw IP address string, or <see langword="null"/>.</param>
+    /// <returns>
+    /// A string of the form <c>"sha256:{firstEightHexChars}"</c>, or <c>null</c> if
+    /// <paramref name="ipAddress"/> is <see langword="null"/> or empty.
+    /// </returns>
+    internal static string? HashIp(string? ipAddress)
+    {
+        if (string.IsNullOrEmpty(ipAddress))
+            return null;
 
-    // Tracks webhook verification failures per IP hash in 60-second buckets.
-    // Used to detect brute-force HMAC attacks and trigger the suspicious-activity gauge.
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(ipAddress));
+        return $"sha256:{Convert.ToHexString(bytes)[..8].ToLowerInvariant()}";
+    }
+
+    // ── Anomaly detection ─────────────────────────────────────────────────────────
+
     private sealed class VerificationFailureTracker
     {
-        // Key: "{ipHash}:{60-second-window-bucket}", Value: failure count within that bucket.
         private readonly ConcurrentDictionary<string, long> _windows = new(StringComparer.Ordinal);
 
         public int RecordFailure(string ipHash)
@@ -463,7 +579,6 @@ public static class WebhookBuilderExtensions
             var key    = $"{ipHash}:{bucket}";
             var count  = _windows.AddOrUpdate(key, 1L, static (_, c) => c + 1);
 
-            // Clean up stale buckets on each new bucket entry to bound memory usage.
             if (count == 1)
                 CleanupOldBuckets(bucket);
 
@@ -482,60 +597,10 @@ public static class WebhookBuilderExtensions
             }
         }
     }
-
-    // ── Reconciliation ────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Registers the Polar webhook reconciliation service, which periodically checks
-    /// the Polar Deliveries API for failed webhook deliveries and replays them through
-    /// the dispatcher.
-    /// </summary>
-    /// <param name="builder">The infrastructure builder.</param>
-    /// <param name="configure">Optional delegate for code-level configuration overrides.</param>
-    /// <returns>The same <see cref="PolarInfrastructureBuilder"/> for chaining.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="builder"/> is <see langword="null"/>.
-    /// </exception>
-    /// <remarks>
-    /// <para>
-    /// All settings are read from <c>PolarSharp:Webhooks:Reconciliation</c>. Defaults:
-    /// <c>Enabled=true</c>, <c>IntervalMinutes=15</c>, <c>MaxLookbackHours=24</c>,
-    /// <c>Storage=File</c>, <c>FilePath=polarsharp-checkpoint.json</c>.
-    /// </para>
-    /// <para>
-    /// Replayed events flow through the same <see cref="IPolarWebhookDispatcher"/> pipeline
-    /// as live webhooks. Handler implementations must be idempotent.
-    /// </para>
-    /// <para>
-    /// For multi-instance deployments, implement <see cref="IReconciliationCheckpointStore"/>
-    /// backed by Redis or SQL and configure <c>Storage=Custom</c>.
-    /// </para>
-    /// </remarks>
-    public static PolarInfrastructureBuilder AddPolarWebhookReconciliation(
-        this PolarInfrastructureBuilder builder,
-        Action<PolarReconciliationOptions>? configure = null)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-
-        builder.Services
-            .AddOptions<PolarReconciliationOptions>()
-            .BindConfiguration("PolarSharp:Webhooks:Reconciliation");
-
-        if (configure is not null)
-            builder.Services.Configure(configure);
-
-        builder.Services.TryAddSingleton<IReconciliationCheckpointStore, FileCheckpointStore>();
-        builder.Services.AddHostedService<PolarWebhookReconciler>();
-
-        return builder;
-    }
 }
 
 // ── Rate limiter configurer ───────────────────────────────────────────────────
 
-// Reads PolarWebhookOptions at DI resolution time (after the container is built)
-// to configure the ASP.NET Core rate limiter with the correct permit limit and window.
-// Using IConfigureOptions<RateLimiterOptions> avoids BuildServiceProvider() anti-pattern.
 internal sealed class PolarWebhookRateLimiterConfigurer(IOptions<PolarWebhookOptions> polarOpts)
     : IConfigureOptions<RateLimiterOptions>
 {
@@ -556,17 +621,20 @@ internal sealed class PolarWebhookRateLimiterConfigurer(IOptions<PolarWebhookOpt
         {
             ctx.HttpContext.Response.StatusCode = 429;
 
-            // Emit metric for rate-limited requests. IP is hashed for GDPR compliance.
-            var meter = ctx.HttpContext.RequestServices.GetService<PolarMeter>();
-            if (meter is not null)
+            // Emit optional metric — IMeterFactory may not be present in standalone deployments.
+            var meterFactory = ctx.HttpContext.RequestServices.GetService<IMeterFactory>();
+            if (meterFactory is not null)
             {
-                var opts2     = ctx.HttpContext.RequestServices.GetService<IOptionsMonitor<PolarWebhookOptions>>();
+                var opts2        = ctx.HttpContext.RequestServices.GetService<IOptionsMonitor<PolarWebhookOptions>>();
                 var useForwarded = opts2?.CurrentValue.UseForwardedForHeader ?? false;
-                var rawIp     = useForwarded
+                var rawIp        = useForwarded
                     ? ctx.HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()?.Split(',')[0].Trim()
                     : ctx.HttpContext.Connection.RemoteIpAddress?.ToString();
-                var ipHash    = PolarPiiRedactor.HashIp(rawIp) ?? "unknown";
-                meter.IncrementWebhookRateLimited(ipHash);
+                var ipHash = WebhookBuilderExtensions.HashIp(rawIp) ?? "unknown";
+
+                var meter = meterFactory.Create("PolarSharp.Webhooks");
+                var counter = meter.CreateCounter<long>("polar.webhooks.rejected_rate_limited");
+                counter.Add(1, new KeyValuePair<string, object?>("source_ip_hash", ipHash));
             }
 
             await ctx.HttpContext.Response.WriteAsync("Rate limit exceeded.", ct).ConfigureAwait(false);

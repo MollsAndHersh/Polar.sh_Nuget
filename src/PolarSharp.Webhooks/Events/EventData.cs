@@ -91,6 +91,9 @@ public sealed record WebhookOrderData
     /// <summary>Gets the associated customer.</summary>
     [JsonPropertyName("customer")] public WebhookCustomer? Customer { get; init; }
 
+    /// <summary>Gets the Polar organization this order belongs to.</summary>
+    [JsonPropertyName("organization_id")] public string? OrganizationId { get; init; }
+
     /// <summary>Gets the associated subscription ID, if this order is a subscription renewal.</summary>
     [JsonPropertyName("subscription_id")] public string? SubscriptionId { get; init; }
 
@@ -133,6 +136,9 @@ public sealed record WebhookSubscriptionData
     /// <summary>Gets the current price tier.</summary>
     [JsonPropertyName("price")] public WebhookPrice? Price { get; init; }
 
+    /// <summary>Gets the Polar organization this subscription belongs to.</summary>
+    [JsonPropertyName("organization_id")] public string? OrganizationId { get; init; }
+
     /// <summary>Gets the UTC creation timestamp.</summary>
     [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; init; }
 }
@@ -165,6 +171,9 @@ public sealed record WebhookCheckoutData
 
     /// <summary>Gets the resulting order ID once the checkout completes.</summary>
     [JsonPropertyName("order_id")] public string? OrderId { get; init; }
+
+    /// <summary>Gets the Polar organization this checkout belongs to.</summary>
+    [JsonPropertyName("organization_id")] public string? OrganizationId { get; init; }
 
     /// <summary>Gets the UTC creation timestamp.</summary>
     [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; init; }
@@ -261,6 +270,9 @@ public sealed record WebhookBenefitGrantData
 
     /// <summary>Gets the UTC timestamp when the grant was revoked (if applicable).</summary>
     [JsonPropertyName("revoked_at")] public DateTimeOffset? RevokedAt { get; init; }
+
+    /// <summary>Gets the Polar organization this benefit grant belongs to.</summary>
+    [JsonPropertyName("organization_id")] public string? OrganizationId { get; init; }
 }
 
 // ── Refund ─────────────────────────────────────────────────────────────────
@@ -288,6 +300,9 @@ public sealed record WebhookRefundData
 
     /// <summary>Gets the customer ID who received the refund.</summary>
     [JsonPropertyName("customer_id")] public string? CustomerId { get; init; }
+
+    /// <summary>Gets the Polar organization this refund belongs to.</summary>
+    [JsonPropertyName("organization_id")] public string? OrganizationId { get; init; }
 
     /// <summary>Gets the UTC creation timestamp.</summary>
     [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; init; }

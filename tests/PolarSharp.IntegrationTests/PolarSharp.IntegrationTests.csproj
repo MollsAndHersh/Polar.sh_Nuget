@@ -12,6 +12,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
@@ -20,8 +21,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Core + webhook project refs for cross-package integration tests -->
     <ProjectReference Include="..\..\src\PolarSharp\PolarSharp.csproj" />
     <ProjectReference Include="..\..\src\PolarSharp.Webhooks\PolarSharp.Webhooks.csproj" />
+    <!-- Standalone webhook test app — used by WebApplicationFactory<Program> tests -->
+    <ProjectReference Include="..\..\testapp\PolarWebhooksTestApp\PolarWebhooksTestApp.csproj" />
     <Using Include="Xunit" />
   </ItemGroup>
 

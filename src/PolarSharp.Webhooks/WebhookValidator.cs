@@ -28,10 +28,18 @@ namespace PolarSharp.Webhooks;
 /// externally, even though specific failure reason is logged internally — prevents
 /// timing/information oracle attacks.
 /// </para>
+/// <para>
+/// When an <see cref="IWebhookTenantResolver"/> is registered (i.e., when
+/// <c>AddPolarMultiTenant()</c> has been called), the validator pre-parses
+/// <c>data.organization_id</c> from the raw body bytes to select the correct per-tenant
+/// HMAC secret before verification. The unverified value is used ONLY for secret
+/// selection — no business logic acts on it.
+/// </para>
 /// </remarks>
 public sealed class WebhookValidator(
     IOptionsMonitor<PolarWebhookOptions> options,
-    ILogger<WebhookValidator> logger)
+    ILogger<WebhookValidator> logger,
+    IWebhookTenantResolver? tenantResolver = null)
 {
     // AOT-safe: uses the (string, JsonTypeInfo<T>) overload, not (string, JsonSerializerOptions).
     // WebhookJsonContext.Default.WebhookEvent resolves to the source-generated JsonTypeInfo<WebhookEvent>,
@@ -78,7 +86,23 @@ public sealed class WebhookValidator(
         var tolerance = TimeSpan.FromSeconds(opts.ToleranceSeconds);
         var isTimestampValid = age >= -tolerance && age <= tolerance;
 
-        // 2. Compute HMAC — always computed even when timestamp is invalid (timing uniformity).
+        // 2. Multi-tenant secret selection: pre-parse organization_id from raw bytes to find
+        //    the correct per-tenant HMAC secret. This value is used ONLY for secret selection —
+        //    no business logic acts on unverified data.
+        string? preparsedOrgId = null;
+        WebhookTenantResolution? tenantResolution = null;
+        if (tenantResolver is not null)
+        {
+            preparsedOrgId = ExtractOrganizationId(body);
+            if (preparsedOrgId is not null)
+                tenantResolution = tenantResolver.Resolve(preparsedOrgId);
+        }
+
+        var secretsToTry = tenantResolution is not null
+            ? tenantResolution.Secrets
+            : opts.GetSecrets().Select(s => s.Value).ToList();
+
+        // 3. Compute HMAC — always computed even when timestamp is invalid (timing uniformity).
         var signaturePayload = Encoding.UTF8.GetBytes($"{webhookId}.{webhookTimestamp}.");
         var totalLength = signaturePayload.Length + body.Length;
         var payloadBytes = ArrayPool<byte>.Shared.Rent(totalLength);
@@ -93,12 +117,12 @@ public sealed class WebhookValidator(
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             verified = false;
-            foreach (var secret in opts.GetSecrets())
+            foreach (var secret in secretsToTry)
             {
                 var secretBytes = Convert.FromBase64String(
-                    secret.Value.StartsWith("whsec_", StringComparison.Ordinal)
-                        ? secret.Value[6..]
-                        : secret.Value);
+                    secret.StartsWith("whsec_", StringComparison.Ordinal)
+                        ? secret[6..]
+                        : secret);
 
                 var computed = HMACSHA256.HashData(secretBytes, payloadBytes.AsSpan(0, totalLength));
                 var computedB64 = Convert.ToBase64String(computed);
@@ -141,7 +165,7 @@ public sealed class WebhookValidator(
             ArrayPool<byte>.Shared.Return(payloadBytes, clearArray: true);
         }
 
-        // 3. Deserialize event payload.
+        // 4. Deserialize event payload.
         try
         {
             var bodyText = Encoding.UTF8.GetString(body);
@@ -149,8 +173,15 @@ public sealed class WebhookValidator(
             if (evt is null)
                 return Result<WebhookEvent, WebhookVerificationError>.Failure(new WebhookVerificationError(OpaqueError));
 
-            // Inject delivery metadata from headers (not in JSON body per Standard Webhooks spec).
-            evt = evt with { WebhookId = webhookId, Timestamp = eventTime };
+            // Inject delivery metadata from headers (not in JSON body per Standard Webhooks spec)
+            // plus multi-tenant routing metadata populated during pre-parse above.
+            evt = evt with
+            {
+                WebhookId = webhookId,
+                Timestamp = eventTime,
+                OrganizationId = preparsedOrgId,
+                ResolvedTenantId = tenantResolution?.TenantId,
+            };
             return Result<WebhookEvent, WebhookVerificationError>.Success(evt);
         }
         catch (JsonException ex)
@@ -200,6 +231,45 @@ public sealed class WebhookValidator(
             return Result<WebhookEvent, WebhookVerificationError>.Failure(
                 new WebhookVerificationError("Event deserialization failed."));
         }
+    }
+
+    /// <summary>
+    /// Extracts <c>data.organization_id</c> from the raw payload bytes without performing
+    /// HMAC verification. Used solely for per-tenant secret selection before verification.
+    /// </summary>
+    /// <param name="body">The raw webhook request body bytes.</param>
+    /// <returns>
+    /// The organization ID string if present and parseable, or <see langword="null"/> if
+    /// absent or if the JSON structure is unexpected.
+    /// </returns>
+    /// <remarks>
+    /// The returned value is treated as untrusted input — it selects which HMAC secret to
+    /// try, nothing more. Business logic must always read from the verified event object.
+    /// </remarks>
+    private static string? ExtractOrganizationId(ReadOnlySpan<byte> body)
+    {
+        try
+        {
+            var reader = new Utf8JsonReader(body);
+            if (!JsonDocument.TryParseValue(ref reader, out var doc))
+                return null;
+
+            using (doc)
+            {
+                if (doc.RootElement.TryGetProperty("data", out var data) &&
+                    data.TryGetProperty("organization_id", out var orgIdProp) &&
+                    orgIdProp.ValueKind == JsonValueKind.String)
+                {
+                    return orgIdProp.GetString();
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            // Malformed JSON — validator will surface this during the main deserialization step.
+        }
+
+        return null;
     }
 
     private static bool TryParseTimestamp(string value, out DateTimeOffset result)

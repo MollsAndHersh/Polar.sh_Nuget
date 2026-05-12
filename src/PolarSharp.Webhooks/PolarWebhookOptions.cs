@@ -1,5 +1,3 @@
-using PolarSharp.ValueObjects;
-
 namespace PolarSharp.Webhooks;
 
 /// <summary>

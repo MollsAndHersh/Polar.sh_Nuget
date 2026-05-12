@@ -55,4 +55,29 @@ public abstract record WebhookEvent
     /// </remarks>
     [JsonIgnore]
     public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.MinValue;
+
+    /// <summary>Gets the Polar organization ID pre-parsed from the payload before HMAC verification.</summary>
+    /// <remarks>
+    /// Used for multi-tenant webhook routing: the <see cref="WebhookValidator"/> extracts
+    /// <c>data.organization_id</c> from the raw bytes before (and independently of) signature
+    /// verification, solely to select the correct per-tenant HMAC secret. The verified
+    /// value is then injected here via a <c>with</c> expression after successful verification.
+    /// <para>
+    /// <c>[JsonIgnore]</c> prevents STJ from looking for this property in the JSON body
+    /// (the actual field is on the concrete data sub-object, e.g. <c>WebhookOrderData.OrganizationId</c>).
+    /// </para>
+    /// </remarks>
+    [JsonIgnore]
+    public string? OrganizationId { get; init; }
+
+    /// <summary>Gets the resolved tenant identifier mapped from <see cref="OrganizationId"/>.</summary>
+    /// <remarks>
+    /// Populated by <see cref="IWebhookTenantResolver"/> after HMAC verification succeeds.
+    /// Handlers can inject <c>IMultiTenantContext&lt;PolarTenantInfo&gt;</c> to get full tenant
+    /// details; this property provides the raw tenant ID string for scenarios where only the
+    /// identifier is needed without resolving the full tenant object.
+    /// <para><c>[JsonIgnore]</c> — not present in the JSON payload.</para>
+    /// </remarks>
+    [JsonIgnore]
+    public string? ResolvedTenantId { get; init; }
 }

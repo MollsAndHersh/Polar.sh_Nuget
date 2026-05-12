@@ -12,6 +12,8 @@
   href: webhooks.md
 - name: Webhook Handlers
   href: webhook-handlers.md
+- name: Webhook Event Reference
+  href: webhook-event-reference.md
 - name: Multi-Tenancy
   href: multi-tenancy.md
 - name: Localization

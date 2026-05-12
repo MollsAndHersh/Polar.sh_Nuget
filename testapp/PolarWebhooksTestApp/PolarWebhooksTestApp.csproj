@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <!-- Disable doc requirement for test app -->
+    <WarningsAsErrors />
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- PolarSharp.Webhooks ONLY — demonstrates standalone usage without the core package. -->
+    <ProjectReference Include="..\..\src\PolarSharp.Webhooks\PolarSharp.Webhooks.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Kiota.Serialization.Json;
 
 namespace PolarSharp.Webhooks.Reconciliation;
 
@@ -24,6 +23,12 @@ namespace PolarSharp.Webhooks.Reconciliation;
 /// HMAC signature verification is skipped for replayed events because the data is sourced
 /// directly from the authenticated Polar API, not from an inbound HTTP request.
 /// </para>
+/// <para>
+/// Requires <see cref="IPolarWebhookDeliveryClient"/> to be registered in DI. When running
+/// standalone (without the <c>PolarSharp</c> core package), implement
+/// <see cref="IPolarWebhookDeliveryClient"/> and register it, or reconciliation will be
+/// skipped with a startup warning.
+/// </para>
 /// </remarks>
 internal sealed class PolarWebhookReconciler(
     IServiceScopeFactory scopeFactory,
@@ -39,6 +44,19 @@ internal sealed class PolarWebhookReconciler(
         if (!opts.Enabled)
         {
             logger.LogInformation("PolarSharp webhook reconciliation is disabled (Enabled=false).");
+            return;
+        }
+
+        // Check if delivery client is available — required for reconciliation to function.
+        await using var startupScope = scopeFactory.CreateAsyncScope();
+        var deliveryClient = startupScope.ServiceProvider.GetService<IPolarWebhookDeliveryClient>();
+        if (deliveryClient is null)
+        {
+            logger.LogWarning(
+                "PolarSharp webhook reconciliation: No {ClientType} is registered. " +
+                "Reconciliation requires the PolarSharp core package (AddPolarInfrastructure()) " +
+                "or a custom IPolarWebhookDeliveryClient implementation. Reconciliation skipped.",
+                nameof(IPolarWebhookDeliveryClient));
             return;
         }
 
@@ -73,15 +91,13 @@ internal sealed class PolarWebhookReconciler(
         if (lowerBound < absoluteLowerBound)
             lowerBound = absoluteLowerBound;
 
-        var startTimestamp = lowerBound.ToUnixTimeSeconds().ToString();
-
         logger.LogInformation(
             "PolarSharp reconciliation: checking failed deliveries since {Since}.",
             lowerBound);
 
         await using var scope = scopeFactory.CreateAsyncScope();
-        var polar = scope.ServiceProvider.GetRequiredService<PolarClient>();
-        var dispatcher = scope.ServiceProvider.GetRequiredService<IPolarWebhookDispatcher>();
+        var deliveryClient = scope.ServiceProvider.GetRequiredService<IPolarWebhookDeliveryClient>();
+        var dispatcher     = scope.ServiceProvider.GetRequiredService<IPolarWebhookDispatcher>();
 
         int page = 1;
         int replayed = 0;
@@ -90,47 +106,33 @@ internal sealed class PolarWebhookReconciler(
 
         while (true)
         {
-            var response = await polar.Webhooks.Deliveries.GetAsync(config =>
-            {
-                config.QueryParameters.StartTimestamp = startTimestamp;
-                config.QueryParameters.Succeeded = false;
-                config.QueryParameters.Limit = 100;
-                config.QueryParameters.Page = page;
-            }, ct).ConfigureAwait(false);
+            var items = await deliveryClient.GetFailedDeliveriesAsync(lowerBound, page, ct)
+                .ConfigureAwait(false);
 
-            var items = response?.Items;
-            if (items is null || items.Count == 0)
+            if (items.Count == 0)
                 break;
 
             foreach (var delivery in items)
             {
-                var webhookEvent = delivery.WebhookEvent;
-                if (webhookEvent is null || webhookEvent.IsArchived == true)
-                {
-                    skipped++;
-                    continue;
-                }
-
-                var deliveryId = webhookEvent.Id ?? Guid.NewGuid().ToString();
-                var deliveryTime = delivery.CreatedAt ?? DateTimeOffset.UtcNow;
-                var payloadJson = SerializePayload(webhookEvent.Payload);
-
-                if (string.IsNullOrEmpty(payloadJson))
+                if (string.IsNullOrEmpty(delivery.PayloadJson))
                 {
                     logger.LogWarning(
-                        "PolarSharp reconciliation: delivery {DeliveryId} has no serializable payload. Skipping.",
-                        deliveryId);
+                        "PolarSharp reconciliation: delivery {DeliveryId} has no payload. Skipping.",
+                        delivery.DeliveryId);
                     skipped++;
                     continue;
                 }
 
-                var deserializeResult = validator.Deserialize(payloadJson, deliveryId, deliveryTime);
+                var deserializeResult = validator.Deserialize(
+                    delivery.PayloadJson,
+                    delivery.DeliveryId,
+                    delivery.DeliveryTime);
 
                 if (deserializeResult.IsFailure)
                 {
                     logger.LogWarning(
                         "PolarSharp reconciliation: could not deserialize event for delivery {DeliveryId}. Skipping.",
-                        deliveryId);
+                        delivery.DeliveryId);
                     skipped++;
                     continue;
                 }
@@ -139,8 +141,8 @@ internal sealed class PolarWebhookReconciler(
                 await dispatcher.DispatchAsync(parsedEvent, ct).ConfigureAwait(false);
                 replayed++;
 
-                if (latestProcessed is null || deliveryTime > latestProcessed)
-                    latestProcessed = deliveryTime;
+                if (latestProcessed is null || delivery.DeliveryTime > latestProcessed)
+                    latestProcessed = delivery.DeliveryTime;
             }
 
             if (items.Count < 100)
@@ -155,34 +157,5 @@ internal sealed class PolarWebhookReconciler(
 
         if (latestProcessed.HasValue)
             await checkpoint.SetCheckpointAsync(latestProcessed.Value, ct).ConfigureAwait(false);
-    }
-
-    private static string? SerializePayload(
-        global::PolarSharp.Generated.Models.WebhookEvent.WebhookEvent_payload? payload)
-    {
-        if (payload is null)
-            return null;
-
-        // Fast path: Polar may return the payload as a JSON string literal.
-        // WebhookEvent_payload is a Kiota union type (string | object); when the raw
-        // JSON value is a string, Kiota populates String directly — no serialization needed.
-        if (payload.String is { Length: > 0 } json)
-            return json;
-
-        // Object path: use JsonSerializationWriter directly — AOT-safe, reflection-free.
-        // Calls payload.Serialize(writer) which is hand-written Kiota-generated code,
-        // not bare JsonSerializer.Serialize which requires a registered JsonTypeInfo.
-        try
-        {
-            using var writer = new JsonSerializationWriter();
-            payload.Serialize(writer);
-            using var stream = writer.GetSerializedContent();
-            using var reader = new System.IO.StreamReader(stream);
-            return reader.ReadToEnd();
-        }
-        catch (Exception)
-        {
-            return null;
-        }
     }
 }

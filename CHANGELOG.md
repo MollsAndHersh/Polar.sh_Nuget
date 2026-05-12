@@ -6,6 +6,39 @@ and [Common Changelog](https://common-changelog.org) format.
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-05-12
+
+### Added
+
+- **Standalone `PolarSharp.Webhooks` mode** — package now works independently without `PolarSharp` core or `PolarSharp.MultiTenant`
+  - `AddPolarWebhooks(IServiceCollection, Action<PolarWebhookOptions>?)` — direct `IServiceCollection` extension; no `PolarInfrastructureBuilder` dependency
+  - `MapPolarWebhooks(IEndpointRouteBuilder)` — registers the webhook POST endpoint directly on any Minimal API or MVC host
+  - `PolarWebhooksBuilder` fluent type returned by `AddPolarWebhooks` for standalone handler registration
+  - `testapp/PolarWebhooksTestApp` — complete reference application using only `PolarSharp.Webhooks`; all 28 handlers via `LoggingHandlerBase<TEvent>`
+
+- **Webhook test suite** — `tests/PolarSharp.Webhooks.Tests/Standalone/` (70 tests total)
+  - `StandaloneRegistrationTests` — verifies DI registration of validator, dispatcher, keyed route mapper, keyed rate-limiter activator, handler adapters (all 28)
+  - `StandaloneOptionsTests` — verifies `PolarWebhookOptions` config binding from `IConfiguration`, multiple secrets, in-code configure overrides
+  - `StandaloneStartupValidatorTests` — verifies host starts when all 28 handlers registered, warns without `FailOnMissingHandlers`, fails-fast with `FailOnMissingHandlers=true`, partial handlers enumerate missing names in exception message
+  - `StandaloneHttpPipelineTests` — in-memory `TestServer` end-to-end pipeline: valid HMAC → 200, bad signature → 400, tampered body → 400, expired timestamp → 400, missing signature header → 400, wrong content-type → 415, wrong path → 404, GET → 405, secret rotation with two simultaneous secrets → 200
+
+- **Integration test suite** — `tests/PolarSharp.IntegrationTests/Standalone/` (48 tests total)
+  - `StandaloneWebhookPipelineTests` — `WebApplicationFactory<Program>` against real `PolarWebhooksTestApp`; Theory across all 28 event types; 415/404/405/400 enforcement; multi-secret rotation scenario
+
+- `docs/articles/webhook-event-reference.md` — generated reference listing all 28 webhook event types, their `type` discriminator strings, and available payload fields
+
+### Fixed
+
+- **`IWebhookTenantScopeInitializer` ASP.NET Core binding bug** — interface type was declared as a Minimal API parameter, causing `NotSupportedException: Deserialization of interface or abstract types is not supported` (HTTP 500) on every webhook POST in standalone deployments without `PolarSharp.MultiTenant` installed. Resolved by removing the parameter and resolving via `context.RequestServices.GetService<T>()` instead.
+
+- **`UsePolarInfrastructure` webhook discovery** — previously gated behind `marker.WebhooksRegistered`; now always attempts keyed DI lookup so standalone `MapPolarWebhooks()` usage works even when the core marker is not set.
+
+### Changed
+
+- `PolarSharp` → 1.1.0, `PolarSharp.Webhooks` → 1.1.0, `PolarSharp.MultiTenant` → 1.1.0
+
+## [1.0.0] — 2026-05-01
+
 ### Added
 
 - `PolarSharp` — core HTTP client package targeting Polar.sh API

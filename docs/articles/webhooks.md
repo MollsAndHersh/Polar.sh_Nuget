@@ -2,6 +2,17 @@
 
 PolarSharp verifies Polar webhook signatures per the [Standard Webhooks](https://www.standardwebhooks.com/) specification and dispatches events to typed handler classes you register in DI.
 
+## Installation modes
+
+`PolarSharp.Webhooks` works in two modes depending on which packages you install:
+
+| Mode | Packages required | Registration method |
+|---|---|---|
+| **Standalone** | `PolarSharp.Webhooks` only | `services.AddPolarWebhooks()` + `app.MapPolarWebhooks()` |
+| **Full-stack** | `PolarSharp` + `PolarSharp.Webhooks` | `AddPolarInfrastructure()` → `AddPolarWebhooks()` + `UsePolarInfrastructure()` |
+
+Both modes support all 28 event types, HMAC verification, multi-secret rotation, startup completeness checks, and the background queue adapter.
+
 ## Setup
 
 ### 1. Configure the webhook secret
@@ -19,7 +30,30 @@ PolarSharp verifies Polar webhook signatures per the [Standard Webhooks](https:/
 
 Get your webhook secret from the Polar dashboard after creating a webhook endpoint pointed at `https://yourdomain.com/hooks/polar`.
 
-### 2. Register in `Program.cs`
+### 2a. Register in `Program.cs` — standalone mode
+
+Use this when you install **only `PolarSharp.Webhooks`** (no `PolarSharp` core package):
+
+```csharp
+// Program.cs — standalone webhook host
+builder.Services
+    .AddPolarWebhooks(opts =>
+    {
+        // appsettings.json binds automatically; use the delegate for dev overrides
+        opts.RequireHttps = false;   // remove in production
+    })
+    .AddWebhookHandler<OrderCreatedEvent, OrderCreatedHandler>()
+    .AddWebhookHandler<SubscriptionActiveEvent, SubscriptionActiveHandler>();
+
+// ... build app ...
+
+app.MapPolarWebhooks();   // maps POST /hooks/polar
+app.Run();
+```
+
+### 2b. Register in `Program.cs` — full-stack mode
+
+Use this when you install **both `PolarSharp` and `PolarSharp.Webhooks`**:
 
 ```csharp
 builder.Services

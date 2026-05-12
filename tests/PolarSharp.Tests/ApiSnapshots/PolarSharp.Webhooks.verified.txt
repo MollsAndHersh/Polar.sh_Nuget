@@ -228,6 +228,8 @@ namespace PolarSharp.Webhooks.Events
         public required string Id { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("is_granted")]
         public bool IsGranted { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("organization_id")]
+        public string? OrganizationId { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("revoked_at")]
         public System.DateTimeOffset? RevokedAt { get; init; }
     }
@@ -250,6 +252,8 @@ namespace PolarSharp.Webhooks.Events
         public required string Id { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("order_id")]
         public string? OrderId { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("organization_id")]
+        public string? OrganizationId { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         public string? Status { get; init; }
     }
@@ -284,6 +288,10 @@ namespace PolarSharp.Webhooks.Events
     {
         protected WebhookEvent() { }
         [System.Text.Json.Serialization.JsonIgnore]
+        public string? OrganizationId { get; init; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? ResolvedTenantId { get; init; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public System.DateTimeOffset Timestamp { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("type")]
         public required string Type { get; init; }
@@ -311,6 +319,8 @@ namespace PolarSharp.Webhooks.Events
         public System.Collections.Generic.IReadOnlyList<PolarSharp.Webhooks.Events.WebhookOrderItem> Items { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("number")]
         public string? Number { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("organization_id")]
+        public string? OrganizationId { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         public string? Status { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("subscription_id")]
@@ -379,6 +389,8 @@ namespace PolarSharp.Webhooks.Events
         public required string Id { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("order_id")]
         public string? OrderId { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("organization_id")]
+        public string? OrganizationId { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("reason")]
         public string? Reason { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("status")]
@@ -401,6 +413,8 @@ namespace PolarSharp.Webhooks.Events
         public System.DateTimeOffset? EndsAt { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         public required string Id { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("organization_id")]
+        public string? OrganizationId { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("price")]
         public PolarSharp.Webhooks.Events.WebhookPrice? Price { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("product")]
@@ -418,13 +432,14 @@ namespace PolarSharp.Webhooks.Extensions
     }
     public static class WebhookBuilderExtensions
     {
-        public static PolarSharp.PolarInfrastructureBuilder AddPolarToastNotifications(this PolarSharp.PolarInfrastructureBuilder builder, System.Action<PolarSharp.Webhooks.Toast.PolarToastOptions>? configure = null) { }
-        public static PolarSharp.PolarInfrastructureBuilder AddPolarWebhookInMemoryDedup(this PolarSharp.PolarInfrastructureBuilder builder, System.Action<PolarSharp.Webhooks.Dedup.PolarWebhookInMemoryDedupOptions>? configure = null) { }
-        public static PolarSharp.PolarInfrastructureBuilder AddPolarWebhookReconciliation(this PolarSharp.PolarInfrastructureBuilder builder, System.Action<PolarSharp.Webhooks.Reconciliation.PolarReconciliationOptions>? configure = null) { }
-        public static PolarSharp.PolarInfrastructureBuilder AddPolarWebhooks(this PolarSharp.PolarInfrastructureBuilder builder, System.Action<PolarSharp.Webhooks.PolarWebhookOptions>? configure = null) { }
-        public static PolarSharp.PolarInfrastructureBuilder AddWebhookHandler<TEvent, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]  THandler>(this PolarSharp.PolarInfrastructureBuilder builder, bool enqueue = false)
+        public static PolarSharp.Webhooks.PolarWebhooksBuilder AddPolarToastNotifications(this PolarSharp.Webhooks.PolarWebhooksBuilder builder, System.Action<PolarSharp.Webhooks.Toast.PolarToastOptions>? configure = null) { }
+        public static PolarSharp.Webhooks.PolarWebhooksBuilder AddPolarWebhookInMemoryDedup(this PolarSharp.Webhooks.PolarWebhooksBuilder builder, System.Action<PolarSharp.Webhooks.Dedup.PolarWebhookInMemoryDedupOptions>? configure = null) { }
+        public static PolarSharp.Webhooks.PolarWebhooksBuilder AddPolarWebhookReconciliation(this PolarSharp.Webhooks.PolarWebhooksBuilder builder, System.Action<PolarSharp.Webhooks.Reconciliation.PolarReconciliationOptions>? configure = null) { }
+        public static PolarSharp.Webhooks.PolarWebhooksBuilder AddPolarWebhooks(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<PolarSharp.Webhooks.PolarWebhookOptions>? configure = null) { }
+        public static PolarSharp.Webhooks.PolarWebhooksBuilder AddWebhookHandler<TEvent, [System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]  THandler>(this PolarSharp.Webhooks.PolarWebhooksBuilder builder, bool enqueue = false)
             where TEvent : PolarSharp.Webhooks.Events.WebhookEvent
             where THandler :  class, PolarSharp.Webhooks.IPolarWebhookHandler<TEvent> { }
+        public static Microsoft.AspNetCore.Routing.IEndpointRouteBuilder MapPolarWebhooks(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { }
     }
 }
 namespace PolarSharp.Webhooks
@@ -433,6 +448,25 @@ namespace PolarSharp.Webhooks
         where in TEvent : PolarSharp.Webhooks.Events.WebhookEvent
     {
         System.Threading.Tasks.Task HandleAsync(TEvent @event, System.Threading.CancellationToken ct = default);
+    }
+    public interface IWebhookTenantResolver
+    {
+        PolarSharp.Webhooks.WebhookTenantResolution? Resolve(string polarOrganizationId);
+    }
+    public interface IWebhookTenantScopeInitializer
+    {
+        System.Threading.Tasks.Task InitializeScopeAsync(Microsoft.AspNetCore.Http.HttpContext context, string tenantId);
+    }
+    public readonly struct Option<T> : System.IEquatable<PolarSharp.Webhooks.Option<T>>
+    {
+        public static readonly PolarSharp.Webhooks.Option<T> None;
+        public bool HasValue { get; }
+        public PolarSharp.Webhooks.Option<TResult> Bind<TResult>(System.Func<T, PolarSharp.Webhooks.Option<TResult>> binder) { }
+        public T GetValueOrDefault(T defaultValue) { }
+        public PolarSharp.Webhooks.Option<TResult> Map<TResult>(System.Func<T, TResult> mapper) { }
+        public TResult Match<TResult>(System.Func<T, TResult> onSome, System.Func<TResult> onNone) { }
+        public override string ToString() { }
+        public static PolarSharp.Webhooks.Option<T> Some(T value) { }
     }
     public sealed class PolarWebhookConfigurationException : System.Exception
     {
@@ -467,12 +501,43 @@ namespace PolarSharp.Webhooks
         public int ToleranceSeconds { get; set; }
         public bool UseForwardedForHeader { get; set; }
         public bool WarnOnUnhandledEventTypes { get; set; }
-        public System.Collections.Generic.IEnumerable<PolarSharp.ValueObjects.WebhookSecret> GetSecrets() { }
+        public System.Collections.Generic.IEnumerable<PolarSharp.Webhooks.WebhookSecret> GetSecrets() { }
+    }
+    public sealed class PolarWebhooksBuilder
+    {
+        public PolarWebhooksBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection services) { }
+        public Microsoft.Extensions.DependencyInjection.IServiceCollection Services { get; }
+    }
+    public readonly struct Result<TValue, TError> : System.IEquatable<PolarSharp.Webhooks.Result<TValue, TError>>
+    {
+        public bool IsFailure { get; }
+        public bool IsSuccess { get; }
+        public PolarSharp.Webhooks.Result<TResult, TError> Bind<TResult>(System.Func<TValue, PolarSharp.Webhooks.Result<TResult, TError>> binder) { }
+        public System.Threading.Tasks.Task<PolarSharp.Webhooks.Result<TResult, TError>> BindAsync<TResult>(System.Func<TValue, System.Threading.Tasks.Task<PolarSharp.Webhooks.Result<TResult, TError>>> binder) { }
+        public PolarSharp.Webhooks.Result<TResult, TError> Map<TResult>(System.Func<TValue, TResult> mapper) { }
+        public TResult Match<TResult>(System.Func<TValue, TResult> onSuccess, System.Func<TError, TResult> onFailure) { }
+        public System.Threading.Tasks.Task<TResult> MatchAsync<TResult>(System.Func<TValue, System.Threading.Tasks.Task<TResult>> onSuccess, System.Func<TError, System.Threading.Tasks.Task<TResult>> onFailure) { }
+        public override string ToString() { }
+        public static PolarSharp.Webhooks.Result<TValue, TError> Failure(TError error) { }
+        public static PolarSharp.Webhooks.Result<TValue, TError> Success(TValue value) { }
+    }
+    public readonly struct WebhookSecret : System.IEquatable<PolarSharp.Webhooks.WebhookSecret>
+    {
+        public WebhookSecret(string value) { }
+        public string Value { get; init; }
+        public override string ToString() { }
+        public static PolarSharp.Webhooks.WebhookSecret From(string value) { }
+    }
+    public sealed class WebhookTenantResolution : System.IEquatable<PolarSharp.Webhooks.WebhookTenantResolution>
+    {
+        public WebhookTenantResolution(System.Collections.Generic.IReadOnlyList<string> Secrets, string TenantId) { }
+        public System.Collections.Generic.IReadOnlyList<string> Secrets { get; init; }
+        public string TenantId { get; init; }
     }
     public sealed class WebhookValidator
     {
-        public WebhookValidator(Microsoft.Extensions.Options.IOptionsMonitor<PolarSharp.Webhooks.PolarWebhookOptions> options, Microsoft.Extensions.Logging.ILogger<PolarSharp.Webhooks.WebhookValidator> logger) { }
-        public PolarSharp.Result<PolarSharp.Webhooks.Events.WebhookEvent, PolarSharp.Webhooks.WebhookVerificationError> Verify(string webhookId, string webhookTimestamp, string webhookSignature, System.ReadOnlySpan<byte> body) { }
+        public WebhookValidator(Microsoft.Extensions.Options.IOptionsMonitor<PolarSharp.Webhooks.PolarWebhookOptions> options, Microsoft.Extensions.Logging.ILogger<PolarSharp.Webhooks.WebhookValidator> logger, PolarSharp.Webhooks.IWebhookTenantResolver? tenantResolver = null) { }
+        public PolarSharp.Webhooks.Result<PolarSharp.Webhooks.Events.WebhookEvent, PolarSharp.Webhooks.WebhookVerificationError> Verify(string webhookId, string webhookTimestamp, string webhookSignature, System.ReadOnlySpan<byte> body) { }
     }
     public sealed class WebhookVerificationError : System.IEquatable<PolarSharp.Webhooks.WebhookVerificationError>
     {
@@ -482,6 +547,10 @@ namespace PolarSharp.Webhooks
 }
 namespace PolarSharp.Webhooks.Reconciliation
 {
+    public interface IPolarWebhookDeliveryClient
+    {
+        System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<PolarSharp.Webhooks.Reconciliation.ReconciliationDelivery>> GetFailedDeliveriesAsync(System.DateTimeOffset since, int page, System.Threading.CancellationToken cancellationToken = default);
+    }
     public interface IReconciliationCheckpointStore
     {
         System.Threading.Tasks.Task<System.DateTimeOffset?> GetCheckpointAsync(System.Threading.CancellationToken ct = default);
@@ -495,6 +564,13 @@ namespace PolarSharp.Webhooks.Reconciliation
         public int IntervalMinutes { get; set; }
         public int MaxLookbackHours { get; set; }
         public PolarSharp.Webhooks.Reconciliation.ReconciliationStorage Storage { get; set; }
+    }
+    public sealed class ReconciliationDelivery : System.IEquatable<PolarSharp.Webhooks.Reconciliation.ReconciliationDelivery>
+    {
+        public ReconciliationDelivery(string DeliveryId, string PayloadJson, System.DateTimeOffset DeliveryTime) { }
+        public string DeliveryId { get; init; }
+        public System.DateTimeOffset DeliveryTime { get; init; }
+        public string PayloadJson { get; init; }
     }
     public enum ReconciliationStorage
     {
@@ -520,16 +596,16 @@ namespace PolarSharp.Webhooks.Toast
     }
     public sealed class PolarToastAmount : System.IEquatable<PolarSharp.Webhooks.Toast.PolarToastAmount>
     {
-        public PolarToastAmount(decimal Amount, string Currency, PolarSharp.Option<string> Formatted) { }
+        public PolarToastAmount(decimal Amount, string Currency, PolarSharp.Webhooks.Option<string> Formatted) { }
         public decimal Amount { get; init; }
         public string Currency { get; init; }
-        public PolarSharp.Option<string> Formatted { get; init; }
+        public PolarSharp.Webhooks.Option<string> Formatted { get; init; }
     }
     public sealed class PolarToastError : System.IEquatable<PolarSharp.Webhooks.Toast.PolarToastError>
     {
-        public PolarToastError(string Code, string Message, PolarSharp.Option<string> Detail) { }
+        public PolarToastError(string Code, string Message, PolarSharp.Webhooks.Option<string> Detail) { }
         public string Code { get; init; }
-        public PolarSharp.Option<string> Detail { get; init; }
+        public PolarSharp.Webhooks.Option<string> Detail { get; init; }
         public string Message { get; init; }
     }
     public class PolarToastEventConfig
@@ -543,44 +619,44 @@ namespace PolarSharp.Webhooks.Toast
     }
     public sealed class PolarToastLineItem : System.IEquatable<PolarSharp.Webhooks.Toast.PolarToastLineItem>
     {
-        public PolarToastLineItem(string ProductId, string ProductName, int Quantity, PolarSharp.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> UnitPrice, PolarSharp.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> LineTotal) { }
-        public PolarSharp.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> LineTotal { get; init; }
+        public PolarToastLineItem(string ProductId, string ProductName, int Quantity, PolarSharp.Webhooks.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> UnitPrice, PolarSharp.Webhooks.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> LineTotal) { }
+        public PolarSharp.Webhooks.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> LineTotal { get; init; }
         public string ProductId { get; init; }
         public string ProductName { get; init; }
         public int Quantity { get; init; }
-        public PolarSharp.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> UnitPrice { get; init; }
+        public PolarSharp.Webhooks.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> UnitPrice { get; init; }
     }
     public sealed class PolarToastNotification : System.IEquatable<PolarSharp.Webhooks.Toast.PolarToastNotification>
     {
         public PolarToastNotification() { }
-        public PolarSharp.Option<string> Channel { get; init; }
-        public PolarSharp.Option<string> CustomerEmail { get; init; }
-        public PolarSharp.Option<string> CustomerId { get; init; }
-        public PolarSharp.Option<string> CustomerName { get; init; }
+        public PolarSharp.Webhooks.Option<string> Channel { get; init; }
+        public PolarSharp.Webhooks.Option<string> CustomerEmail { get; init; }
+        public PolarSharp.Webhooks.Option<string> CustomerId { get; init; }
+        public PolarSharp.Webhooks.Option<string> CustomerName { get; init; }
         public required System.TimeSpan Duration { get; init; }
-        public PolarSharp.Option<PolarSharp.Webhooks.Toast.PolarToastError> Error { get; init; }
+        public PolarSharp.Webhooks.Option<PolarSharp.Webhooks.Toast.PolarToastError> Error { get; init; }
         public required System.DateTimeOffset EventTimestamp { get; init; }
         public required string EventType { get; init; }
         public System.Collections.Generic.IReadOnlyDictionary<string, string> ExtendedProperties { get; init; }
         public System.Collections.Generic.IReadOnlyList<PolarSharp.Webhooks.Toast.PolarToastLineItem> Items { get; init; }
         public required string Message { get; init; }
         public required string MessageLocalizationKey { get; init; }
-        public PolarSharp.Option<string> OrderId { get; init; }
-        public PolarSharp.Option<string> OrderNumber { get; init; }
-        public PolarSharp.Option<string> OrderStatus { get; init; }
-        public PolarSharp.Option<string> PlanName { get; init; }
-        public PolarSharp.Option<string> ProductId { get; init; }
-        public PolarSharp.Option<string> ProductName { get; init; }
+        public PolarSharp.Webhooks.Option<string> OrderId { get; init; }
+        public PolarSharp.Webhooks.Option<string> OrderNumber { get; init; }
+        public PolarSharp.Webhooks.Option<string> OrderStatus { get; init; }
+        public PolarSharp.Webhooks.Option<string> PlanName { get; init; }
+        public PolarSharp.Webhooks.Option<string> ProductId { get; init; }
+        public PolarSharp.Webhooks.Option<string> ProductName { get; init; }
         public required PolarSharp.Webhooks.Toast.ToastSeverity Severity { get; init; }
-        public PolarSharp.Option<string> SubscriptionId { get; init; }
-        public PolarSharp.Option<string> SubscriptionStatus { get; init; }
-        public PolarSharp.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> TaxAmount { get; init; }
+        public PolarSharp.Webhooks.Option<string> SubscriptionId { get; init; }
+        public PolarSharp.Webhooks.Option<string> SubscriptionStatus { get; init; }
+        public PolarSharp.Webhooks.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> TaxAmount { get; init; }
         public required string Title { get; init; }
         public required string TitleLocalizationKey { get; init; }
         public required System.Collections.Generic.IReadOnlyDictionary<string, string> TokenValues { get; init; }
-        public PolarSharp.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> TotalAmount { get; init; }
+        public PolarSharp.Webhooks.Option<PolarSharp.Webhooks.Toast.PolarToastAmount> TotalAmount { get; init; }
         public required string WebhookId { get; init; }
-        public PolarSharp.Webhooks.Toast.PolarToastNotification Localize(PolarSharp.Localization.IPolarLocalizer localizer) { }
+        public PolarSharp.Webhooks.Toast.PolarToastNotification Localize(Microsoft.Extensions.Localization.IStringLocalizer localizer) { }
     }
     public class PolarToastOptions
     {

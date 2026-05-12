@@ -28,7 +28,10 @@ namespace PolarSharp.MultiTenant
         public string Identifier { get; set; }
         public string? Name { get; set; }
         public string PolarAccessToken { get; set; }
+        public string PolarOrganizationId { get; set; }
         public PolarSharp.PolarServer Server { get; set; }
+        public System.Guid TenantId { get; }
+        public string? WebhookSecret { get; set; }
     }
     public enum TenantStrategy
     {

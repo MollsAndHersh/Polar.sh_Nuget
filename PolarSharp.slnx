@@ -9,6 +9,7 @@
   </Folder>
   <Folder Name="/testapp/">
     <Project Path="testapp/PolarTestApp/PolarTestApp.csproj" />
+    <Project Path="testapp/PolarWebhooksTestApp/PolarWebhooksTestApp.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PolarSharp.Benchmarks/PolarSharp.Benchmarks.csproj" />

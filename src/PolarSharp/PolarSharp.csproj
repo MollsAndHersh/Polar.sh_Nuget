@@ -3,8 +3,8 @@
   <PropertyGroup>
     <IsLibrary>true</IsLibrary>
     <PackageId>PolarSharp</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>Mark Chipman</Authors>
+    <Version>1.1.0</Version>
+    <Authors>Molls and Hersh, LLC</Authors>
     <Description>A .NET 10 AOT-compatible SDK for Polar.sh — open source Merchant of Record payment and monetization platform.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>

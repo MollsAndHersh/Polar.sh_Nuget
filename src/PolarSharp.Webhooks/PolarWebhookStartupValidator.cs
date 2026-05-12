@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -27,7 +28,7 @@ namespace PolarSharp.Webhooks;
 /// </para>
 /// </remarks>
 internal sealed class PolarWebhookStartupValidator(
-    IEnumerable<IWebhookHandlerAdapter> registeredAdapters,
+    IServiceScopeFactory scopeFactory,
     IOptionsMonitor<PolarWebhookOptions> options,
     ILogger<PolarWebhookStartupValidator> logger) : IHostedService
 {
@@ -62,8 +63,11 @@ internal sealed class PolarWebhookStartupValidator(
 
     private void ValidateHandlerCoverage(PolarWebhookOptions opts)
     {
-        var registeredEventTypes = new HashSet<Type>(
-            registeredAdapters.Select(a => a.EventType));
+        // Adapters are Scoped (they wrap Scoped handlers). Create a transient scope here
+        // so this Singleton service can enumerate them without a lifetime violation.
+        using var scope = scopeFactory.CreateScope();
+        var adapters = scope.ServiceProvider.GetServices<IWebhookHandlerAdapter>();
+        var registeredEventTypes = new HashSet<Type>(adapters.Select(a => a.EventType));
 
         var unhandled = KnownWebhookEventTypes.All
             .Where(t => !registeredEventTypes.Contains(t))

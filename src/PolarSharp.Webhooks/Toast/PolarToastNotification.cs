@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
+using Microsoft.Extensions.Localization;
 
 namespace PolarSharp.Webhooks.Toast;
 
@@ -170,7 +171,9 @@ public sealed record PolarToastNotification
     /// re-rendered using <paramref name="localizer"/> under the caller's current UI culture.
     /// </summary>
     /// <param name="localizer">
-    /// The localizer to use for key lookup. Inject <c>IPolarLocalizer</c> from DI.
+    /// The <see cref="IStringLocalizer"/> to use for key lookup.
+    /// Inject <c>IStringLocalizer&lt;PolarWebhookMessages&gt;</c> from DI, or any
+    /// <c>IStringLocalizer</c> backed by your preferred resource source.
     /// </param>
     /// <returns>
     /// A new <see cref="PolarToastNotification"/> with localized <see cref="Title"/> and
@@ -186,7 +189,7 @@ public sealed record PolarToastNotification
     /// <para>
     /// Resolution order for each string (most specific wins):
     /// <list type="number">
-    ///   <item><description>Host app's <c>IPolarLocalizer</c> custom implementation.</description></item>
+    ///   <item><description>Host app's <see cref="IStringLocalizer"/> custom implementation.</description></item>
     ///   <item><description>PolarSharp built-in .resx (en-US and es-MX shipped complete).</description></item>
     ///   <item><description>Pre-rendered <see cref="Title"/>/<see cref="Message"/> fallback (always en-US).</description></item>
     /// </list>
@@ -204,7 +207,7 @@ public sealed record PolarToastNotification
     /// </code>
     /// </example>
     /// </remarks>
-    public PolarToastNotification Localize(PolarSharp.Localization.IPolarLocalizer localizer)
+    public PolarToastNotification Localize(IStringLocalizer localizer)
     {
         ArgumentNullException.ThrowIfNull(localizer);
 
