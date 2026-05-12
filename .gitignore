@@ -18,6 +18,9 @@ docs/_site/
 # Doxygen generated output
 docs/doxygen/
 
+# Claude Code local settings (machine-specific, not for source control)
+.claude/
+
 # IDE
 .vs/
 .vscode/
