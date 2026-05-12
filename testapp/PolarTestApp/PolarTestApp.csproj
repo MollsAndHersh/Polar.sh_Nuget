@@ -3,15 +3,14 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <UserSecretsId>PolarTestApp-secrets</UserSecretsId>
-    <!-- Disable doc requirement for test app -->
+    <!-- Demo/test app — disable strict warning policy inherited from Directory.Build.props.
+         TreatWarningsAsErrors=false prevents third-party deps (Kiota, Finbuckle,
+         Microsoft.IO.RecyclableMemoryStream) from failing the AOT smoke test with IL2026/IL3050.
+         Library code (IsLibrary=true projects) retains TreatWarningsAsErrors=true. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningsAsErrors />
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <!-- Third-party assemblies (Kiota, Finbuckle.MultiTenant, Microsoft.IO.RecyclableMemoryStream)
-         emit ILC warnings on Linux that don't appear on macOS. The smoke test verifies that the app
-         compiles to native code; warning-free third-party annotation is not the goal here.
-         PolarSharp library code itself produces zero ILC warnings. -->
     <NoWarn>$(NoWarn);IL2104</NoWarn>
-    <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
