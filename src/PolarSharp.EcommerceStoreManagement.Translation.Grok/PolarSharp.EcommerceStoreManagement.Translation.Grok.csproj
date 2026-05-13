@@ -2,17 +2,17 @@
 
   <PropertyGroup>
     <IsLibrary>true</IsLibrary>
-    <PackageId>PolarSharp.EcommerceStoreManagement.Translation.Anthropic</PackageId>
+    <PackageId>PolarSharp.EcommerceStoreManagement.Translation.Grok</PackageId>
     <Version>1.0.0</Version>
     <Authors>Molls and Hersh, LLC</Authors>
-    <Description>Anthropic Claude implementation of IPolarCatalogTranslator — auto-translate product/service descriptions from a master language to all supported target languages.</Description>
+    <Description>xAI Grok implementation of IPolarCatalogTranslator — uses xAI's OpenAI-compatible REST endpoint at https://api.x.ai/v1. Raw HttpClient + JSON; no third-party SDK dependency.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>polar;translation;anthropic;claude;localization;aot</PackageTags>
+    <PackageTags>polar;translation;grok;xai;localization;aot</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RootNamespace>PolarSharp.EcommerceStoreManagement.Translation.Anthropic</RootNamespace>
+    <RootNamespace>PolarSharp.EcommerceStoreManagement.Translation.Grok</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

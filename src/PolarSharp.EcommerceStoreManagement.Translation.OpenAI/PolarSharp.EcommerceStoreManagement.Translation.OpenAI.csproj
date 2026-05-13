@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PolarSharp.EcommerceStoreManagement\PolarSharp.EcommerceStoreManagement.csproj" />
-    <PackageReference Include="OpenAI" />
   </ItemGroup>
 
 </Project>

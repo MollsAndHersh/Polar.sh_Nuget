@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <WarningsAsErrors />
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PolarSharp.EcommerceStoreManagement\PolarSharp.EcommerceStoreManagement.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.EcommerceStoreManagement.Translation.Anthropic\PolarSharp.EcommerceStoreManagement.Translation.Anthropic.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.EcommerceStoreManagement.Translation.OpenAI\PolarSharp.EcommerceStoreManagement.Translation.OpenAI.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI\PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.EcommerceStoreManagement.Translation.Gemini\PolarSharp.EcommerceStoreManagement.Translation.Gemini.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.EcommerceStoreManagement.Translation.Grok\PolarSharp.EcommerceStoreManagement.Translation.Grok.csproj" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

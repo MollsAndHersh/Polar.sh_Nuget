@@ -22,6 +22,8 @@
     <Project Path="src/PolarSharp.EcommerceStoreManagement.Translation.Anthropic/PolarSharp.EcommerceStoreManagement.Translation.Anthropic.csproj" />
     <Project Path="src/PolarSharp.EcommerceStoreManagement.Translation.OpenAI/PolarSharp.EcommerceStoreManagement.Translation.OpenAI.csproj" />
     <Project Path="src/PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI/PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI.csproj" />
+    <Project Path="src/PolarSharp.EcommerceStoreManagement.Translation.Gemini/PolarSharp.EcommerceStoreManagement.Translation.Gemini.csproj" />
+    <Project Path="src/PolarSharp.EcommerceStoreManagement.Translation.Grok/PolarSharp.EcommerceStoreManagement.Translation.Grok.csproj" />
     <Project Path="src/PolarSharp.Reporting/PolarSharp.Reporting.csproj" />
     <Project Path="src/PolarSharp.Reporting.EntityFrameworkCore/PolarSharp.Reporting.EntityFrameworkCore.csproj" />
     <Project Path="src/PolarSharp.Reporting.EntityFrameworkCore.SqlServer/PolarSharp.Reporting.EntityFrameworkCore.SqlServer.csproj" />
@@ -47,6 +49,7 @@
     <Project Path="tests/PolarSharp.MultiTenant.Identity.KeyCloak.Tests/PolarSharp.MultiTenant.Identity.KeyCloak.Tests.csproj" />
     <Project Path="tests/PolarSharp.Onboarding.Tests/PolarSharp.Onboarding.Tests.csproj" />
     <Project Path="tests/PolarSharp.EcommerceStoreManagement.Tests/PolarSharp.EcommerceStoreManagement.Tests.csproj" />
+    <Project Path="tests/PolarSharp.EcommerceStoreManagement.Translation.Tests/PolarSharp.EcommerceStoreManagement.Translation.Tests.csproj" />
     <Project Path="tests/PolarSharp.Reporting.Tests/PolarSharp.Reporting.Tests.csproj" />
     <Project Path="tests/PolarSharp.DataSeeding.Tests/PolarSharp.DataSeeding.Tests.csproj" />
   </Folder>
