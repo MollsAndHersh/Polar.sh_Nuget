@@ -42,5 +42,10 @@
   href: performance-tuning.md
 - name: Data Seeding
   href: data-seeding.md
+- name: Implementation Narratives
+  href: narratives/index.md
+  items:
+    - name: What are Implementation Narratives?
+      href: narratives/index.md
 - name: Disclaimer
   href: disclaimer.md
