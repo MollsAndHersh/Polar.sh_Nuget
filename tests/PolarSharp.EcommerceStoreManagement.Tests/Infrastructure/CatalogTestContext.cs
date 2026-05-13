@@ -78,7 +78,10 @@ public sealed class CatalogTestContext : IAsyncDisposable
     /// Builds and initialises the harness. Caller is responsible for disposal.
     /// </summary>
     /// <param name="initialTenantId">Initial tenant id placed in scope.</param>
-    public static async Task<CatalogTestContext> CreateAsync(string initialTenantId = DefaultTenantId)
+    /// <param name="configureServices">Optional callback to register additional services (e.g. cloning, reader, translation repo) on top of the harness's base DI graph.</param>
+    public static async Task<CatalogTestContext> CreateAsync(
+        string initialTenantId = DefaultTenantId,
+        Action<IServiceCollection>? configureServices = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(initialTenantId);
 
@@ -92,6 +95,8 @@ public sealed class CatalogTestContext : IAsyncDisposable
         services.AddSingleton<IMultiTenantContextAccessor>(accessor);
         services.AddSingleton<TimeProvider>(TimeProvider.System);
         services.AddDbContext<PolarCatalogDbContext>(opts => opts.UseSqlite(connection));
+
+        configureServices?.Invoke(services);
 
         var provider = services.BuildServiceProvider();
 
