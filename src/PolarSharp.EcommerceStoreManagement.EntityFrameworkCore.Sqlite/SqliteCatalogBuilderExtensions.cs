@@ -15,9 +15,16 @@ public static class SqliteCatalogBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
-        services.AddDbContext<PolarCatalogDbContext>(opts =>
+        services.AddDbContext<PolarCatalogDbContext>((sp, opts) =>
+        {
             opts.UseSqlite(connectionString, sql =>
-                sql.MigrationsAssembly(typeof(SqliteCatalogBuilderExtensions).Assembly.GetName().Name)));
+                sql.MigrationsAssembly(typeof(SqliteCatalogBuilderExtensions).Assembly.GetName().Name));
+            // TASK-V20-013: wire the audit-log interceptor when it's registered. It's added by
+            // AddPolarCatalogServices; hosts that use UseSqliteCatalog without the catalog-services
+            // orchestrator simply get no interceptor (auditing is silently disabled).
+            var interceptor = sp.GetService<AuditLogSaveChangesInterceptor>();
+            if (interceptor is not null) opts.AddInterceptors(interceptor);
+        });
         services.AddHealthChecks()
             .AddDbContextCheck<PolarCatalogDbContext>(name: "polar-catalog-sql", tags: ["polar-sql", "polar-catalog"]);
         return services;

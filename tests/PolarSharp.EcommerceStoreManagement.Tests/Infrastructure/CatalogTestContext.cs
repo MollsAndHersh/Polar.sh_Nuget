@@ -101,7 +101,16 @@ public sealed class CatalogTestContext : IAsyncDisposable
         services.AddLogging(b => b.AddProvider(NullLoggerProvider.Instance));
         services.AddSingleton<IMultiTenantContextAccessor>(accessor);
         services.AddSingleton<TimeProvider>(TimeProvider.System);
-        services.AddDbContext<PolarCatalogDbContext>(opts => opts.UseSqlite(connection));
+        // Mirror production wiring: pull AuditLogSaveChangesInterceptor (and any other
+        // ISaveChangesInterceptor) out of DI when present. Tests that exercise the interceptor
+        // register it via configureServices; other tests get the default behaviour with no
+        // interceptor wired (and zero perf cost).
+        services.AddDbContext<PolarCatalogDbContext>((sp, opts) =>
+        {
+            opts.UseSqlite(connection);
+            var auditInterceptor = sp.GetService<AuditLogSaveChangesInterceptor>();
+            if (auditInterceptor is not null) opts.AddInterceptors(auditInterceptor);
+        });
 
         configureServices?.Invoke(services);
 

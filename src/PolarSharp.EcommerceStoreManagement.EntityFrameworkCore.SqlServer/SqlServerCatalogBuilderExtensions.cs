@@ -20,9 +20,14 @@ public static class SqlServerCatalogBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
-        services.AddDbContext<PolarCatalogDbContext>(opts =>
+        services.AddDbContext<PolarCatalogDbContext>((sp, opts) =>
+        {
             opts.UseSqlServer(connectionString, sql =>
-                sql.MigrationsAssembly(typeof(SqlServerCatalogBuilderExtensions).Assembly.GetName().Name)));
+                sql.MigrationsAssembly(typeof(SqlServerCatalogBuilderExtensions).Assembly.GetName().Name));
+            // TASK-V20-013: wire the audit-log interceptor when registered.
+            var interceptor = sp.GetService<AuditLogSaveChangesInterceptor>();
+            if (interceptor is not null) opts.AddInterceptors(interceptor);
+        });
         services.AddHealthChecks()
             .AddDbContextCheck<PolarCatalogDbContext>(name: "polar-catalog-sql", tags: ["polar-sql", "polar-catalog"]);
         return services;
