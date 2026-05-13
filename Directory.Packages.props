@@ -15,8 +15,30 @@
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.5.0" />
     <!-- Health checks -->
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.7" />
+    <!-- Caching -->
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.7" />
     <!-- Multi-tenancy -->
     <PackageVersion Include="Finbuckle.MultiTenant.AspNetCore" Version="10.0.7" />
+    <!-- EF Core (used by PolarSharp.MultiTenant.EntityFrameworkCore et al.) -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.7" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+    <!-- ASP.NET Core Identity -->
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.7" />
+    <!-- AI translation providers -->
+    <PackageVersion Include="Anthropic.SDK" Version="5.10.0" />
+    <PackageVersion Include="OpenAI" Version="2.6.0" />
+    <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
+    <!-- Fake-data generation -->
+    <PackageVersion Include="Bogus" Version="35.6.5" />
     <!-- Source link + analyzers -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.203" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" />

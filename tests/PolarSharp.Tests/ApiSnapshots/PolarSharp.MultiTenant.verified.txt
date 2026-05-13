@@ -7,9 +7,17 @@
 }
 namespace PolarSharp.MultiTenant
 {
+    public interface IFakeDataAware
+    {
+        bool IsFakeData { get; }
+    }
     public interface IMultiTenantPolarClientFactory
     {
         PolarSharp.PolarClient GetClientForCurrentTenant();
+    }
+    public interface ITenantOwned : PolarSharp.MultiTenant.IFakeDataAware
+    {
+        string TenantId { get; }
     }
     public class PolarMultiTenantOptions
     {

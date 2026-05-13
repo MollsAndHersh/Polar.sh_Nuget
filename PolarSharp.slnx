@@ -1,8 +1,32 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/PolarSharp.MultiTenant/PolarSharp.MultiTenant.csproj" />
-    <Project Path="src/PolarSharp.Webhooks/PolarSharp.Webhooks.csproj" />
     <Project Path="src/PolarSharp/PolarSharp.csproj" />
+    <Project Path="src/PolarSharp.Webhooks/PolarSharp.Webhooks.csproj" />
+    <Project Path="src/PolarSharp.MultiTenant/PolarSharp.MultiTenant.csproj" />
+    <Project Path="src/PolarSharp.MultiTenant.EntityFrameworkCore/PolarSharp.MultiTenant.EntityFrameworkCore.csproj" />
+    <Project Path="src/PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer/PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer.csproj" />
+    <Project Path="src/PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite/PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.csproj" />
+    <Project Path="src/PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL/PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL.csproj" />
+    <Project Path="src/PolarSharp.MultiTenant.Identity/PolarSharp.MultiTenant.Identity.csproj" />
+    <Project Path="src/PolarSharp.MultiTenant.Identity.SqlServer/PolarSharp.MultiTenant.Identity.SqlServer.csproj" />
+    <Project Path="src/PolarSharp.MultiTenant.Identity.Sqlite/PolarSharp.MultiTenant.Identity.Sqlite.csproj" />
+    <Project Path="src/PolarSharp.MultiTenant.Identity.PostgreSQL/PolarSharp.MultiTenant.Identity.PostgreSQL.csproj" />
+    <Project Path="src/PolarSharp.MultiTenant.Identity.KeyCloak/PolarSharp.MultiTenant.Identity.KeyCloak.csproj" />
+    <Project Path="src/PolarSharp.Onboarding/PolarSharp.Onboarding.csproj" />
+    <Project Path="src/PolarSharp.EcommerceStoreManagement/PolarSharp.EcommerceStoreManagement.csproj" />
+    <Project Path="src/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.csproj" />
+    <Project Path="src/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.SqlServer/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.SqlServer.csproj" />
+    <Project Path="src/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Sqlite/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Sqlite.csproj" />
+    <Project Path="src/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.PostgreSQL/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.PostgreSQL.csproj" />
+    <Project Path="src/PolarSharp.EcommerceStoreManagement.Translation.Anthropic/PolarSharp.EcommerceStoreManagement.Translation.Anthropic.csproj" />
+    <Project Path="src/PolarSharp.EcommerceStoreManagement.Translation.OpenAI/PolarSharp.EcommerceStoreManagement.Translation.OpenAI.csproj" />
+    <Project Path="src/PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI/PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI.csproj" />
+    <Project Path="src/PolarSharp.Reporting/PolarSharp.Reporting.csproj" />
+    <Project Path="src/PolarSharp.Reporting.EntityFrameworkCore/PolarSharp.Reporting.EntityFrameworkCore.csproj" />
+    <Project Path="src/PolarSharp.Reporting.EntityFrameworkCore.SqlServer/PolarSharp.Reporting.EntityFrameworkCore.SqlServer.csproj" />
+    <Project Path="src/PolarSharp.Reporting.EntityFrameworkCore.Sqlite/PolarSharp.Reporting.EntityFrameworkCore.Sqlite.csproj" />
+    <Project Path="src/PolarSharp.Reporting.EntityFrameworkCore.PostgreSQL/PolarSharp.Reporting.EntityFrameworkCore.PostgreSQL.csproj" />
+    <Project Path="src/PolarSharp.DataSeeding/PolarSharp.DataSeeding.csproj" />
   </Folder>
   <Folder Name="/templates/">
     <Project Path="templates/PolarSharp.Templates/PolarSharp.Templates.csproj" />
@@ -16,5 +40,12 @@
     <Project Path="tests/PolarSharp.IntegrationTests/PolarSharp.IntegrationTests.csproj" />
     <Project Path="tests/PolarSharp.Tests/PolarSharp.Tests.csproj" />
     <Project Path="tests/PolarSharp.Webhooks.Tests/PolarSharp.Webhooks.Tests.csproj" />
+    <Project Path="tests/PolarSharp.MultiTenant.EntityFrameworkCore.Tests/PolarSharp.MultiTenant.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="tests/PolarSharp.MultiTenant.Identity.Tests/PolarSharp.MultiTenant.Identity.Tests.csproj" />
+    <Project Path="tests/PolarSharp.MultiTenant.Identity.KeyCloak.Tests/PolarSharp.MultiTenant.Identity.KeyCloak.Tests.csproj" />
+    <Project Path="tests/PolarSharp.Onboarding.Tests/PolarSharp.Onboarding.Tests.csproj" />
+    <Project Path="tests/PolarSharp.EcommerceStoreManagement.Tests/PolarSharp.EcommerceStoreManagement.Tests.csproj" />
+    <Project Path="tests/PolarSharp.Reporting.Tests/PolarSharp.Reporting.Tests.csproj" />
+    <Project Path="tests/PolarSharp.DataSeeding.Tests/PolarSharp.DataSeeding.Tests.csproj" />
   </Folder>
 </Solution>
