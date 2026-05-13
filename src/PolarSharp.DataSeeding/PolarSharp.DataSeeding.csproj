@@ -24,4 +24,8 @@
     <PackageReference Include="Bogus" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="PolarSharp.DataSeeding.Tests" />
+  </ItemGroup>
+
 </Project>
