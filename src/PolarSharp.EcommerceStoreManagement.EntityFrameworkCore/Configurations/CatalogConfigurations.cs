@@ -161,15 +161,25 @@ internal sealed class AdminAuditLogConfiguration : IEntityTypeConfiguration<Admi
     {
         b.ToTable("polar_admin_audit_log");
         b.HasKey(e => e.Id);
-        b.HasIndex(e => new { e.TenantGuid, e.OccurredAt });
-        b.HasIndex(e => new { e.TenantGuid, e.EntityType, e.EntityId });
+        b.HasIndex(e => new { e.TenantId, e.OccurredAt });
+        b.HasIndex(e => new { e.TenantId, e.EntityType, e.EntityId });
+        b.Property(e => e.TenantId).IsRequired().HasMaxLength(64);
         b.Property(e => e.ActorEmail).HasMaxLength(320).IsRequired();
         b.Property(e => e.EntityType).HasMaxLength(128).IsRequired();
         b.Property(e => e.Action).HasConversion<string>().HasMaxLength(16);
         b.Property(e => e.CrossTenantJustification).HasMaxLength(2048);
-        // The ITenantOwned shadow TenantId column maps from the Guid via the TenantId interface
-        // member; EF stores it as the underlying TenantGuid value.
-        b.Ignore("TenantId");
+        b.Ignore(e => e.TenantGuid);   // computed property; not a column
+        // JsonNode columns serialised by hand to/from string — EF can't map JsonNode directly.
+        b.Property(e => e.BeforeValues)
+            .HasConversion(
+                v => v == null ? null : v.ToJsonString(),
+                v => v == null ? null : System.Text.Json.Nodes.JsonNode.Parse(v))
+            .HasColumnType("nvarchar(max)");
+        b.Property(e => e.AfterValues)
+            .HasConversion(
+                v => v == null ? null : v.ToJsonString(),
+                v => v == null ? null : System.Text.Json.Nodes.JsonNode.Parse(v))
+            .HasColumnType("nvarchar(max)");
         b.Property(e => e.ChangedFields)
             .HasConversion(
                 v => string.Join(',', v),

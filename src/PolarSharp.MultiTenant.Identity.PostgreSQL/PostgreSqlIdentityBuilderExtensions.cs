@@ -53,7 +53,9 @@ public static class PostgreSqlIdentityBuilderExtensions
 
     private static PolarIdentityBuilder RegisterDbContext(PolarIdentityBuilder builder, string connectionString)
     {
-        builder.Services.AddDbContext<PolarUserDbContext>(opts => opts.UseNpgsql(connectionString));
+        builder.Services.AddDbContext<PolarUserDbContext>(opts =>
+            opts.UseNpgsql(connectionString, npg =>
+                npg.MigrationsAssembly(typeof(PostgreSqlIdentityBuilderExtensions).Assembly.GetName().Name)));
 
         builder.Services.AddHealthChecks()
             .AddDbContextCheck<PolarUserDbContext>(

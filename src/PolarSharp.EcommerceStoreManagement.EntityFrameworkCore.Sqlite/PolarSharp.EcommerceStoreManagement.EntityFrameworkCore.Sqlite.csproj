@@ -22,6 +22,10 @@
   <ItemGroup>
     <ProjectReference Include="..\PolarSharp.EcommerceStoreManagement.EntityFrameworkCore\PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite\PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

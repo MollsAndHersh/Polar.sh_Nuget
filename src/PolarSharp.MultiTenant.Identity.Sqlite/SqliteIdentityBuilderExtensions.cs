@@ -58,7 +58,9 @@ public static class SqliteIdentityBuilderExtensions
 
     private static PolarIdentityBuilder RegisterDbContext(PolarIdentityBuilder builder, string connectionString)
     {
-        builder.Services.AddDbContext<PolarUserDbContext>(opts => opts.UseSqlite(connectionString));
+        builder.Services.AddDbContext<PolarUserDbContext>(opts =>
+            opts.UseSqlite(connectionString, sql =>
+                sql.MigrationsAssembly(typeof(SqliteIdentityBuilderExtensions).Assembly.GetName().Name)));
 
         builder.Services.AddHealthChecks()
             .AddDbContextCheck<PolarUserDbContext>(

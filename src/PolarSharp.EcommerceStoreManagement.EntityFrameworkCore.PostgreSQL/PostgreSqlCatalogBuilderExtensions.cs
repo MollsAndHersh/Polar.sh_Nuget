@@ -13,7 +13,9 @@ public static class PostgreSqlCatalogBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
-        services.AddDbContext<PolarCatalogDbContext>(opts => opts.UseNpgsql(connectionString));
+        services.AddDbContext<PolarCatalogDbContext>(opts =>
+            opts.UseNpgsql(connectionString, npg =>
+                npg.MigrationsAssembly(typeof(PostgreSqlCatalogBuilderExtensions).Assembly.GetName().Name)));
         services.AddHealthChecks()
             .AddDbContextCheck<PolarCatalogDbContext>(name: "polar-catalog-sql", tags: ["polar-sql", "polar-catalog"]);
         return services;

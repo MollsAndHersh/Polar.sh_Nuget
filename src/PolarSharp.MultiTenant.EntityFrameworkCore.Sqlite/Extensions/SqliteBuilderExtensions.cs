@@ -44,7 +44,9 @@ public static class SqliteBuilderExtensions
 
         EfTenantStoreBuilderExtensions.AddCoreServices(builder.Services, builder.Configuration);
 
-        builder.Services.AddDbContext<PolarTenantDbContext>(opts => opts.UseSqlite(connectionString));
+        builder.Services.AddDbContext<PolarTenantDbContext>(opts =>
+            opts.UseSqlite(connectionString, sql =>
+                sql.MigrationsAssembly(typeof(SqliteBuilderExtensions).Assembly.GetName().Name)));
         builder.Services.AddScoped<IMultiTenantStore<PolarTenantInfo>, EfMultiTenantStore>();
 
         builder.Services.AddHealthChecks()

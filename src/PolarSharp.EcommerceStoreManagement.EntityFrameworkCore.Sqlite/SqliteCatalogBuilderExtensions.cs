@@ -15,7 +15,9 @@ public static class SqliteCatalogBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
-        services.AddDbContext<PolarCatalogDbContext>(opts => opts.UseSqlite(connectionString));
+        services.AddDbContext<PolarCatalogDbContext>(opts =>
+            opts.UseSqlite(connectionString, sql =>
+                sql.MigrationsAssembly(typeof(SqliteCatalogBuilderExtensions).Assembly.GetName().Name)));
         services.AddHealthChecks()
             .AddDbContextCheck<PolarCatalogDbContext>(name: "polar-catalog-sql", tags: ["polar-sql", "polar-catalog"]);
         return services;

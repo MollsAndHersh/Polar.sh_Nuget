@@ -20,7 +20,9 @@ public static class SqlServerCatalogBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
-        services.AddDbContext<PolarCatalogDbContext>(opts => opts.UseSqlServer(connectionString));
+        services.AddDbContext<PolarCatalogDbContext>(opts =>
+            opts.UseSqlServer(connectionString, sql =>
+                sql.MigrationsAssembly(typeof(SqlServerCatalogBuilderExtensions).Assembly.GetName().Name)));
         services.AddHealthChecks()
             .AddDbContextCheck<PolarCatalogDbContext>(name: "polar-catalog-sql", tags: ["polar-sql", "polar-catalog"]);
         return services;

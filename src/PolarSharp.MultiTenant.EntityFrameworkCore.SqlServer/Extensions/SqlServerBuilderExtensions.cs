@@ -43,7 +43,9 @@ public static class SqlServerBuilderExtensions
 
         EfTenantStoreBuilderExtensions.AddCoreServices(builder.Services, builder.Configuration);
 
-        builder.Services.AddDbContext<PolarTenantDbContext>(opts => opts.UseSqlServer(connectionString));
+        builder.Services.AddDbContext<PolarTenantDbContext>(opts =>
+            opts.UseSqlServer(connectionString, sql =>
+                sql.MigrationsAssembly(typeof(SqlServerBuilderExtensions).Assembly.GetName().Name)));
         builder.Services.AddScoped<IMultiTenantStore<PolarTenantInfo>, EfMultiTenantStore>();
 
         // EF Core health check

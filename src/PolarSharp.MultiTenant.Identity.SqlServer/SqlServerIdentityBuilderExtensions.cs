@@ -96,7 +96,9 @@ public static class SqlServerIdentityBuilderExtensions
 
     private static PolarIdentityBuilder RegisterDbContext(PolarIdentityBuilder builder, string connectionString)
     {
-        builder.Services.AddDbContext<PolarUserDbContext>(opts => opts.UseSqlServer(connectionString));
+        builder.Services.AddDbContext<PolarUserDbContext>(opts =>
+            opts.UseSqlServer(connectionString, sql =>
+                sql.MigrationsAssembly(typeof(SqlServerIdentityBuilderExtensions).Assembly.GetName().Name)));
 
         builder.Services.AddHealthChecks()
             .AddDbContextCheck<PolarUserDbContext>(

@@ -24,11 +24,11 @@ public sealed class AdminAuditLogEntry : ITenantOwned, IFakeDataAware
     /// <summary>Primary key.</summary>
     public Guid Id { get; set; }
 
-    /// <summary>The tenant the audited entity belongs to. Implements <see cref="ITenantOwned.TenantId"/> as a string projection of the underlying Guid.</summary>
-    public Guid TenantGuid { get; set; }
+    /// <summary>The tenant the audited entity belongs to. EF Core's <see cref="ITenantOwned"/> filter requires this as a regular settable string property (explicit-interface impls aren't reflectable by EF expressions).</summary>
+    public string TenantId { get; set; } = "";
 
-    /// <inheritdoc/>
-    string ITenantOwned.TenantId => TenantGuid.ToString();
+    /// <summary>Convenience accessor — parses <see cref="TenantId"/> as a <see cref="Guid"/> for downstream Identity / Reporting integrations.</summary>
+    public Guid TenantGuid => Guid.TryParse(TenantId, out var g) ? g : Guid.Empty;
 
     /// <summary>Guid of the user who performed the mutation. Resolved via <c>IAuditLogActorProvider</c>.</summary>
     public Guid ActorUserId { get; set; }

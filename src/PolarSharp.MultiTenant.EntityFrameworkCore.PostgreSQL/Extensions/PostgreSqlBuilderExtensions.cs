@@ -38,7 +38,9 @@ public static class PostgreSqlBuilderExtensions
 
         EfTenantStoreBuilderExtensions.AddCoreServices(builder.Services, builder.Configuration);
 
-        builder.Services.AddDbContext<PolarTenantDbContext>(opts => opts.UseNpgsql(connectionString));
+        builder.Services.AddDbContext<PolarTenantDbContext>(opts =>
+            opts.UseNpgsql(connectionString, npg =>
+                npg.MigrationsAssembly(typeof(PostgreSqlBuilderExtensions).Assembly.GetName().Name)));
         builder.Services.AddScoped<IMultiTenantStore<PolarTenantInfo>, EfMultiTenantStore>();
 
         builder.Services.AddHealthChecks()
