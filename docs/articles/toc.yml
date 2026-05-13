@@ -24,8 +24,22 @@
   href: onboarding.md
 - name: Ecommerce Store Management
   href: ecommerce-catalog.md
+- name: Refund Management
+  href: refund-management.md
+- name: License Key Validation
+  href: license-validation.md
+- name: Business Profile + Stripe-Connect Handoff
+  href: business-profile.md
+- name: Inventory Tracking
+  href: inventory.md
+- name: Catalog Publisher
+  href: publisher.md
 - name: Reporting
   href: reporting.md
+- name: Report Snapshot Service
+  href: snapshot-service.md
+- name: Advanced Reporting (12 reports)
+  href: advanced-reporting.md
 - name: EF Core Migrations
   href: migrations.md
 - name: Localization

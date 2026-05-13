@@ -2,7 +2,7 @@
 
 > A .NET 10 Native AOT-compatible SDK for [Polar.sh](https://polar.sh) — the open-source Merchant of Record payment and monetization platform.
 
-> **v1.2.0+** — what started as a Polar.sh SDK has grown into a full multi-tenant SaaS toolkit. **31 packages** cover everything from the raw API client to programmatic merchant onboarding, SQL-backed tenant + identity stores with row-level security, a local catalog with AI-translated product copy, hierarchical reporting, KeyCloak SSO, and bulk fake-data seeding. Pick the pieces you need; the v1.1.0 core SDK keeps working unchanged for hosts that don't.
+> **v1.2.0+** — what started as a Polar.sh SDK has grown into a full multi-tenant SaaS toolkit. **30 packages** cover everything from the raw API client to programmatic merchant onboarding, SQL-backed tenant + identity stores with row-level security, a local catalog with AI-translated product copy, hierarchical reporting, KeyCloak SSO, and bulk fake-data seeding. Pick the pieces you need; the v1.1.0 core SDK keeps working unchanged for hosts that don't.
 
 [![CI](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/ci.yml/badge.svg)](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/ci.yml)
 [![Publish Docs](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/docs.yml/badge.svg)](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/docs.yml)
@@ -10,10 +10,10 @@
 [![Docs](https://img.shields.io/badge/docs-github.io-informational)](https://mollsandhersh.github.io/Polar.sh_Nuget/)
 [![Latest release](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=latest&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/releases)
 
-> **31 packages distributed via [GitHub Packages](https://github.com/mollsandhersh/Polar.sh_Nuget/packages).** See [Installing from GitHub Packages](#installing-from-github-packages) below. All packages release together under one repo tag — every version badge below reflects the latest tagged release.
+> **30 packages distributed via [GitHub Packages](https://github.com/mollsandhersh/Polar.sh_Nuget/packages).** See [Installing from GitHub Packages](#installing-from-github-packages) below. All packages release together under one repo tag — every version badge below reflects the latest tagged release.
 
 <details>
-<summary><strong>All 31 packages</strong> — click to expand version badges (each links to its GitHub Packages page)</summary>
+<summary><strong>All 30 packages</strong> — click to expand version badges (each links to its GitHub Packages page)</summary>
 
 **Core (5)**
 
@@ -83,7 +83,7 @@ So you do what .NET developers do: you write it yourself. An `HttpClient`. Some 
 
 ## What You Get
 
-**31 NuGet packages**, every one of them AOT-safe and ZH-style-compliant, grouped into seven capability areas. Install the ones you need; the rest stay out of your dependency graph.
+**30 NuGet packages**, every one of them AOT-safe and ZH-style-compliant, grouped into seven capability areas. Install the ones you need; the rest stay out of your dependency graph.
 
 | Capability area | Packages | What it does |
 |---|---|---|
@@ -222,7 +222,7 @@ dotnet add package PolarSharp.Reporting.EntityFrameworkCore.SqlServer    # or .S
 dotnet add package PolarSharp.DataSeeding                                # dev-time only; see AOT note below
 ```
 
-The full list of 31 packages is in the badge block at the top of this README. Every package depends transitively on the ones it needs — installing a provider package brings in its EF Core base and PolarSharp itself automatically.
+The full list of 30 packages is in the badge block at the top of this README. Every package depends transitively on the ones it needs — installing a provider package brings in its EF Core base and PolarSharp itself automatically.
 
 ### Minimum configuration
 
@@ -400,7 +400,7 @@ The site covers:
 |---|---|
 | [Getting Started](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/getting-started.html) | Full annotated `Program.cs` and first API call |
 | [Local Development Setup](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/local-development.html) | Sandbox token, user-secrets, ngrok tunnel, webhook testing |
-| [Configuration](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/configuration.html) | Every `appsettings.json` field across all 31 packages with valid values and defaults |
+| [Configuration](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/configuration.html) | Every `appsettings.json` field across all 30 packages with valid values and defaults |
 | [Webhooks](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/webhooks.html) | HMAC verification, event types, handler registration |
 | [Webhook Handlers](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/webhook-handlers.html) | `PolarWebhookHandlerBase<T>`, background queues, idempotency |
 | [Webhook Event Reference](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/webhook-event-reference.html) | Every Polar event type, payload shape, and recommended handler pattern |
@@ -420,7 +420,7 @@ The site covers:
 | [Test vs Live Mode](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/test-vs-live-mode.html) | Mode banner, token-prefix checks, switching safely |
 | [NuGet Deployment](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/nuget-deployment.html) | Publishing to NuGet.org, GitHub Packages, release tagging |
 | [Localization](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/localization.html) | `IPolarLocalizer`, built-in `en-US`/`es-MX`, adding new languages |
-| [API Reference](https://mollsandhersh.github.io/Polar.sh_Nuget/api/) | Full XML-documented API reference for every public type across all 31 packages |
+| [API Reference](https://mollsandhersh.github.io/Polar.sh_Nuget/api/) | Full XML-documented API reference for every public type across all 30 packages |
 
 ---
 

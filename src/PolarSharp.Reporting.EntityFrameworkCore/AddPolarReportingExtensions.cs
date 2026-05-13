@@ -32,6 +32,7 @@ public static class AddPolarReportingExtensions
 
         services.AddPolarReportingSnapshot(configuration);
         services.AddScoped<IPolarReportingClient, EfPolarReportingClient>();
+        services.AddScoped<IAdvancedReportingClient, EfAdvancedReportingClient>();
         return services;
     }
 }

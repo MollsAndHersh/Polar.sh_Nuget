@@ -6,6 +6,90 @@ and [Common Changelog](https://common-changelog.org) format.
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-05-13
+
+Feature release. The v1.2.0 store-management surface gains six concrete operator services (refunds, license validation, business profile + Stripe-Connect deep-link, inventory tracking with zero-boundary Polar sync, catalog publisher, reporting snapshot ingester), and the reporting package gains **twelve advanced reports** — eight scoped to a single tenant for merchant dashboards, four cross-tenant for SaaS-operator (AppMasterAdmin) oversight. The v1.1.0 / v1.2.0 packages remain additive-compatible.
+
+### Added
+
+#### Twelve advanced reports — `PolarSharp.Reporting` + `PolarSharp.Reporting.EntityFrameworkCore`
+
+- New `IAdvancedReportingClient` (12 methods, all returning `Result<TReport, PolarError>`) and `EfAdvancedReportingClient` implementation reading from the snapshot tables
+- **Eight tenant-scoped reports** for merchant dashboards (use the global tenant query filter; bucketed by `ReportBucketGranularity` Daily / Weekly / Monthly where applicable):
+  - `GetRevenueOverTimeAsync` — gross / refunded / net revenue + order count per bucket
+  - `GetTopProductsAsync` — top-N by revenue AND by units sold, with order count tiebreaker
+  - `GetTopCustomersAsync` — top-N by lifetime value, with first/last order timestamps
+  - `GetSubscriptionChurnCohortAsync` — per-cohort retention curve over N months (0–36)
+  - `GetRefundRateAsync` — gross / refunded / refund-count per bucket + overall %
+  - `GetAverageOrderValueAsync` — per-bucket AOV + overall AOV
+  - `GetCustomerLifetimeValueDistributionAsync` — histogram with caller-defined upper bounds
+  - `GetCurrencyMixAsync` — per-currency gross / net / share %
+- **Four SaaS-operator (cross-tenant) reports** that use `IgnoreQueryFilters()` and rely on `[RequireAppMasterAdmin]` at the endpoint layer for authorization:
+  - `GetCrossTenantRevenueAsync` — platform-wide revenue per tenant + "(other)" rollup beyond top-N
+  - `GetCrossTenantOrderVolumeAsync` — order count, distinct customers, last-order timestamp per tenant
+  - `GetWebhookDeliveryHealthAsync` — event counts by tenant + type prefix (order./subscription./refund.)
+  - `GetTenantHealthAsync` — composite grade (`Healthy` | `Dormant` | `Empty`) per tenant from customer / order / subscription signals
+- Auto-registered via `AddPolarReporting()` orchestrator alongside the existing aggregate `IPolarReportingClient`
+- 12 unit tests in `tests/PolarSharp.Reporting.Tests/AdvancedReportingClientTests.cs` covering each report against an in-memory SQLite snapshot fixture
+
+#### Refund management — `PolarSharp.EcommerceStoreManagement` + `.EntityFrameworkCore`
+
+- `IRefundService` with `IssueFullRefundAsync(orderId, reason, comment, ct)` and `IssuePartialRefundAsync(orderId, amount, currency, reason, comment, ct)` — both write `AdminAuditLogEntry` rows via the active `IAuditLogActorProvider`
+- `RefundService` orchestrator implementation
+- `IPolarRefundsApi` HTTP boundary abstraction + deferred `PolarClientRefundsApi` stub (TASK-V20-002)
+
+#### License key validation — `PolarSharp.EcommerceStoreManagement` + `.EntityFrameworkCore`
+
+- `ILicenseKeyValidator.ValidateAsync(licenseKey, ct)` returning structured `LicenseValidationResult` with `IsValid`, `CustomerId`, `ExpiresAt`, `ActivationsRemaining`, `InvalidReason`, `IsWithinGracePeriod`
+- `LicenseKeyValidator` impl with short-lived in-memory cache (`LicenseValidatorOptions.CacheTtlSeconds`, default 60s) and per-tenant grace-period support (`GracePeriodDays`, default 7)
+- `IPolarLicenseKeysApi` HTTP boundary + deferred `PolarClientLicenseKeysApi` stub (TASK-V20-003)
+
+#### Business profile + Stripe-Connect handoff — `PolarSharp.EcommerceStoreManagement` + `.EntityFrameworkCore`
+
+- `IPolarBusinessProfileService` with `GetAsync`, `SaveAsync` (writes locally, pushes the writable subset to Polar), `BuildBankingSetupDeepLink(tenantId)` returning the dashboard URL for Stripe-Connect linking, and `RefreshPayoutStatusAsync(tenantId, ct)` polling Polar's read-only `account_id` / `payout_account_id`
+- `PolarBusinessProfileService` impl persisting to `TenantBusinessProfile`
+- `IPolarOrganizationsApi` HTTP boundary + deferred `PolarClientOrganizationsApi` stub (TASK-V20-004)
+- **Strict framing:** PolarSharp does NOT call Stripe; it produces a deep-link to Polar's own dashboard where the merchant completes Connect onboarding. PolarSharp polls Polar's read-only fields for status.
+
+#### Inventory tracking + zero-boundary Polar sync — `PolarSharp.EcommerceStoreManagement` + `.EntityFrameworkCore`
+
+- `IInventoryUpdater.UpdateAsync(tenantId, variantId, newCount, ct)` and `UpdateManyAsync(tenantId, updates, ct)` — host's existing inventory service calls these; emits `SkuStockChanged` only on zero-boundary transitions (10→9 produces no event; 1→0 and 0→1 do)
+- `InventoryUpdater` impl with structured `InventoryUpdateOutcome` records (`OldCount`, `NewCount`, `CrossedZeroBoundary`)
+- `LocalProductVariant.IsActive` / `InventoryCount` / `InventoryLowThreshold` / `IsOutOfStock` / `LastStockChangedAt` properties used by the publisher to set `is_archived: true` on Polar when stock crosses 0
+
+#### Catalog publisher — `PolarSharp.EcommerceStoreManagement.EntityFrameworkCore`
+
+- `PolarCatalogPublisher` concrete impl of the v1.2.0 `IPolarCatalogPublisher` abstraction — dependency-ordered (Benefits → Products+variants/tiers → Discounts → Checkout Links), idempotent (`PolarXxxId` persisted on success), resumable (partial failure leaves rows marked `OutOfSync` for re-run)
+- `IPolarPublishingApi` HTTP boundary covering create/update product / benefit / discount / checkout-link + deferred `PolarClientPublishingApi` stub
+
+#### Report snapshot ingester — `PolarSharp.Reporting.EntityFrameworkCore`
+
+- `ReportSnapshotService` reads from `IPolarReportingApi` and writes into the snapshot tables on the schedule configured in `PolarReportingOptions.SnapshotInterval` (default 15 minutes)
+- `IPolarReportingApi` HTTP boundary with five `Fetch*SinceAsync` methods + deferred `PolarClientReportingApi` stub returning empty pages (TASK-V20-005 — honest no-op until live Polar sandbox validation)
+- `PolarReportingHostedService` runs the snapshot for every tenant in bounded parallel via the shared `IPolarTenantScopeInitializer` (`MaxTenantsInParallel`, default 4)
+
+### Changed
+
+- `PolarSharp`, `PolarSharp.Webhooks`, `PolarSharp.MultiTenant` version bump 1.2.1 → 1.3.0 — no breaking changes, aligns release tag with v1.3.0 feature set
+- `EfAdvancedReportingClient` uses a **materialise-then-filter pattern** for `DateTimeOffset` range filters: SQLite's EF Core provider can't translate `o.CreatedAt >= request.From` when combined with the global tenant filter's parameterised expression, so the read materialises post-tenant-filter then narrows in memory. Production providers (SQL Server / PostgreSQL) translate the same query server-side natively. Tenant data volumes per snapshot run are bounded, so the SQLite in-memory narrowing is acceptable
+- Cross-tenant query-filter constant-folding bug (introduced in an earlier v1.3 phase) resolved in `TenantAwareDbContextBase.ApplyFilter` by replacing `Expression.Constant(_currentTenantId)` with `Expression.Field(Expression.Constant(this), nameof(_currentTenantId))`. Without this fix, the cached EF model captured the first request's tenant id and served it to every subsequent request — a cross-tenant data leak. Now isolated across requests; covered by the cross-tenant isolation test suite
+
+### Audits performed pre-release
+
+- **Audit 1 (incomplete implementations):** clean. All `NotImplementedException` / stub patterns map to tracked v2.0 deferrals (TASK-V20-001..007) — Refunds API, License API, Organizations API, Reporting API, FakeData sync branches. No unintentional dropped work
+- **Audit 2 (test coverage):** 379+ green tests across 8 test projects. Identified 4 quick-win gaps (closed in this release) and 3 v2.0 deferrals (FakeDataSync concurrency, per-provider tenant isolation under live DBs, InventoryUpdater row-locking by provider)
+- **Audit 3 (documentation):** CS1591 build-error gate confirms 100% XML doc coverage on public surface. Seven v1.3.0 DocFX articles authored (refund-management, license-validation, business-profile, inventory, publisher, snapshot-service, advanced-reporting). README package count corrected from 31 → 30 (the historical 31-count came from a planning doc that included a `PolarSharp.Templates` package that never scaffolded into `src/`)
+
+### Production-readiness analysis
+
+- New `PRODUCTION-READINESS-ANALYSIS.md` at the repo root documents resilience / performance / security / observability / operational / multi-tenancy / API-stability / docs-for-ops gaps with severity (P1/P2/P3) and proposed TASK-V20-NNN remediations. Top-10 ranked priorities seeded into v2.0 task backlog
+
+### Tests
+
+- **569 / 569 tests pass** across 12 test projects (BaseEntities 67, Webhooks 70, MultiTenant.EntityFrameworkCore 10, Identity 36, Identity.KeyCloak 23, Onboarding 17, EcommerceStoreManagement 123, Translation 23, Reporting 41, DataSeeding 21, IntegrationTests 48, PolarSharp 90)
+- AOT publish: `dotnet publish -p:PublishAot=true` zero warnings
+- Build: 0 warnings, 0 errors
+
 ## [1.2.1] — 2026-05-13
 
 Patch release. Fixes two release-time gaps discovered after v1.2.0 shipped:
