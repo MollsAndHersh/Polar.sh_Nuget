@@ -60,6 +60,13 @@ public sealed class CatalogTestContext : IAsyncDisposable
         _accessor.SwitchTo(tenantId);
     }
 
+    /// <summary>Sets the Polar organization id on the current tenant info — used by services that need it (e.g. <c>LicenseKeyValidator</c>).</summary>
+    public void SetPolarOrganizationId(string polarOrganizationId)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(polarOrganizationId);
+        _accessor.SetPolarOrganizationId(polarOrganizationId);
+    }
+
     /// <summary>Creates a DI scope. Each test typically opens one scope to resolve the DbContext + services together.</summary>
     public IServiceScope CreateScope() => _services.CreateScope();
 
@@ -137,6 +144,14 @@ public sealed class CatalogTestContext : IAsyncDisposable
         }
 
         public void SwitchTo(string tenantId) => _current = BuildContext(tenantId);
+
+        public void SetPolarOrganizationId(string polarOrganizationId)
+        {
+            if (_current.TenantInfo is PolarTenantInfo polar)
+            {
+                polar.PolarOrganizationId = polarOrganizationId;
+            }
+        }
 
         private static IMultiTenantContext BuildContext(string tenantId) =>
             new MultiTenantContext<PolarTenantInfo>(

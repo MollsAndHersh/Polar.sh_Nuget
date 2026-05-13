@@ -104,4 +104,21 @@ If a draft Narrative or doc accidentally references Stripe in a way that implies
 - Every major workflow change → Implementation Narrative covering the user-visible impact
 - Every release → CHANGELOG entry summarising what readers need to know
 
+### MAUI / multi-platform dev setup documentation (binding for v1.5.0+)
+
+When the `PolarSharp.UI.Components.Maui` RCL + `PolarMauiDemo` flagship land in v1.5.0, the DocFX `local-development.md` article MUST gain a dedicated **"Setting up .NET MAUI for PolarSharp development"** section. The section must cover, concretely:
+
+- **Required SDK workloads** with exact CLI: `dotnet workload install maui` (bundle) OR individually `maui-android`, `maui-ios`, `maui-maccatalyst`, `maui-windows`. Plus `dotnet workload list` to verify and `dotnet workload update` to maintain currency.
+- **Per-OS tooling** for each supported dev environment:
+  - macOS — Xcode + Command Line Tools (required for iOS / Mac Catalyst), Apple Developer ID + provisioning profiles, Android Studio + Android SDK + AVD emulators, JDK 17+
+  - Windows — Visual Studio 2026 with the ".NET Multi-platform App UI development" workload, Android SDK + emulator, Hyper-V or WSL2 for emulator acceleration, optional Mac pairing for iOS via Hot Restart
+  - Linux — Android only (no iOS / Mac Catalyst support is possible), JetBrains Rider or VS Code with the .NET MAUI extension
+- **Simulators / emulators** — install steps, CLI launch commands (`xcrun simctl boot`, `emulator @AvdName`), pairing to the IDE
+- **Signing certs + provisioning profiles** — explicit guidance on what's needed for running on a real device vs. just simulator; how to manage Apple provisioning expiry; Android signing key generation
+- **Telerik UI for Blazor on MAUI** — confirmation that the Telerik license file works identically for MAUI Blazor Hybrid as for web (per-developer, not per-platform); how to share licensing across Web + Mobile dev work
+- **First-run validation** — a command sequence the reader can paste to prove their setup works: `dotnet new polar-mobile-companion -n FirstMauiTest && cd FirstMauiTest && dotnet build -f net10.0-android`
+- **Common pitfalls** — Android SDK version mismatches, iOS provisioning expiry, MacCatalyst capability entitlements, Hot Restart limitations, .NET workload mismatch errors
+
+Style: the conceptual framing parts (why workloads exist, when you need them, what's optional vs. required) follow the Implementation Narratives style — friendly, audience-friendly, analogies for hard concepts ("think of each workload as a separate language pack you install based on which platforms you want to target"). The reference parts (exact commands, exact CLI flags, exact prerequisite versions) stay precise and copy-pasteable.
+
 This standard is encoded here so it carries forward across sessions, contributors, and feature waves without needing to be re-asked.
