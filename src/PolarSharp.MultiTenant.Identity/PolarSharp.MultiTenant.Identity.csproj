@@ -25,4 +25,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Authorization" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="PolarSharp.MultiTenant.Identity.Tests" />
+  </ItemGroup>
+
 </Project>
