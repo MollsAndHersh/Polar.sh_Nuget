@@ -48,6 +48,44 @@ var cloned = await productCloning.CloneAsync(
 
 Five cloning services: `IProductCloningService`, `ICategoryCloningService`, `IBenefitCloningService`, `IDiscountCloningService`, `ICheckoutLinkCloningService`.
 
+## Banking and payouts — why PolarSharp can't do this for you
+
+Before a merchant can receive money, they need to connect a bank account so Polar.sh
+knows where to send the payouts. **PolarSharp cannot set up this bank account
+connection.** Polar's API has no endpoint for it — the merchant must do it themselves
+in Polar's own admin dashboard, in a web browser.
+
+Here's what actually happens, in plain terms:
+
+1. The merchant goes to your application. Your admin UI shows a button or link that
+   says something like "Connect your bank account to receive payouts."
+2. You generate that link by calling `IPolarBusinessProfileService.BuildBankingSetupDeepLink()`.
+   The link points to a specific page on Polar.sh's website.
+3. The merchant clicks the link, lands on Polar's website, and walks through Polar's
+   bank-account setup flow there. They may see Stripe-branded screens during this
+   step — that is normal. Polar.sh uses Stripe internally to actually move money,
+   but the merchant's relationship is with Polar, and your application has no
+   relationship with Stripe at all.
+4. When the merchant finishes the setup in Polar's dashboard, they come back to your
+   application.
+5. Your application calls `IPolarBusinessProfileService.RefreshPayoutStatusAsync()`
+   (or relies on the optional `PayoutStatusPollerService` that does this on a
+   schedule in the background). PolarSharp asks Polar's API whether the setup is
+   complete and stores the answer in the local `TenantBusinessProfile`. When the
+   answer is "yes," your UI can show "Payouts ready."
+
+**Key takeaways:**
+
+- PolarSharp **never** calls Stripe. Not once. Anywhere.
+- The merchant **must** complete the bank-account setup themselves in Polar.sh's web
+  dashboard. There is no programmatic shortcut. This is a Polar.sh design choice,
+  not a PolarSharp limitation.
+- Your application's only role is to show the link, then later check the status.
+
+If you're building the admin UI for your tenants, surface the deep link prominently
+during onboarding and keep showing it (perhaps with a "Setup incomplete" badge) until
+`RefreshPayoutStatusAsync` returns `PayoutSetupStatus.Ready`.
+
 ## Three-tier translation resolution
 
 Translation provider config resolves in priority order:

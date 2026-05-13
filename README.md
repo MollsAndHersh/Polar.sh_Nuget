@@ -512,6 +512,8 @@ The foundation. Everything else builds on top of this.
 - **Inventory auto-sync** — zero-boundary transitions PATCH `is_archived` on the variant's Polar product; routine stock decrements don't churn the API
 - **Admin audit log** via EF Core `SaveChangesInterceptor` — every mutation captured with before/after values, actor identity, timestamp, cross-tenant marker
 
+**About merchant bank-account setup (the "payouts" question):** PolarSharp **does not talk to Stripe**, ever. When a merchant signs up with Polar.sh, they connect a bank account by going to Polar.sh's own web dashboard and following Polar's setup flow there. Polar uses Stripe behind the scenes to move money to that bank, so the merchant may see Stripe-branded screens during the setup — that's normal, and it does not mean your application has any direct relationship with Stripe. PolarSharp's role is limited to (a) generating a clickable link to the right page on Polar's dashboard via `IPolarBusinessProfileService.BuildBankingSetupDeepLink()`, and (b) asking Polar's API whether the setup is complete via `RefreshPayoutStatusAsync()`. The merchant has to do the actual setup themselves in a browser — there is no PolarSharp API shortcut, because Polar's API has no endpoint for it.
+
 ### `PolarSharp.Reporting` + EF Core providers — Aggregate KPIs + Hierarchical Drilldown
 
 - **Aggregate / KPI reports** — `TransactionReport` (revenue, refunds, AOV, top products, time buckets), `SubscriptionReport` (MRR, ARR, churn, cohort retention), `OrderReport` (fulfillment latency), `ErrorAuditReport`, `CustomerReport`, `CustomerEntitlementsReport`
