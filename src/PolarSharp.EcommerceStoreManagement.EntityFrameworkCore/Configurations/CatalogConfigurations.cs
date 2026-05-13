@@ -170,16 +170,16 @@ internal sealed class AdminAuditLogConfiguration : IEntityTypeConfiguration<Admi
         b.Property(e => e.CrossTenantJustification).HasMaxLength(2048);
         b.Ignore(e => e.TenantGuid);   // computed property; not a column
         // JsonNode columns serialised by hand to/from string — EF can't map JsonNode directly.
+        // No explicit column type so EF picks provider-appropriate large-text storage:
+        // nvarchar(max) on SQL Server, TEXT on SQLite, text on PostgreSQL.
         b.Property(e => e.BeforeValues)
             .HasConversion(
                 v => v == null ? null : v.ToJsonString(),
-                v => v == null ? null : System.Text.Json.Nodes.JsonNode.Parse(v))
-            .HasColumnType("nvarchar(max)");
+                v => v == null ? null : System.Text.Json.Nodes.JsonNode.Parse(v));
         b.Property(e => e.AfterValues)
             .HasConversion(
                 v => v == null ? null : v.ToJsonString(),
-                v => v == null ? null : System.Text.Json.Nodes.JsonNode.Parse(v))
-            .HasColumnType("nvarchar(max)");
+                v => v == null ? null : System.Text.Json.Nodes.JsonNode.Parse(v));
         b.Property(e => e.ChangedFields)
             .HasConversion(
                 v => string.Join(',', v),

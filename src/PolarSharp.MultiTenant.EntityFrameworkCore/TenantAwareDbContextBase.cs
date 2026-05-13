@@ -124,16 +124,31 @@ public abstract class TenantAwareDbContextBase : DbContext
     private void ApplyFilter(ModelBuilder modelBuilder, IMutableEntityType entityType)
     {
         // Build expression: (e) => isAppMasterAdminCrossTenant || (e.TenantId == currentTenantId && (allowFakeData || !e.IsFakeData))
+        //
+        // CRITICAL: do NOT use Expression.Constant for any of _currentTenantId / _allowFakeData /
+        // _isAppMasterAdminCrossTenant — EF Core caches the model per DbContext type, so any
+        // constant-folded value gets baked in at first model build and subsequent DbContext
+        // instances (with different per-instance values) inherit the stale constant. Cross-tenant
+        // isolation then quietly breaks: every tenant sees the first-tenant's filter applied to
+        // their queries.
+        //
+        // Instead we reference the fields through `Expression.Field(Expression.Constant(this), ...)`,
+        // which captures `this` as a closure variable. EF Core's expression analyser detects the
+        // closure and re-parameterises the query per DbContext instance, so each tenant's filter
+        // uses that tenant's _currentTenantId value at query-execution time.
         var parameter = Expression.Parameter(entityType.ClrType, "e");
         var tenantIdProp = Expression.Property(parameter, nameof(ITenantOwned.TenantId));
         var isFakeProp = Expression.Property(parameter, nameof(IFakeDataAware.IsFakeData));
 
-        var tenantMatches = Expression.Equal(tenantIdProp, Expression.Constant(_currentTenantId, typeof(string)));
-        var notFakeOrAllowed = Expression.OrElse(
-            Expression.Constant(_allowFakeData),
-            Expression.Not(isFakeProp));
+        var contextRef = Expression.Constant(this, typeof(TenantAwareDbContextBase));
+        var currentTenantIdRef = Expression.Field(contextRef, nameof(_currentTenantId));
+        var allowFakeDataRef = Expression.Field(contextRef, nameof(_allowFakeData));
+        var crossTenantRef = Expression.Field(contextRef, nameof(_isAppMasterAdminCrossTenant));
+
+        var tenantMatches = Expression.Equal(tenantIdProp, currentTenantIdRef);
+        var notFakeOrAllowed = Expression.OrElse(allowFakeDataRef, Expression.Not(isFakeProp));
         var tenantBound = Expression.AndAlso(tenantMatches, notFakeOrAllowed);
-        var body = Expression.OrElse(Expression.Constant(_isAppMasterAdminCrossTenant), tenantBound);
+        var body = Expression.OrElse(crossTenantRef, tenantBound);
 
         var lambda = Expression.Lambda(body, parameter);
         modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
