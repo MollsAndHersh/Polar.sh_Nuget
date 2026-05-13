@@ -1,0 +1,14 @@
+.agentic/snapshots/before-git-20260513-101715/meta.json
+.agentic/snapshots/before-git-20260513-101715/staged.diff
+.agentic/snapshots/before-git-20260513-101715/status.txt
+.agentic/snapshots/before-git-20260513-101715/tracked.diff
+.agentic/snapshots/before-git-20260513-101715/untracked.txt
+.agentic/snapshots/before-git-20260513-101744/meta.json
+.agentic/snapshots/before-git-20260513-101744/staged.diff
+.agentic/snapshots/before-git-20260513-101744/status.txt
+.agentic/snapshots/before-git-20260513-101744/tracked.diff
+.agentic/snapshots/before-pull-20260513-101735/meta.json
+.agentic/snapshots/before-pull-20260513-101735/staged.diff
+.agentic/snapshots/before-pull-20260513-101735/status.txt
+.agentic/snapshots/before-pull-20260513-101735/tracked.diff
+.agentic/snapshots/before-pull-20260513-101735/untracked.txt

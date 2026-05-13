@@ -3,7 +3,7 @@
   <PropertyGroup>
     <IsLibrary>true</IsLibrary>
     <PackageId>PolarSharp.Webhooks</PackageId>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <Authors>Molls and Hersh, LLC</Authors>
     <Description>Webhook integration package for PolarSharp — HMAC verification, typed event handlers, toast notifications, and reconciliation for Polar.sh.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

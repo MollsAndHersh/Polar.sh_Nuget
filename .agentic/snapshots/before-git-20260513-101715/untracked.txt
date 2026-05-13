@@ -1,0 +1,4 @@
+.agentic/snapshots/before-git-20260513-101715/meta.json
+.agentic/snapshots/before-git-20260513-101715/staged.diff
+.agentic/snapshots/before-git-20260513-101715/status.txt
+.agentic/snapshots/before-git-20260513-101715/tracked.diff

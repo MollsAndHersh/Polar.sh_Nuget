@@ -48,7 +48,7 @@
       "_disableContribution": false,
       "_gitUrlPattern": "auto"
     },
-    "template": ["default"],
+    "template": ["default", "modern"],
     "postProcessors": []
   }
 }

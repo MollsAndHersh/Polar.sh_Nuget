@@ -133,6 +133,8 @@ jobs:
           dotnet pack src/PolarSharp.EcommerceStoreManagement.Translation.Anthropic -c Release --no-build -o artifacts/
           dotnet pack src/PolarSharp.EcommerceStoreManagement.Translation.OpenAI -c Release --no-build -o artifacts/
           dotnet pack src/PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.EcommerceStoreManagement.Translation.Gemini -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.EcommerceStoreManagement.Translation.Grok -c Release --no-build -o artifacts/
 
       - name: Pack PolarSharp.Reporting (+ EF providers)
         run: |

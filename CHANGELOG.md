@@ -6,6 +6,23 @@ and [Common Changelog](https://common-changelog.org) format.
 
 ## [Unreleased]
 
+## [1.2.1] — 2026-05-13
+
+Patch release. Fixes two release-time gaps discovered after v1.2.0 shipped:
+
+### Added
+
+- `PolarSharp.EcommerceStoreManagement.Translation.Gemini` (1.0.0) — pack step added to CI. The package was implemented in Phase 7 of the v1.2.0 cycle but the workflow's `dotnet pack` list omitted it, so it never published. First publication to GitHub Packages happens at v1.2.1.
+- `PolarSharp.EcommerceStoreManagement.Translation.Grok` (1.0.0) — same as Gemini above; first publication at v1.2.1.
+
+### Fixed
+
+- DocFX site navigation bar at https://mollsandhersh.github.io/Polar.sh_Nuget/ was empty (logo + search only). The classic template renders top-level `toc.yml` items in a sidebar that is hidden on the homepage's full-width layout, so the "Articles" and "API Reference" links were unreachable. Switched `docfx.json` to `"template": ["default", "modern"]`, which renders top-level items in the top navbar on every page.
+
+### Changed
+
+- `PolarSharp`, `PolarSharp.Webhooks`, `PolarSharp.MultiTenant`, `PolarSharp.Templates` version bump 1.2.0 → 1.2.1. No public API change vs 1.2.0; the bump exists solely to ship the CI + docs fixes through the tag-triggered publish job.
+
 ## [1.2.0] — 2026-05-13
 
 This is a major feature release adding **25 new packages** that extend PolarSharp from a Polar.sh SDK into a full multi-tenant SaaS ecosystem: SQL-backed tenant + identity stores, programmatic + wizard-style merchant onboarding, an end-to-end ecommerce store-management layer with AI translation, hierarchical reporting, bulk fake-data seeding, and optional KeyCloak SSO. The v1.1.0 packages are **additive-compatible** — existing consumer code continues to work; new capabilities are opt-in via package install.
