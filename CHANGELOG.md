@@ -78,7 +78,7 @@ Feature release. The v1.2.0 store-management surface gains six concrete operator
 
 - **Audit 1 (incomplete implementations):** clean. All `NotImplementedException` / stub patterns map to tracked v2.0 deferrals (TASK-V20-001..007) — Refunds API, License API, Organizations API, Reporting API, FakeData sync branches. No unintentional dropped work
 - **Audit 2 (test coverage):** 379+ green tests across 8 test projects. Identified 4 quick-win gaps (closed in this release) and 3 v2.0 deferrals (FakeDataSync concurrency, per-provider tenant isolation under live DBs, InventoryUpdater row-locking by provider)
-- **Audit 3 (documentation):** CS1591 build-error gate confirms 100% XML doc coverage on public surface. Seven v1.3.0 DocFX articles authored (refund-management, license-validation, business-profile, inventory, publisher, snapshot-service, advanced-reporting). README package count corrected from 31 → 30 (the historical 31-count came from a planning doc that included a `PolarSharp.Templates` package that never scaffolded into `src/`)
+- **Audit 3 (documentation):** CS1591 build-error gate confirms 100% XML doc coverage on public surface. Seven v1.3.0 DocFX articles authored (refund-management, license-validation, business-profile, inventory, publisher, snapshot-service, advanced-reporting). README package count verified at 31 (during the audit I briefly mis-corrected this to 30 after only scanning `src/`; `PolarSharp.Templates` lives at `templates/PolarSharp.Templates/` and is the 31st package — confirmed via the v1.3.0 CI publish log, which packed and pushed `PolarSharp.Templates.1.2.1.nupkg` alongside the 30 src-tree packages)
 
 ### Production-readiness analysis
 
