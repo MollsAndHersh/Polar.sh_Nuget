@@ -1,4 +1,5 @@
 using Finbuckle.MultiTenant.Abstractions;
+using PolarSharp.BaseEntities;
 
 namespace PolarSharp.MultiTenant.EntityFrameworkCore;
 
@@ -7,32 +8,26 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Persisted by <see cref="PolarTenantDbContext"/> in the tenant registry. Implements both
-/// Finbuckle's <see cref="ITenantInfo"/> contract (string-typed <see cref="Id"/> property,
-/// required by the Finbuckle store interface) and PolarSharp's GUID-first convention
-/// (<see cref="TenantId"/> property returns the parsed <see cref="System.Guid"/>).
+/// Inherits from <see cref="PolarTenantBase"/> so the entity carries Polar's wire-format
+/// tenant shape (Id, Name, Slug, Country, Email, Status, AccountId, PayoutAccountId,
+/// CreatedAt, ModifiedAt) AND adds Finbuckle's <see cref="ITenantInfo"/> contract
+/// (<see cref="Identifier"/>) plus PolarSharp-internal fields the host doesn't expose
+/// publicly (<see cref="PolarAccessToken"/>, <see cref="Server"/>, <see cref="WebhookEndpointId"/>,
+/// <see cref="WebhookSecret"/>).
 /// </para>
 /// <para>
 /// The <see cref="PolarAccessToken"/> field is treated as sensitive and is masked in all log
-/// output via <c>PolarSharp.Logging.RedactPii</c> (default on in Production).
+/// output via <c>PolarSharp.Logging.RedactPii</c> (default on in Production). Same for
+/// <see cref="WebhookSecret"/>.
 /// </para>
 /// </remarks>
-public sealed class PolarTenantInfoEntity : ITenantInfo
+public sealed record PolarTenantInfoEntity : PolarTenantBase, ITenantInfo
 {
-    /// <summary>Gets or sets the tenant's GUID identifier as a canonical string.</summary>
-    /// <value>A canonical Guid string (e.g. <c>"3fa85f64-5717-4562-b3fc-2c963f66afa6"</c>).</value>
-    /// <remarks>
-    /// Required by Finbuckle's <see cref="ITenantInfo"/> contract. PolarSharp generates GUID-formed
-    /// identifiers exclusively; the EF column type is <see cref="System.Guid"/> with a
-    /// string-conversion at the API boundary.
-    /// </remarks>
-    public string Id { get; set; } = string.Empty;
-
     /// <summary>Gets the tenant's identifier as a typed <see cref="System.Guid"/>.</summary>
     /// <value>
-    /// The parsed Guid from <see cref="Id"/>. Returns <see cref="System.Guid.Empty"/> when
-    /// <see cref="Id"/> is unset or malformed — ensure every persisted row carries a
-    /// well-formed Guid string.
+    /// The parsed Guid from <see cref="PolarTenantBase.Id"/>. Returns <see cref="System.Guid.Empty"/>
+    /// when the Id is unset or malformed — ensure every persisted row carries a well-formed
+    /// Guid string.
     /// </value>
     public Guid TenantId
         => Guid.TryParse(Id, out var g) ? g : Guid.Empty;
@@ -41,13 +36,13 @@ public sealed class PolarTenantInfoEntity : ITenantInfo
     /// Gets or sets the human-readable identifier Finbuckle uses to resolve the tenant from a
     /// header / route / hostname / claim.
     /// </summary>
-    /// <value>
-    /// A URL-safe slug (e.g. <c>"acme-corp"</c>). Must be unique per tenant registry.
-    /// </value>
+    /// <value>A URL-safe slug (e.g. <c>"acme-corp"</c>). Must be unique per tenant registry.</value>
+    /// <remarks>
+    /// Required by Finbuckle's <see cref="ITenantInfo"/> contract — distinct from Polar's
+    /// own <see cref="PolarTenantBase.Slug"/> field, though they're often the same string in
+    /// practice.
+    /// </remarks>
     public string Identifier { get; set; } = string.Empty;
-
-    /// <summary>Gets or sets the tenant's display name for admin UIs and audit log entries.</summary>
-    public string? Name { get; set; }
 
     /// <summary>Gets or sets the Polar.sh Organization Access Token used to authenticate this tenant's API calls.</summary>
     /// <value>
@@ -62,9 +57,6 @@ public sealed class PolarTenantInfoEntity : ITenantInfo
     /// <see cref="PolarServer.Custom"/>. Determines the base URL used for outbound API calls.
     /// </value>
     public PolarServer Server { get; set; } = PolarServer.Production;
-
-    /// <summary>Gets or sets the UTC timestamp the tenant was onboarded.</summary>
-    public DateTimeOffset OnboardedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>Gets or sets the Polar webhook endpoint identifier for this tenant (populated by onboarding).</summary>
     /// <value>The Polar-assigned webhook endpoint ID (e.g. <c>"webhook_endpoint_xxx"</c>), or <see langword="null"/> if webhooks are not yet configured.</value>

@@ -119,7 +119,19 @@ public sealed class EfMultiTenantStore : IMultiTenantStore<PolarTenantInfo>
         var entity = await _db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantInfo.Id).ConfigureAwait(false);
         if (entity is null) return false;
 
-        CopyTo(entity, tenantInfo);
+        // PolarTenantInfoEntity is a `record` with `init`-only properties inherited from
+        // PolarTenantBase, so we build a fresh entity with the new values and let EF Core
+        // copy them onto the tracked instance via SetValues (which uses internal property
+        // accessors that bypass the C# init-only restriction).
+        var updated = entity with
+        {
+            Identifier = tenantInfo.Identifier ?? entity.Identifier,
+            Name = tenantInfo.Name ?? entity.Name,
+            PolarAccessToken = tenantInfo.PolarAccessToken,
+            Server = tenantInfo.Server,
+        };
+        _db.Entry(entity).CurrentValues.SetValues(updated);
+
         await _db.SaveChangesAsync().ConfigureAwait(false);
         await _cache.InvalidateAsync(tenantInfo.Id!).ConfigureAwait(false);
         return true;
@@ -155,18 +167,15 @@ public sealed class EfMultiTenantStore : IMultiTenantStore<PolarTenantInfo>
 
     private static PolarTenantInfoEntity ToEntity(PolarTenantInfo info) => new()
     {
-        Id = info.Id,
-        Identifier = info.Identifier,
-        Name = info.Name,
+        // Inherited from PolarTenantBase (required init):
+        Id = info.Id ?? string.Empty,
+        Name = info.Name ?? info.Identifier ?? "",
+        Slug = info.Identifier ?? info.Id ?? "",
+        CreatedAt = DateTimeOffset.UtcNow,
+        // Entity-specific:
+        Identifier = info.Identifier ?? string.Empty,
         PolarAccessToken = info.PolarAccessToken,
         Server = info.Server,
     };
 
-    private static void CopyTo(PolarTenantInfoEntity entity, PolarTenantInfo info)
-    {
-        entity.Identifier = info.Identifier;
-        entity.Name = info.Name;
-        entity.PolarAccessToken = info.PolarAccessToken;
-        entity.Server = info.Server;
-    }
 }

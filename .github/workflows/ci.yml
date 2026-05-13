@@ -102,6 +102,9 @@ jobs:
         run: dotnet pack templates/PolarSharp.Templates -c Release --no-build -o artifacts/
 
       # ── v1.2.0 new packages — scaffolded in Phase 1; implementation lands in subsequent phases ──
+      - name: Pack PolarSharp.BaseEntities
+        run: dotnet pack src/PolarSharp.BaseEntities -c Release --no-build -o artifacts/
+
       - name: Pack PolarSharp.MultiTenant.EntityFrameworkCore (+ providers)
         run: |
           dotnet pack src/PolarSharp.MultiTenant.EntityFrameworkCore -c Release --no-build -o artifacts/

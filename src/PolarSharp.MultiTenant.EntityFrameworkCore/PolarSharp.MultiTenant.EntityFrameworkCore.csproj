@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PolarSharp.BaseEntities\PolarSharp.BaseEntities.csproj" />
     <ProjectReference Include="..\PolarSharp.MultiTenant\PolarSharp.MultiTenant.csproj" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />

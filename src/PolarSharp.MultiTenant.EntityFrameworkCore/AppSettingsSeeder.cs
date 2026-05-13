@@ -67,12 +67,13 @@ public sealed class AppSettingsSeeder : IHostedService
         {
             db.Tenants.Add(new PolarTenantInfoEntity
             {
-                Id = t.Id,
-                Identifier = t.Identifier,
-                Name = t.Name,
+                Id = t.Id ?? string.Empty,
+                Name = t.Name ?? t.Identifier ?? "",
+                Slug = t.Identifier ?? t.Id ?? "",
+                CreatedAt = DateTimeOffset.UtcNow,
+                Identifier = t.Identifier ?? string.Empty,
                 PolarAccessToken = t.PolarAccessToken,
                 Server = t.Server,
-                OnboardedAt = DateTimeOffset.UtcNow,
             });
         }
 

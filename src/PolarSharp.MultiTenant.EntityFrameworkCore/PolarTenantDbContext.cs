@@ -42,11 +42,23 @@ public class PolarTenantDbContext : DbContext
             e.Property(x => x.Id).HasMaxLength(64).IsRequired();
             e.HasIndex(x => x.Identifier).IsUnique();
             e.Property(x => x.Identifier).HasMaxLength(128).IsRequired();
-            e.Property(x => x.Name).HasMaxLength(256);
+            // Inherited from PolarTenantBase:
+            e.Property(x => x.Name).HasMaxLength(256).IsRequired();
+            e.Property(x => x.Slug).HasMaxLength(128).IsRequired();
+            e.Property(x => x.Country).HasMaxLength(2);
+            e.Property(x => x.Email).HasMaxLength(320);
+            e.Property(x => x.Website).HasMaxLength(2048);
+            e.Property(x => x.AvatarUrl).HasMaxLength(2048);
+            e.Property(x => x.DefaultPresentmentCurrency).HasMaxLength(3);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
+            e.Property(x => x.AccountId).HasMaxLength(128);
+            e.Property(x => x.PayoutAccountId).HasMaxLength(128);
+            // PolarSharp-internal:
             e.Property(x => x.PolarAccessToken).HasMaxLength(512).IsRequired();
             e.Property(x => x.WebhookEndpointId).HasMaxLength(128);
             e.Property(x => x.WebhookSecret).HasMaxLength(256);
             e.Property(x => x.Server).HasConversion<string>().HasMaxLength(32);
+            e.Ignore(x => x.TenantId);   // computed property — not a column
         });
     }
 }
