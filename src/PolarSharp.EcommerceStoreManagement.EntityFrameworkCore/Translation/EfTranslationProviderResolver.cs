@@ -1,41 +1,40 @@
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Entities;
 using PolarSharp.EcommerceStoreManagement.Translation;
 
 namespace PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Translation;
 
 /// <summary>
-/// Default <see cref="ITranslationProviderResolver"/> implementation that performs the
-/// documented 3-tier resolution against the catalog DbContext.
+/// Default <see cref="ITranslationProviderResolver"/> implementation. Performs the
+/// documented 3-tier resolution against an <see cref="ITenantTranslationConfigLookup"/>
+/// (typically EF-backed) for the per-tenant tier and
+/// <see cref="EcommerceTranslationMasterOptions"/> for the master tier.
 /// </summary>
 /// <remarks>
 /// Resolution order, first match wins:
 /// <list type="number">
-///   <item><description><b>Tier 1 — per-tenant:</b> if the current tenant's
-///     <see cref="TenantBusinessProfileEntity.TranslationProvider"/> is not
-///     <see cref="TranslationProvider.None"/> and an encrypted API key is present, decrypt
-///     it via Data Protection and resolve a matching <see cref="IPolarCatalogTranslatorFactory"/>.</description></item>
-///   <item><description><b>Tier 2 — master / SaaS-site:</b> fall back to
-///     <see cref="EcommerceTranslationMasterOptions"/> when the master has a configured
-///     provider + API key and a matching factory is registered.</description></item>
-///   <item><description><b>Tier 3 — disabled:</b> return <see langword="null"/>.
-///     Translation features gracefully no-op.</description></item>
+///   <item><description><b>Tier 1 — per-tenant:</b> the current tenant's stored config has a
+///     non-<see cref="TranslationProvider.None"/> provider, a present encrypted API key,
+///     a registered factory for the provider, and the key decrypts successfully.</description></item>
+///   <item><description><b>Tier 2 — master / SaaS-site:</b>
+///     <see cref="EcommerceTranslationMasterOptions"/> has a non-None provider, a non-empty
+///     API key, and a registered factory.</description></item>
+///   <item><description><b>Tier 3 — disabled:</b> nothing matches; the resolver returns
+///     <see langword="null"/> and translation features gracefully no-op.</description></item>
 /// </list>
-/// The DbContext's global query filter scopes the
-/// <see cref="TenantBusinessProfileEntity"/> read to the current tenant automatically — no
-/// explicit tenant id parameter is needed.
+/// Every fall-through reason emits a Debug or Warning log; plaintext API keys never appear
+/// in any log entry. Decryption failures fall through to the master tier quietly.
 /// </remarks>
 internal sealed class EfTranslationProviderResolver(
-    PolarCatalogDbContext db,
+    ITenantTranslationConfigLookup tenantLookup,
     IEnumerable<IPolarCatalogTranslatorFactory> factories,
     IDataProtectionProvider dataProtection,
     IOptionsMonitor<EcommerceTranslationMasterOptions> masterOptions,
     ILogger<EfTranslationProviderResolver> logger) : ITranslationProviderResolver
 {
-    private readonly PolarCatalogDbContext _db = db ?? throw new ArgumentNullException(nameof(db));
+    private readonly ITenantTranslationConfigLookup _tenantLookup =
+        tenantLookup ?? throw new ArgumentNullException(nameof(tenantLookup));
     private readonly IReadOnlyList<IPolarCatalogTranslatorFactory> _factories =
         (factories ?? throw new ArgumentNullException(nameof(factories))).ToList();
     private readonly IDataProtectionProvider _dataProtection =
@@ -58,38 +57,24 @@ internal sealed class EfTranslationProviderResolver(
 
     private async Task<IPolarCatalogTranslator?> TryResolvePerTenantAsync(CancellationToken ct)
     {
-        TenantBusinessProfileEntity? profile;
-        try
-        {
-            profile = await _db.Set<TenantBusinessProfileEntity>()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(ct)
-                .ConfigureAwait(false);
-        }
-        catch (InvalidOperationException ex)
-        {
-            // Most commonly: no current tenant in scope, so the global query filter cannot evaluate.
-            _logger.LogDebug(ex, "Translation resolver: per-tenant lookup skipped (no current tenant context).");
-            return null;
-        }
-
-        if (profile is null || profile.TranslationProvider == TranslationProvider.None)
+        var config = await _tenantLookup.GetAsync(ct).ConfigureAwait(false);
+        if (config is null || config.Provider == TranslationProvider.None)
             return null;
 
-        if (string.IsNullOrEmpty(profile.TranslationApiKeyEncrypted))
+        if (string.IsNullOrEmpty(config.EncryptedApiKey))
         {
             _logger.LogDebug(
                 "Translation resolver: tenant {TenantId} has provider {Provider} but no encrypted API key. Falling through to master.",
-                profile.TenantId, profile.TranslationProvider);
+                config.TenantId, config.Provider);
             return null;
         }
 
-        var factory = FindFactory(profile.TranslationProvider);
+        var factory = FindFactory(config.Provider);
         if (factory is null)
         {
             _logger.LogWarning(
                 "Translation resolver: tenant {TenantId} configured provider {Provider} but no IPolarCatalogTranslatorFactory is registered. Falling through to master.",
-                profile.TenantId, profile.TranslationProvider);
+                config.TenantId, config.Provider);
             return null;
         }
 
@@ -97,7 +82,7 @@ internal sealed class EfTranslationProviderResolver(
         try
         {
             var protector = _dataProtection.ForTranslationApiKey();
-            apiKey = protector.Unprotect(profile.TranslationApiKeyEncrypted);
+            apiKey = protector.Unprotect(config.EncryptedApiKey);
         }
         catch (Exception ex)
         {
@@ -106,11 +91,11 @@ internal sealed class EfTranslationProviderResolver(
             // see the warning log.
             _logger.LogWarning(ex,
                 "Translation resolver: tenant {TenantId} translation API key decryption failed. Falling through to master.",
-                profile.TenantId);
+                config.TenantId);
             return null;
         }
 
-        return factory.Create(apiKey, profile.TranslationModel, profile.TranslationEndpoint);
+        return factory.Create(apiKey, config.Model, config.Endpoint);
     }
 
     private IPolarCatalogTranslator? TryResolveMaster()

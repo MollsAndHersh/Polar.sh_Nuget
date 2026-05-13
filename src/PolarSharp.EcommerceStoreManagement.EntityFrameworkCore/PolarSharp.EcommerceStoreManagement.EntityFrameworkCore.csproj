@@ -24,4 +24,8 @@
     <ProjectReference Include="..\PolarSharp.MultiTenant.EntityFrameworkCore\PolarSharp.MultiTenant.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="PolarSharp.EcommerceStoreManagement.Tests" />
+  </ItemGroup>
+
 </Project>
