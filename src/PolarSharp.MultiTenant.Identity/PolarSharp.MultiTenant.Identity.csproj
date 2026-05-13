@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PolarSharp.MultiTenant.EntityFrameworkCore\PolarSharp.MultiTenant.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\PolarSharp.Onboarding\PolarSharp.Onboarding.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" />
   </ItemGroup>

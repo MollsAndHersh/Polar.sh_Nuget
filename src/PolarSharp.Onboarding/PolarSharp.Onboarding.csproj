@@ -21,6 +21,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PolarSharp\PolarSharp.csproj" />
+    <ProjectReference Include="..\PolarSharp.BaseEntities\PolarSharp.BaseEntities.csproj" />
+    <ProjectReference Include="..\PolarSharp.MultiTenant\PolarSharp.MultiTenant.csproj" />
+    <ProjectReference Include="..\PolarSharp.MultiTenant.EntityFrameworkCore\PolarSharp.MultiTenant.EntityFrameworkCore.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PolarSharp.Onboarding.Tests" />
   </ItemGroup>
 
 </Project>
