@@ -8,6 +8,31 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ── Polar sandbox token wiring (SITE-MASTER, NOT per-tenant) ────────────────
+// The site-master Polar OAT (the SaaS app's own credential, used for cross-cutting
+// operations — NOT for tenant-scoped operations) is loaded from the
+// POLAR_SANDBOX_TOKEN environment variable rather than hardcoded in
+// appsettings.json. Sources, in increasing priority:
+//
+//   1. appsettings.json -> "PolarSharp:AccessToken" (left empty in source control;
+//      placeholder only).
+//   2. dotnet user-secrets (Development env only) -> the
+//      <UserSecretsId>PolarTestApp-secrets</UserSecretsId> in the csproj. Set via
+//      `dotnet user-secrets set "PolarSharp:AccessToken" "polar_oat_..."`.
+//   3. POLAR_SANDBOX_TOKEN environment variable (this bridge). Loaded by direnv
+//      from .env locally; injected from the GitHub Actions secret in CI. This is
+//      the recommended path for both local dev (one secret in one place) and CI.
+//
+// Tenant tokens (PolarSharp:MultiTenant:Tenants[N].PolarAccessToken) are
+// intentionally a separate concern — each tenant has their own Polar org and
+// their own OAT, supplied per-tenant via host-specific config (database row,
+// per-tenant user-secret, etc.). This bridge does NOT touch those.
+var sandboxToken = Environment.GetEnvironmentVariable("POLAR_SANDBOX_TOKEN");
+if (!string.IsNullOrWhiteSpace(sandboxToken))
+{
+    builder.Configuration["PolarSharp:AccessToken"] = sandboxToken;
+}
+
 // Core infrastructure + multi-tenant (PolarSharp + PolarSharp.MultiTenant)
 builder.Services
     .AddPolarInfrastructure(builder.Configuration)
