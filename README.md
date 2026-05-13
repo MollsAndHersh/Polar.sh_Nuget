@@ -2,15 +2,70 @@
 
 > A .NET 10 Native AOT-compatible SDK for [Polar.sh](https://polar.sh) — the open-source Merchant of Record payment and monetization platform.
 
+[![CI](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/ci.yml/badge.svg)](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/ci.yml)
+[![Publish Docs](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/docs.yml/badge.svg)](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/docs.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-github.io-informational)](https://mollsandhersh.github.io/Polar.sh_Nuget/)
+[![Latest release](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=latest&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/releases)
+
+> **31 packages distributed via [GitHub Packages](https://github.com/mollsandhersh/Polar.sh_Nuget/packages).** See [Installing from GitHub Packages](#installing-from-github-packages) below. All packages release together under one repo tag — every version badge below reflects the latest tagged release.
+
+<details>
+<summary><strong>All 31 packages</strong> — click to expand version badges (each links to its GitHub Packages page)</summary>
+
+**Core (5)**
+
 [![PolarSharp](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp)
 [![PolarSharp.Webhooks](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Webhooks&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Webhooks)
 [![PolarSharp.MultiTenant](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant)
 [![PolarSharp.Templates](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Templates&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Templates)
-[![CI](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/ci.yml/badge.svg)](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Docs](https://img.shields.io/badge/docs-github.io-informational)](https://mollsandhersh.github.io/Polar.sh_Nuget/)
+[![PolarSharp.BaseEntities](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.BaseEntities&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.BaseEntities)
 
-> **Distributed via [GitHub Packages](https://github.com/mollsandhersh/Polar.sh_Nuget/packages).** See [Installing from GitHub Packages](#installing-from-github-packages) below.
+**Multi-tenant SQL store (4)**
+
+[![PolarSharp.MultiTenant.EntityFrameworkCore](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant.EntityFrameworkCore&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant.EntityFrameworkCore)
+[![PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer)
+[![PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite)
+[![PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL)
+
+**Identity + SSO (5)**
+
+[![PolarSharp.MultiTenant.Identity](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant.Identity&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant.Identity)
+[![PolarSharp.MultiTenant.Identity.SqlServer](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant.Identity.SqlServer&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant.Identity.SqlServer)
+[![PolarSharp.MultiTenant.Identity.Sqlite](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant.Identity.Sqlite&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant.Identity.Sqlite)
+[![PolarSharp.MultiTenant.Identity.PostgreSQL](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant.Identity.PostgreSQL&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant.Identity.PostgreSQL)
+[![PolarSharp.MultiTenant.Identity.KeyCloak](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.MultiTenant.Identity.KeyCloak&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.MultiTenant.Identity.KeyCloak)
+
+**Onboarding (1)**
+
+[![PolarSharp.Onboarding](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Onboarding&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Onboarding)
+
+**Ecommerce store management + AI translation (10)**
+
+[![PolarSharp.EcommerceStoreManagement](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.EcommerceStoreManagement&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.EcommerceStoreManagement)
+[![PolarSharp.EcommerceStoreManagement.EntityFrameworkCore](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.EcommerceStoreManagement.EntityFrameworkCore&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore)
+[![PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.SqlServer](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.SqlServer&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.SqlServer)
+[![PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Sqlite](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Sqlite&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Sqlite)
+[![PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.PostgreSQL](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.PostgreSQL&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.PostgreSQL)
+[![PolarSharp.EcommerceStoreManagement.Translation.Anthropic](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.EcommerceStoreManagement.Translation.Anthropic&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.EcommerceStoreManagement.Translation.Anthropic)
+[![PolarSharp.EcommerceStoreManagement.Translation.OpenAI](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.EcommerceStoreManagement.Translation.OpenAI&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.EcommerceStoreManagement.Translation.OpenAI)
+[![PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI)
+[![PolarSharp.EcommerceStoreManagement.Translation.Gemini](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.EcommerceStoreManagement.Translation.Gemini&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.EcommerceStoreManagement.Translation.Gemini)
+[![PolarSharp.EcommerceStoreManagement.Translation.Grok](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.EcommerceStoreManagement.Translation.Grok&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.EcommerceStoreManagement.Translation.Grok)
+
+**Reporting (5)**
+
+[![PolarSharp.Reporting](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Reporting&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Reporting)
+[![PolarSharp.Reporting.EntityFrameworkCore](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Reporting.EntityFrameworkCore&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Reporting.EntityFrameworkCore)
+[![PolarSharp.Reporting.EntityFrameworkCore.SqlServer](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Reporting.EntityFrameworkCore.SqlServer&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Reporting.EntityFrameworkCore.SqlServer)
+[![PolarSharp.Reporting.EntityFrameworkCore.Sqlite](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Reporting.EntityFrameworkCore.Sqlite&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Reporting.EntityFrameworkCore.Sqlite)
+[![PolarSharp.Reporting.EntityFrameworkCore.PostgreSQL](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.Reporting.EntityFrameworkCore.PostgreSQL&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.Reporting.EntityFrameworkCore.PostgreSQL)
+
+**Data seeding (1)**
+
+[![PolarSharp.DataSeeding](https://img.shields.io/github/v/tag/MollsAndHersh/Polar.sh_Nuget?label=PolarSharp.DataSeeding&color=blue&sort=semver)](https://github.com/MollsAndHersh/Polar.sh_Nuget/pkgs/nuget/PolarSharp.DataSeeding)
+
+</details>
 
 ---
 
