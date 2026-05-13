@@ -3,6 +3,8 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Publishing;
+using PolarSharp.EcommerceStoreManagement.Publishing;
 using PolarSharp.EcommerceStoreManagement.Services;
 
 namespace PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Services;
@@ -66,6 +68,10 @@ public static class CatalogServicesExtensions
         services.TryAddSingleton<ChannelReader<SkuStockChanged>>(sp => sp.GetRequiredService<Channel<SkuStockChanged>>().Reader);
         services.TryAddSingleton<ChannelWriter<SkuStockChanged>>(sp => sp.GetRequiredService<Channel<SkuStockChanged>>().Writer);
         services.TryAddSingleton<IInventoryEventNotifier, ChannelInventoryEventNotifier>();
+
+        // Publisher (v1.3.E) — HTTP boundary + orchestrator.
+        services.TryAddScoped<IPolarPublishingApi, PolarClientPublishingApi>();
+        services.AddScoped<IPolarCatalogPublisher, PolarCatalogPublisher>();
 
         // The service implementations.
         services.AddScoped<IRefundService, RefundService>();
