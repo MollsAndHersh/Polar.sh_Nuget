@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <WarningsAsErrors />
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PolarSharp.MultiTenant.EntityFrameworkCore\PolarSharp.MultiTenant.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer\PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite\PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL\PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL.csproj" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

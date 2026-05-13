@@ -88,6 +88,8 @@ One misbehaving tenant — hammering Polar with bad requests, tripping a circuit
 
 Zero reflection in hot paths. Source-generated JSON. Static event type lists (no `Assembly.GetTypes()`). Explicit `IValidateOptions<T>` instead of `ValidateDataAnnotations()`. CI gates `dotnet publish -p:PublishAot=true` with zero warnings on every PR. If you're deploying to Azure Container Apps, AWS Lambda, or anything else where cold-start time and binary size matter, PolarSharp won't be the thing that breaks your AOT build.
 
+> **Developer note — AOT publish with `PolarSharp.DataSeeding`:** the bundled `PolarTestApp` does **not** transitively reference `PolarSharp.DataSeeding`, so `dotnet publish -p:PublishAot=true` against the test app stays clean. The `Bogus` faker library used by `PolarSharp.DataSeeding` does some reflection internally — hosts who publish AOT with `PolarSharp.DataSeeding` installed may see reflection / trim warnings. Two supported mitigations: (1) suppress the warnings only in the host's csproj via `<TrimmerRootAssembly Include="Bogus" />`, or (2) gate the `AddPolarDataSeeding(...)` registration behind `#if DEBUG` so the package compiles out of the Production build entirely. `PolarSharp.DataSeeding` is a dev-time package — designed for sandbox / QA / demo environments, not production hot paths — so either approach is acceptable.
+
 ### Observability without a config tax
 
 ```csharp

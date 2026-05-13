@@ -3,7 +3,7 @@
   <PropertyGroup>
     <IsLibrary>true</IsLibrary>
     <PackageId>PolarSharp.MultiTenant</PackageId>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Authors>Molls and Hersh, LLC</Authors>
     <Description>Multi-tenant integration package for PolarSharp — per-tenant Polar.sh clients with Finbuckle.MultiTenant and full request isolation.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

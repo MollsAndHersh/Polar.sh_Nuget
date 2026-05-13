@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsLibrary>true</IsLibrary>
+    <PackageId>PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Sqlite</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Molls and Hersh, LLC</Authors>
+    <Description>SQLite provider for PolarSharp.EcommerceStoreManagement catalog persistence — per-tenant {tenantId}.db file isolation.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>polar;ecommerce;catalog;sqlite;efcore;file-isolation;aot</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Sqlite</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PolarSharp.EcommerceStoreManagement.EntityFrameworkCore\PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite\PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

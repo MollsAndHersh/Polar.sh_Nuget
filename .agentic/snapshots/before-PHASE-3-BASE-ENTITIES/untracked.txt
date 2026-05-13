@@ -1,0 +1,4 @@
+.agentic/snapshots/before-PHASE-3-BASE-ENTITIES/meta.json
+.agentic/snapshots/before-PHASE-3-BASE-ENTITIES/staged.diff
+.agentic/snapshots/before-PHASE-3-BASE-ENTITIES/status.txt
+.agentic/snapshots/before-PHASE-3-BASE-ENTITIES/tracked.diff

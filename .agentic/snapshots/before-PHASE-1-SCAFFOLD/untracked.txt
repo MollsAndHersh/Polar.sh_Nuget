@@ -1,0 +1,4 @@
+.agentic/snapshots/before-PHASE-1-SCAFFOLD/meta.json
+.agentic/snapshots/before-PHASE-1-SCAFFOLD/staged.diff
+.agentic/snapshots/before-PHASE-1-SCAFFOLD/status.txt
+.agentic/snapshots/before-PHASE-1-SCAFFOLD/tracked.diff

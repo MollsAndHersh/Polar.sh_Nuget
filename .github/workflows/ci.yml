@@ -101,6 +101,50 @@ jobs:
       - name: Pack PolarSharp.Templates
         run: dotnet pack templates/PolarSharp.Templates -c Release --no-build -o artifacts/
 
+      # ── v1.2.0 new packages — scaffolded in Phase 1; implementation lands in subsequent phases ──
+      - name: Pack PolarSharp.BaseEntities
+        run: dotnet pack src/PolarSharp.BaseEntities -c Release --no-build -o artifacts/
+
+      - name: Pack PolarSharp.MultiTenant.EntityFrameworkCore (+ providers)
+        run: |
+          dotnet pack src/PolarSharp.MultiTenant.EntityFrameworkCore -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL -c Release --no-build -o artifacts/
+
+      - name: Pack PolarSharp.MultiTenant.Identity (+ providers + KeyCloak)
+        run: |
+          dotnet pack src/PolarSharp.MultiTenant.Identity -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.MultiTenant.Identity.SqlServer -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.MultiTenant.Identity.Sqlite -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.MultiTenant.Identity.PostgreSQL -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.MultiTenant.Identity.KeyCloak -c Release --no-build -o artifacts/
+
+      - name: Pack PolarSharp.Onboarding
+        run: dotnet pack src/PolarSharp.Onboarding -c Release --no-build -o artifacts/
+
+      - name: Pack PolarSharp.EcommerceStoreManagement (+ EF providers + translation providers)
+        run: |
+          dotnet pack src/PolarSharp.EcommerceStoreManagement -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.SqlServer -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Sqlite -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.PostgreSQL -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.EcommerceStoreManagement.Translation.Anthropic -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.EcommerceStoreManagement.Translation.OpenAI -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI -c Release --no-build -o artifacts/
+
+      - name: Pack PolarSharp.Reporting (+ EF providers)
+        run: |
+          dotnet pack src/PolarSharp.Reporting -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.Reporting.EntityFrameworkCore -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.Reporting.EntityFrameworkCore.SqlServer -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.Reporting.EntityFrameworkCore.Sqlite -c Release --no-build -o artifacts/
+          dotnet pack src/PolarSharp.Reporting.EntityFrameworkCore.PostgreSQL -c Release --no-build -o artifacts/
+
+      - name: Pack PolarSharp.DataSeeding
+        run: dotnet pack src/PolarSharp.DataSeeding -c Release --no-build -o artifacts/
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:

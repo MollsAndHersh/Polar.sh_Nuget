@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsLibrary>true</IsLibrary>
+    <PackageId>PolarSharp.Onboarding</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Molls and Hersh, LLC</Authors>
+    <Description>Programmatic merchant onboarding for Polar.sh — OAuth-linking (user-consent flow) and fully programmatic provisioning (POST /v1/organizations + access tokens + webhook endpoints). Auto-provisions a TenantAdmin user when used with PolarSharp.MultiTenant.Identity.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>polar;onboarding;oauth;saas;sdk;aot</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>PolarSharp.Onboarding</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PolarSharp\PolarSharp.csproj" />
+    <ProjectReference Include="..\PolarSharp.BaseEntities\PolarSharp.BaseEntities.csproj" />
+    <ProjectReference Include="..\PolarSharp.MultiTenant\PolarSharp.MultiTenant.csproj" />
+    <ProjectReference Include="..\PolarSharp.MultiTenant.EntityFrameworkCore\PolarSharp.MultiTenant.EntityFrameworkCore.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PolarSharp.Onboarding.Tests" />
+  </ItemGroup>
+
+</Project>

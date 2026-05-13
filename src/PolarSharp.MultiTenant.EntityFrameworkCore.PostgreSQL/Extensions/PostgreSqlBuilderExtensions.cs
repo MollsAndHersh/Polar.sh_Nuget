@@ -1,0 +1,58 @@
+using Finbuckle.MultiTenant.Abstractions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using PolarSharp;
+using PolarSharp.MultiTenant.EntityFrameworkCore.Extensions;
+
+namespace PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL;
+
+/// <summary>PostgreSQL-specific registration extensions for the PolarSharp tenant store.</summary>
+public static class PostgreSqlBuilderExtensions
+{
+    /// <summary>
+    /// Registers a PostgreSQL-backed EF Core tenant store, replacing the in-memory tenant
+    /// registry that <c>AddPolarMultiTenant()</c> wires up by default.
+    /// </summary>
+    /// <param name="builder">The PolarSharp infrastructure builder.</param>
+    /// <param name="connectionString">The PostgreSQL connection string.</param>
+    /// <param name="seedFromAppSettings">
+    /// When <see langword="true"/> and the tenants table is empty on first startup, copies
+    /// every <c>PolarSharp:MultiTenant:Tenants[*]</c> entry from <c>appsettings.json</c>.
+    /// </param>
+    /// <returns>The same <see cref="PolarInfrastructureBuilder"/> for chaining.</returns>
+    /// <example>
+    /// <code>
+    /// builder.Services
+    ///     .AddPolarInfrastructure(builder.Configuration)
+    ///     .AddPolarMultiTenant()
+    ///     .UsePostgreSql("Host=...;Database=polar_tenants;Username=...;Password=...");
+    /// </code>
+    /// </example>
+    public static PolarInfrastructureBuilder UsePostgreSql(
+        this PolarInfrastructureBuilder builder,
+        string connectionString,
+        bool seedFromAppSettings = false)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentException.ThrowIfNullOrEmpty(connectionString);
+
+        EfTenantStoreBuilderExtensions.AddCoreServices(builder.Services, builder.Configuration);
+
+        builder.Services.AddDbContext<PolarTenantDbContext>(opts =>
+            opts.UseNpgsql(connectionString, npg =>
+                npg.MigrationsAssembly(typeof(PostgreSqlBuilderExtensions).Assembly.GetName().Name)));
+        builder.Services.AddScoped<IMultiTenantStore<PolarTenantInfo>, EfMultiTenantStore>();
+
+        builder.Services.AddHealthChecks()
+            .AddDbContextCheck<PolarTenantDbContext>(
+                name: "polar-tenant-sql",
+                tags: ["polar-sql", "polar-tenant"]);
+
+        if (seedFromAppSettings)
+        {
+            builder.Services.AddHostedService<AppSettingsSeeder>();
+        }
+
+        return builder;
+    }
+}
