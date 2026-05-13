@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Reading;
+using PolarSharp.EcommerceStoreManagement.Reading;
 using PolarSharp.EcommerceStoreManagement.Translation;
 
 namespace PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Translation;
@@ -42,10 +45,18 @@ public static class TranslationServicesExtensions
 
         services.Configure<EcommerceTranslationMasterOptions>(
             configuration.GetSection(EcommerceTranslationMasterOptions.SectionName));
+        services.Configure<TranslationCacheOptions>(
+            configuration.GetSection(TranslationCacheOptions.SectionName));
 
         services.AddDataProtection();
+        services.AddMemoryCache();
+        services.TryAddSingleton<TimeProvider>(_ => TimeProvider.System);
+
         services.AddScoped<ITenantTranslationConfigLookup, EfTenantTranslationConfigLookup>();
         services.AddScoped<ITranslationProviderResolver, EfTranslationProviderResolver>();
+        services.AddScoped<ITranslationRepository, EfTranslationRepository>();
+        services.AddScoped<IPolarCatalogReader, EfPolarCatalogReader>();
+        services.AddSingleton<IPolarCatalogTranslationCache, MemoryPolarCatalogTranslationCache>();
         return services;
     }
 }
