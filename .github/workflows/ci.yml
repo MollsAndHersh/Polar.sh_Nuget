@@ -20,9 +20,9 @@ jobs:
     name: Build, Test & AOT
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.x'
 
@@ -54,9 +54,9 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [build-test]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.x'
 
@@ -77,9 +77,9 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [build-test]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.x'
 
@@ -148,7 +148,7 @@ jobs:
         run: dotnet pack src/PolarSharp.DataSeeding -c Release --no-build -o artifacts/
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: nuget-packages
           path: artifacts/*.nupkg
