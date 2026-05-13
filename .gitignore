@@ -21,6 +21,11 @@ docs/doxygen/
 # Claude Code local settings (machine-specific, not for source control)
 .claude/
 
+# Local environment variables (loaded by direnv via .envrc; contains GH_TOKEN and any other per-developer secrets — NEVER commit)
+.env
+.env.*
+!.env.example
+
 # IDE
 .vs/
 .vscode/
