@@ -2,6 +2,8 @@
 
 > A .NET 10 Native AOT-compatible SDK for [Polar.sh](https://polar.sh) — the open-source Merchant of Record payment and monetization platform.
 
+> **v1.2.0+** — what started as a Polar.sh SDK has grown into a full multi-tenant SaaS toolkit. **31 packages** cover everything from the raw API client to programmatic merchant onboarding, SQL-backed tenant + identity stores with row-level security, a local catalog with AI-translated product copy, hierarchical reporting, KeyCloak SSO, and bulk fake-data seeding. Pick the pieces you need; the v1.1.0 core SDK keeps working unchanged for hosts that don't.
+
 [![CI](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/ci.yml/badge.svg)](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/ci.yml)
 [![Publish Docs](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/docs.yml/badge.svg)](https://github.com/MollsAndHersh/Polar.sh_Nuget/actions/workflows/docs.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -81,14 +83,18 @@ So you do what .NET developers do: you write it yourself. An `HttpClient`. Some 
 
 ## What You Get
 
-Three focused NuGet packages that cover every operational concern a serious .NET application needs when integrating with Polar:
+**31 NuGet packages**, every one of them AOT-safe and ZH-style-compliant, grouped into seven capability areas. Install the ones you need; the rest stay out of your dependency graph.
 
-| Package | What it does |
-|---|---|
-| `PolarSharp` | Full Polar.sh API client — 25+ resource areas, enterprise resilience, observability, AOT |
-| `PolarSharp.Webhooks` | HMAC-verified event handling, toast notifications, background queues, reconciliation |
-| `PolarSharp.MultiTenant` | Per-tenant client isolation with independent circuit breakers and connection pools |
-| `PolarSharp.Templates` | `dotnet new` template pack — scaffold any webhook handler in one command |
+| Capability area | Packages | What it does |
+|---|---|---|
+| **Core SDK + webhooks + client isolation** | `PolarSharp`, `PolarSharp.Webhooks`, `PolarSharp.MultiTenant`, `PolarSharp.Templates` | The v1.1.0 origin story. Full Polar.sh API client, HMAC-verified event handling, per-tenant `HttpClient` isolation with independent circuit breakers, `dotnet new` handler scaffolds. |
+| **Universal domain model** | `PolarSharp.BaseEntities` | 15 abstract record bases that mirror Polar's webhook wire format byte-for-byte (Order, Customer, Product, Subscription, etc.) + 6 host-additive bases (Cart, Category, Department, Inventory, Sale). Inherit them in your own types and webhook payloads stop needing translation. |
+| **SQL-backed tenant store** | `PolarSharp.MultiTenant.EntityFrameworkCore` + `.SqlServer` / `.Sqlite` / `.PostgreSQL` | When `appsettings.json` isn't enough. SQL Server + PostgreSQL get row-level security with an AppMasterAdmin bypass; SQLite gets one `.db` file per tenant for physical isolation. EF Core query filters + RLS = defense in depth. |
+| **Identity + SSO** | `PolarSharp.MultiTenant.Identity` + `.SqlServer` / `.Sqlite` / `.PostgreSQL` + `.KeyCloak` | ASP.NET Core IdentityFramework with Guid IDs, M:N user↔tenant memberships, a site-level `AppMasterAdmin` tier orthogonal to tenant scope, five-layer cross-tenant safeguards, optional KeyCloak SSO via OIDC. |
+| **Tenant onboarding** | `PolarSharp.Onboarding` | Single-call programmatic API (POST `/v1/organizations/` + OAT + webhook endpoint) **and** a resumable wizard with persistent sessions for interactive UI flows. Encrypts in-flight translation API keys at rest. Auto-provisions a TenantAdmin on completion. |
+| **Local catalog + AI translation** | `PolarSharp.EcommerceStoreManagement` (+ EF Core + 3 providers) + `.Translation.Anthropic` / `.OpenAI` / `.AzureOpenAI` / `.Gemini` / `.Grok` | Author products, variants, categories, tier groups, discounts, and checkout links locally; publish to Polar idempotently with variant + tier expansion. Three-tier translation provider resolution (per-tenant BYOK → master → disabled). Refund service, license validator, inventory sync, admin audit log. |
+| **Reporting** | `PolarSharp.Reporting` (+ EF Core + 3 providers) | Aggregate KPI reports (revenue, MRR, churn, fulfillment latency) **plus** lazy three-level hierarchical drilldown — Customers → Orders → Order details. Pre-aggregated columns keep a 10k-customer top-level grid loading in <100ms. Optional snapshot service mirrors Polar to local SQL on a schedule. |
+| **Fake data for sandbox / QA** | `PolarSharp.DataSeeding` | Bogus-backed bulk generators at Demo / QA / Stress scales. Every fake record is tagged `IsFakeData=true` and filtered by a global EF query predicate; flip a per-tenant toggle to sync fake data to/from Polar's sandbox. |
 
 ---
 
@@ -176,21 +182,47 @@ PolarSharp is distributed via [GitHub Packages](https://github.com/mollsandhersh
 </configuration>
 ```
 
-The `YOUR_GITHUB_PAT` is a [GitHub Personal Access Token](https://github.com/settings/tokens) with the `read:packages` scope — a read-only token is sufficient and safe to commit to CI secrets. Then install the packages:
+The `YOUR_GITHUB_PAT` is a [GitHub Personal Access Token](https://github.com/settings/tokens) with the `read:packages` scope — a read-only token is sufficient and safe to commit to CI secrets. Then install the packages you need.
+
+**Core SDK** (the only required package):
 
 ```bash
-# Core SDK — required
 dotnet add package PolarSharp
-
-# Webhook handling, toast notifications, background queues, reconciliation — optional
-dotnet add package PolarSharp.Webhooks
-
-# Per-tenant client isolation with Finbuckle.MultiTenant — optional
-dotnet add package PolarSharp.MultiTenant
-
-# dotnet new templates for scaffolding webhook handlers — optional
-dotnet new install PolarSharp.Templates
 ```
+
+**Common opt-ins** for any host that handles webhooks or runs more than one tenant:
+
+```bash
+dotnet add package PolarSharp.Webhooks      # HMAC verification, toast notifications, background queues, reconciliation
+dotnet add package PolarSharp.MultiTenant   # per-tenant HttpClient isolation with Finbuckle
+dotnet new install PolarSharp.Templates     # dotnet new templates for scaffolding webhook handlers
+dotnet add package PolarSharp.BaseEntities  # universal domain bases — Order, Customer, Product, etc.
+```
+
+**SQL-backed tenant + identity stores** (pick the provider that matches your DB):
+
+```bash
+dotnet add package PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer       # or .Sqlite / .PostgreSQL
+dotnet add package PolarSharp.MultiTenant.Identity.SqlServer                  # or .Sqlite / .PostgreSQL
+dotnet add package PolarSharp.MultiTenant.Identity.KeyCloak                   # optional OIDC SSO add-on
+```
+
+**Tenant onboarding and local catalog**:
+
+```bash
+dotnet add package PolarSharp.Onboarding
+dotnet add package PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.SqlServer    # or .Sqlite / .PostgreSQL
+dotnet add package PolarSharp.EcommerceStoreManagement.Translation.Anthropic            # or .OpenAI / .AzureOpenAI / .Gemini / .Grok
+```
+
+**Reporting and data seeding**:
+
+```bash
+dotnet add package PolarSharp.Reporting.EntityFrameworkCore.SqlServer    # or .Sqlite / .PostgreSQL
+dotnet add package PolarSharp.DataSeeding                                # dev-time only; see AOT note below
+```
+
+The full list of 31 packages is in the badge block at the top of this README. Every package depends transitively on the ones it needs — installing a provider package brings in its EF Core base and PolarSharp itself automatically.
 
 ### Minimum configuration
 
@@ -225,6 +257,8 @@ app.UsePolarInfrastructure();
 ```
 
 ### Full configuration reference
+
+> **For the v1.2.0+ packages** (Identity, Onboarding, EcommerceStoreManagement, Reporting, DataSeeding, KeyCloak, SQL tenant store, tenant cache, translation cache), see the [Configuration article](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/configuration.html) — every setting is documented there with valid values, defaults, and per-module `IValidateOptions<>` enforcement rules. The snippet below covers the v1.1.0 core sections (mode, access token, resilience, connection pool, webhooks, multi-tenant strategy).
 
 ```json
 {
@@ -366,10 +400,18 @@ The site covers:
 |---|---|
 | [Getting Started](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/getting-started.html) | Full annotated `Program.cs` and first API call |
 | [Local Development Setup](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/local-development.html) | Sandbox token, user-secrets, ngrok tunnel, webhook testing |
-| [Configuration](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/configuration.html) | Every `appsettings.json` field with valid values and defaults |
+| [Configuration](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/configuration.html) | Every `appsettings.json` field across all 31 packages with valid values and defaults |
 | [Webhooks](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/webhooks.html) | HMAC verification, event types, handler registration |
 | [Webhook Handlers](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/webhook-handlers.html) | `PolarWebhookHandlerBase<T>`, background queues, idempotency |
+| [Webhook Event Reference](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/webhook-event-reference.html) | Every Polar event type, payload shape, and recommended handler pattern |
 | [Multi-Tenancy](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/multi-tenancy.html) | Finbuckle strategies, per-tenant bulkhead isolation |
+| [Universal Domain Model (BaseEntities)](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/base-entities.html) | The 15 + 6 abstract record bases and how host inheritance eliminates webhook mapping |
+| [Identity and Authorization](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/identity-and-authorization.html) | 5-role RBAC + 22-permission ABAC, AppMasterAdmin tier, 5-layer cross-tenant safeguards |
+| [Tenant Onboarding](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/onboarding.html) | Programmatic single-call API + resumable wizard with conditional next-steps |
+| [Ecommerce Store Management](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/ecommerce-catalog.html) | Local catalog with variants + tiers, 3-tier translation, idempotent publish to Polar |
+| [Reporting](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/reporting.html) | Aggregate KPI reports + hierarchical drilldown for Telerik/MudBlazor grids |
+| [EF Core Migrations](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/migrations.html) | 12 migration sets, `PolarMigrationRunner<TContext>`, production checklist, CI verification gate |
+| [Data Seeding](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/data-seeding.html) | Bogus generators, scale presets, `IsFakeData` toggle, Polar sandbox sync |
 | [Toast Notifications](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/toast-notifications.html) | `IPolarToastChannel`, Blazor/SignalR/SSE integration, lazy localization |
 | [API Versioning](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/api-versioning.html) | Date-pinned headers, mismatch detection, strictness modes |
 | [Security](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/security.html) | Webhook hardening checklist, IP allowlist, token rotation, anomaly detection |
@@ -378,7 +420,7 @@ The site covers:
 | [Test vs Live Mode](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/test-vs-live-mode.html) | Mode banner, token-prefix checks, switching safely |
 | [NuGet Deployment](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/nuget-deployment.html) | Publishing to NuGet.org, GitHub Packages, release tagging |
 | [Localization](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/localization.html) | `IPolarLocalizer`, built-in `en-US`/`es-MX`, adding new languages |
-| [API Reference](https://mollsandhersh.github.io/Polar.sh_Nuget/api/) | Full XML-documented API reference for all three packages |
+| [API Reference](https://mollsandhersh.github.io/Polar.sh_Nuget/api/) | Full XML-documented API reference for every public type across all 31 packages |
 
 ---
 
@@ -419,6 +461,75 @@ The foundation. Everything else builds on top of this.
 - **Race-free initialization** via `LazyConcurrentDictionary` — factory runs exactly once per tenant under any concurrency
 - **Finbuckle.MultiTenant integration** — Header, Route, Hostname, or Claim resolution; configured entirely from `appsettings.json`
 - **Graceful shutdown** — all per-tenant clients disposed in parallel on `ApplicationStopping`
+
+### `PolarSharp.BaseEntities` — Universal Domain Model
+
+- **15 Polar-native abstract record bases** — `PolarOrderBase`, `PolarCustomerBase`, `PolarProductBase`, `PolarSubscriptionBase`, etc. — property names and types mirror Polar's webhook wire format **byte-for-byte**
+- **6 host-additive bases** — `PolarShoppingCartBase`, `PolarCartLineItemBase`, `PolarCategoryBase`, `PolarDepartmentBase`, `PolarInventoryRecordBase`, `PolarSaleBase` — concepts Polar doesn't model that every storefront needs
+- **10 wire-format enums** — `PolarOrderStatus`, `PolarSubscriptionStatus`, `PolarRefundReason`, etc. — `[JsonStringEnumConverter]` lock to Polar's exact wire strings
+- **Zero external dependencies** — sits at the bottom of every other PolarSharp package's dep tree; safe to inherit in host code without dragging in EF Core, ASP.NET Core, or anything else
+- **`abstract record` with `required init`** — immutable, AOT-safe, supports `with`-expressions, allows inheritance
+- **Webhook payloads inherit the bases** — `WebhookOrderData : PolarOrderBase` ships in v1.2.0+; host types written against `PolarOrderBase` accept webhook payloads with zero translation
+
+### `PolarSharp.MultiTenant.EntityFrameworkCore` + provider packages — SQL-backed Tenant Store
+
+- **`appsettings.json` path stays unchanged** — these packages are 100% opt-in; v1.1.0 hosts don't pay the EF Core cost unless they install
+- **SQL Server + PostgreSQL**: shared DB with EF Core global query filters **AND** database-level Row-Level Security policies (`SECURITY POLICY` / `CREATE POLICY`) for defense-in-depth — a raw-SQL bypass of EF can't leak across tenants
+- **SQLite**: one `.db` file per tenant for physical filesystem isolation; shared `__tenants.db` only for bootstrap
+- **`IPolarTenantCache`** — Memory + Distributed implementations (wraps `IDistributedCache` for Redis/etc.); invalidated on every tenant write
+- **Auto-registered EF Core health checks** with tag `polar-sql` — failures surface in `/health`
+- **`PolarMigrationRunner<TContext>` hosted service** — idempotent migration apply on startup; refuses to silently `EnsureCreated` an unversioned schema in Production
+
+### `PolarSharp.MultiTenant.Identity` + provider packages + KeyCloak — Identity, RBAC, ABAC, SSO
+
+- **ASP.NET Core IdentityFramework**, not bespoke auth — `PolarApplicationUser : IdentityUser<Guid>`, `PolarApplicationRole : IdentityRole<Guid>`
+- **M:N user↔tenant** via `PolarUserTenantMembership` — one identity, multi-tenant access, distinct role per membership
+- **Two role tiers**: SITE-LEVEL `AppMasterAdmin` (SaaS staff with explicit `[AllowCrossTenant]` opt-in) and TENANT-LEVEL (`TenantAdmin`, `TenantUser`, `ReadOnly`, `Auditor`)
+- **22-permission `PolarPermission` enum** with `[RequirePolarPermission(...)]` tenant-scoped attribute, `[RequireAppMasterAdmin]` site-level attribute, `[AllowCrossTenant]` cross-tenant opt-in
+- **Five-layer cross-tenant safeguards**: EF query filter + database RLS bypass-on-opt-in + authorization attribute + self-elevation prevention + dual audit log (tenant + platform)
+- **TenantAdmin invariant** — every tenant has ≥1 active `TenantAdmin` membership; startup `IHostedService` validates; bootstrap of first AppMasterAdmin via config + critical-logged reset token
+- **Optional `.KeyCloak` package** — wraps `Microsoft.AspNetCore.Authentication.OpenIdConnect`; realm-role → PolarSharp-role mapping; tenant_id claim propagation; idempotent claims transformation
+
+### `PolarSharp.Onboarding` — Programmatic + Wizard Merchant Onboarding
+
+- **Single-call programmatic API** — `OnboardProgrammaticallyAsync` POSTs `/v1/organizations/` + creates an OAT + registers the webhook endpoint; returns one `OnboardedTenantResult` carrying everything the host needs to start serving the tenant
+- **OAuth path** for hosts that prefer user-consent — `BuildAuthorizeUrl` + `CompleteOAuthOnboardingAsync` round-trip
+- **Resumable wizard** — `IOnboardingWizard` exposes step-by-step methods with persistent `OnboardingSession` rows (default 7-day TTL); browsers refreshing, multi-day onboarding, and "I'll finish this tomorrow" all just work
+- **Conditional next-steps** — `ProductTypes.RequiresMultiLanguage=false` skips the translation step entirely; no irrelevant questions
+- **Encrypts in-flight translation API keys** at rest via ASP.NET Core Data Protection — plaintext keys never persist to the session JSON or audit log
+- **Auto-provisions a TenantAdmin** on completion via the Identity package's M:N membership table
+- **`OnboardingSessionExpirationCleaner` `IHostedService`** — daily prune of stale sessions
+
+### `PolarSharp.EcommerceStoreManagement` + EF Core + Translation providers — Local Catalog, Publish to Polar, AI-Translated Copy
+
+- **Local authoring with idempotent publish** — products, variants (parent + child variants expand to N Polar products on publish), tier groups (Basic/Advanced/Ultimate with cumulative benefit bundles), categories (M:N), discounts, checkout links, business profile
+- **Five typed cloning services** — `IProductCloningService`, `ICategoryCloningService`, `IBenefitCloningService`, `IDiscountCloningService`, `ICheckoutLinkCloningService` — all with built-in duplicate prevention (auto-suffixed names, null discount codes, Polar-state reset to Draft)
+- **Three-tier translation provider resolution** — per-tenant BYOK (encrypted at rest) → master/SaaS-site config → gracefully disabled
+- **Five translation provider packages** — Anthropic, OpenAI, Azure OpenAI, Google Gemini, xAI Grok; each via raw `HttpClient` + JSON, no third-party SDK bulk
+- **`catalog_translations` table** — single normalized i18n table covering products/variants/categories/departments/sales/benefits with master-language fallback per field; warm-on-read cache pre-loads translations for predictable cache hits
+- **Refund service** wraps Polar `/v1/refunds/` for full + partial refunds with reason codes and audit-logged actor identity
+- **`ILicenseKeyValidator`** with short-window caching, grace-period support, and `[RequireValidLicense]` MVC filter
+- **Inventory auto-sync** — zero-boundary transitions PATCH `is_archived` on the variant's Polar product; routine stock decrements don't churn the API
+- **Admin audit log** via EF Core `SaveChangesInterceptor` — every mutation captured with before/after values, actor identity, timestamp, cross-tenant marker
+
+### `PolarSharp.Reporting` + EF Core providers — Aggregate KPIs + Hierarchical Drilldown
+
+- **Aggregate / KPI reports** — `TransactionReport` (revenue, refunds, AOV, top products, time buckets), `SubscriptionReport` (MRR, ARR, churn, cohort retention), `OrderReport` (fulfillment latency), `ErrorAuditReport`, `CustomerReport`, `CustomerEntitlementsReport`
+- **Hierarchical drilldown** — three lazy methods (`ListCustomersAsync` → `ListOrdersForCustomerAsync` → `GetOrderDrilldownAsync`) designed for hierarchical Telerik / MudBlazor / Blazor grids where the operator opens rows on demand
+- **Pre-aggregated snapshot columns** — `OrderCount`, `LifetimeValue`, `LineItemCount`, `RefundedAmount` indexed on the snapshot tables; top-level customer grid loads in <100ms even at 10k customers
+- **JSON-first** — every report record `[JsonSerializable]` in source-gen context; client exposes both typed and `*AsJsonAsync()` variants plus a streaming `WriteReportAsJsonAsync(Stream)` for very large payloads
+- **Optional snapshot service** — `IHostedService` mirrors `/v1/events/` + `/v1/orders/` + `/v1/subscriptions/` + `/v1/customers/` into local SQL on a schedule; reports query local cache when present, fall back to Polar API otherwise
+- **Tenant-scope-aware** — same Finbuckle resolution as webhooks in HTTP requests; bounded `Parallel.ForEachAsync` over all tenants from the tenant store in the background
+
+### `PolarSharp.DataSeeding` — Bulk Fake Data for Sandbox / QA / Demo
+
+- **Six Bogus-backed generators** — Product, Category, Department, LicenseKeysBenefit, Discount, CheckoutLink — each producing base-typed records (`PolarProductBase`-shaped, etc.)
+- **Three scale presets** — Demo (10s of records), QA (100s), Stress (10000s) — composable via `SeedFullCatalogAsync`
+- **Deterministic seeds** for CI reproducibility — same `randomSeed` → same output across runs
+- **`IsFakeData=true`** on every record via the `IFakeDataAware` interface; a dual EF Core global query filter hides fake data from every query/report/publish when the per-tenant `AllowFakeData` toggle is OFF
+- **`FakeDataToggleChanged`** domain event + `FakeDataSyncService` `IHostedService` — flipping the toggle OFF↔ON syncs fake data to/from Polar's sandbox automatically
+- **`Metadata["polar_sharp_is_fake_data"]="true"`** on every published fake record so the snapshot ingester preserves the fake-data marker end-to-end
+- **Dev-time package** — see the AOT-publish note in [Features That Actually Matter](#features-that-actually-matter) above; gate behind `#if DEBUG` or suppress trim warnings via `<TrimmerRootAssembly>`
 
 ---
 
