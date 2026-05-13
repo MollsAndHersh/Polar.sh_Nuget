@@ -28,5 +28,7 @@
   href: security.md
 - name: Performance Tuning
   href: performance-tuning.md
+- name: Data Seeding
+  href: data-seeding.md
 - name: Disclaimer
   href: disclaimer.md

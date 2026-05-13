@@ -28,6 +28,28 @@ When `TenantBusinessProfile.AllowFakeData=false`, every read query, report, and 
 
 See `docs/articles/data-seeding.md` on the [GitHub Pages site](https://mollsandhersh.github.io/Polar.sh_Nuget/).
 
+## Developer note: AOT publish
+
+The bundled `PolarTestApp` does **not** transitively reference `PolarSharp.DataSeeding`, so `dotnet publish -p:PublishAot=true` against the test app stays clean. The `Bogus` faker library uses some reflection internally — hosts who publish AOT with `PolarSharp.DataSeeding` installed may see reflection / trim warnings. Two supported mitigations:
+
+1. Suppress the warnings only in the host's csproj:
+
+   ```xml
+   <ItemGroup>
+     <TrimmerRootAssembly Include="Bogus" />
+   </ItemGroup>
+   ```
+
+2. Gate the `AddPolarDataSeeding(...)` registration behind `#if DEBUG` so the package compiles out of the Production build entirely:
+
+   ```csharp
+   #if DEBUG
+   builder.Services.AddPolarDataSeeding(builder.Configuration);
+   #endif
+   ```
+
+`PolarSharp.DataSeeding` is a dev-time package — designed for sandbox / QA / demo environments, not production hot paths — so either approach is acceptable.
+
 ## License
 
 MIT.

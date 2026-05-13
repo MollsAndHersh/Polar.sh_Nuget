@@ -15,6 +15,21 @@ public static class DataSeedingExtensions
     /// <see cref="ISeedSink"/>. Hosts override the sink registration to wire persistence to
     /// their catalog DbContext.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Developer note (AOT publish):</strong> the bundled <c>PolarTestApp</c> does
+    /// NOT transitively reference <c>PolarSharp.DataSeeding</c>, so <c>dotnet publish
+    /// -p:PublishAot=true</c> against the test app stays clean. The <c>Bogus</c> faker
+    /// library uses some reflection internally — hosts who publish AOT with
+    /// <c>PolarSharp.DataSeeding</c> installed may see reflection / trim warnings. Two
+    /// supported mitigations: (1) suppress the warnings only in the host's csproj via
+    /// <c>&lt;TrimmerRootAssembly Include="Bogus" /&gt;</c>, or (2) gate the
+    /// <c>AddPolarDataSeeding(...)</c> registration behind <c>#if DEBUG</c> so the package
+    /// compiles out of the Production build entirely. <c>PolarSharp.DataSeeding</c> is a
+    /// dev-time package — designed for sandbox / QA / demo environments, not production
+    /// hot paths — so either approach is acceptable.
+    /// </para>
+    /// </remarks>
     public static IServiceCollection AddPolarDataSeeding(this IServiceCollection services, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(services);
