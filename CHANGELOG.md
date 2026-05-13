@@ -6,6 +6,89 @@ and [Common Changelog](https://common-changelog.org) format.
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-05-13
+
+This is a major feature release adding **25 new packages** that extend PolarSharp from a Polar.sh SDK into a full multi-tenant SaaS ecosystem: SQL-backed tenant + identity stores, programmatic + wizard-style merchant onboarding, an end-to-end ecommerce store-management layer with AI translation, hierarchical reporting, bulk fake-data seeding, and optional KeyCloak SSO. The v1.1.0 packages are **additive-compatible** — existing consumer code continues to work; new capabilities are opt-in via package install.
+
+### Added
+
+#### `PolarSharp.BaseEntities` (new, 1.0.0)
+
+- 15 Polar-native abstract record bases mirroring Polar's webhook wire format: `PolarTenantBase`, `PolarCustomerBase`, `PolarProductBase`, `PolarPriceBase`, `PolarOrderBase`, `PolarOrderLineItemBase`, `PolarSubscriptionBase`, `PolarRefundBase`, `PolarDiscountBase`, `PolarBenefitBase`, `PolarBenefitGrantBase`, `PolarCheckoutBase`, `PolarLicenseKeyBase`, `PolarAddressBase`, `PolarMediaFileBase`
+- 6 host-additive abstract record bases: `PolarShoppingCartBase`, `PolarCartLineItemBase`, `PolarCategoryBase`, `PolarDepartmentBase`, `PolarInventoryRecordBase`, `PolarSaleBase`
+- 10 wire-format enums with `[JsonStringEnumConverter]`: `PolarOrderStatus`, `PolarSubscriptionStatus`, `PolarRefundStatus`, `PolarRefundReason`, `PolarCheckoutStatus`, `PolarLicenseKeyStatus`, `PolarRecurringInterval`, `PolarTrialInterval`, `PolarOrganizationStatus`, `PolarBenefitType`
+- 4 core interfaces: `IPolarEntity`, `IPolarTimestamped`, `IPolarMetadata`, `IPolarOrganizationScoped`
+- Zero external dependencies; AOT-safe; targets net10.0
+
+#### SQL-backed tenant store (4 new packages)
+
+- `PolarSharp.MultiTenant.EntityFrameworkCore` (1.0.0) — common base with `TenantAwareDbContextBase`, `ITenantOwned`, `IPolarTenantCache` (Memory + Distributed impls), `IPolarTenantScopeInitializer`, `IFakeDataPolicy`, dual tenant + fake-data global query filter, `PolarMigrationRunner<TContext>` hosted service
+- `PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer` (1.0.0)
+- `PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite` (1.0.0) — shared `__tenants.db`; catalog/identity DBs use `{tenantId}.db` per tenant
+- `PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL` (1.0.0)
+
+#### Identity + RBAC/ABAC (4 new packages)
+
+- `PolarSharp.MultiTenant.Identity` (1.0.0) — `PolarApplicationUser : IdentityUser<Guid>` with `IsAppMasterAdmin` flag, `PolarApplicationRole : IdentityRole<Guid>`, M:N `PolarUserTenantMembership` (a user can have different roles in different tenants), `PolarRoles` / `PolarClaims` constants, `PolarPermission` enum (22 fine-grained permissions), `[RequirePolarPermission]` / `[RequireAppMasterAdmin]` / `[AllowCrossTenant]` attributes, `ICurrentUser`, `IAppMasterAdminProvisioning`, `RoleSeeder`, `AppMasterAdminBootstrapper`, `TenantAdminInvariantValidator`, `PlatformAuditLogEntry` (site-level cross-tenant audit ledger), three deployment shapes (dedicated DB / shared DB / shared host DbContext)
+- `PolarSharp.MultiTenant.Identity.SqlServer` (1.0.0)
+- `PolarSharp.MultiTenant.Identity.Sqlite` (1.0.0)
+- `PolarSharp.MultiTenant.Identity.PostgreSQL` (1.0.0)
+- `TenantAdminAutoProvisioningPostProcessor` — auto-creates the first `TenantAdmin` membership on successful tenant onboarding
+
+#### Tenant onboarding (1 new package)
+
+- `PolarSharp.Onboarding` (1.0.0) — `IPolarOnboardingClient` with both **programmatic** (headless / B2B) and **OAuth-linking** (user-consent) flows, plus a **persistent wizard** API (`IOnboardingWizard`) with resumable sessions (7-day TTL), conditional next-steps based on prior answers (e.g. `TranslationConfig` step appears only when `RequiresMultiLanguage=true`), `OnboardingSessionExpirationCleaner` background prune, encrypted-at-rest in-flight translation API keys via the Data Protection API, `IOnboardedTenantSink` abstraction with `EfMultiTenantStoreSink` impl, `IOnboardingPostProcessor` extension point
+
+#### Ecommerce store management (5 new packages + 5 translation provider packages)
+
+- `PolarSharp.EcommerceStoreManagement` (1.0.0) — `LocalProduct` (with M:N `CategoryIds` — products can live in multiple categories simultaneously), `LocalProductVariant` (computed `IsOutOfStock` / `IsLowStock`), `LocalCategory`, `LocalDepartment`, `LocalTierGroup` + `TierLevel` (cumulative-benefit ladder), `LocalPrice` (5 price kinds incl. seat-tiered, recurring, trial), polymorphic `LocalBenefit` hierarchy (7 subtypes), `LocalDiscount`, `LocalCheckoutLinkConfig`, `TenantBusinessProfile` (encrypted translation API key), `AdminAuditLogEntry`; service abstractions: `IRefundService` / `ILicenseKeyValidator` / `IInventoryUpdater` / `IPolarBusinessProfileService` / `IAuditLogActorProvider`; `IPolarCatalogPublisher` with `PublishPlan` / `PublishReport` / sealed `PlannedAction` + `PublishOutcome` hierarchies; translation infrastructure (`IPolarCatalogTranslator`, `ITranslationProviderResolver` for 3-tier resolution, `IPolarCatalogTranslationCache` Memory + Distributed impls, `CatalogTranslationEntity` unified i18n table, `IPolarCatalogReader` reassembly API); **5 cloning services** (`IProductCloningService` / `ICategoryCloningService` / `IBenefitCloningService` / `IDiscountCloningService` / `ICheckoutLinkCloningService`) with built-in duplicate prevention via `" (Copy)"` auto-suffix and discount-code-null-by-default
+- `PolarSharp.EcommerceStoreManagement.EntityFrameworkCore` (1.0.0) — `PolarCatalogDbContext` with 12 entities + 12 `IEntityTypeConfiguration<T>` classes
+- `PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.SqlServer` (1.0.0)
+- `PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.Sqlite` (1.0.0)
+- `PolarSharp.EcommerceStoreManagement.EntityFrameworkCore.PostgreSQL` (1.0.0)
+- **5 translation provider packages** using raw HttpClient + JSON (no third-party SDK transitive bulk; AOT-safe; shared prompt/parser):
+  - `PolarSharp.EcommerceStoreManagement.Translation.Anthropic` (1.0.0)
+  - `PolarSharp.EcommerceStoreManagement.Translation.OpenAI` (1.0.0)
+  - `PolarSharp.EcommerceStoreManagement.Translation.AzureOpenAI` (1.0.0)
+  - `PolarSharp.EcommerceStoreManagement.Translation.Gemini` (1.0.0)
+  - `PolarSharp.EcommerceStoreManagement.Translation.Grok` (1.0.0)
+
+#### Reporting (4 new packages)
+
+- `PolarSharp.Reporting` (1.0.0) — `IPolarReportingClient` with aggregate KPI reports (`TransactionReport`, `SubscriptionReport`, `OrderReport`, `ErrorAuditReport`, `CustomerReport`, `CustomerEntitlementsReport`), JSON variants for every method, and **hierarchical drilldown** (`ListCustomersAsync` → `ListOrdersForCustomerAsync` → `GetOrderDrilldownAsync`) designed for Telerik / MudBlazor / Blazor hierarchical grids — each level paged independently; pre-aggregated columns (`OrderCount`, `LifetimeValue`, `LineItemCount`, `RefundedAmount`) load 10k-customer top-level grids in sub-100ms; `IReportSnapshotService` + `PolarReportingOptions` + `IReportExporter` (CSV/JSON streaming)
+- `PolarSharp.Reporting.EntityFrameworkCore` (1.0.0) — `PolarReportingDbContext` with 8 snapshot entities + `EfPolarReportingClient`
+- `PolarSharp.Reporting.EntityFrameworkCore.SqlServer` (1.0.0)
+- `PolarSharp.Reporting.EntityFrameworkCore.Sqlite` (1.0.0)
+- `PolarSharp.Reporting.EntityFrameworkCore.PostgreSQL` (1.0.0)
+
+#### Data seeding (1 new package)
+
+- `PolarSharp.DataSeeding` (1.0.0) — `IPolarDataSeeder` with 6 Bogus generators (Product / Category / Department / LicenseKeysBenefit / Discount / CheckoutLink); `SeedScale` (Demo / QA / Stress) presets; deterministic seeding via `randomSeed`; `ISeedSink` abstraction; `FakeDataToggleChanged` event + `FakeDataSyncService` background reconciliation with Polar's sandbox
+
+#### KeyCloak SSO (1 new package)
+
+- `PolarSharp.MultiTenant.Identity.KeyCloak` (1.0.0) — optional OIDC SSO add-on; `KeyCloakClaimsTransformer` maps realm-roles → PolarSharp roles, emits AppMasterAdmin dual-flag, propagates tenant id; env-var client-secret resolution; idempotent claim rewriting
+
+#### EF Core migrations — required per provider
+
+- **12 real migration sets** generated across the SQL-backed packages × 3 providers (tenant store, Identity, Catalog, Reporting × SqlServer / Sqlite / PostgreSQL)
+- `PolarMigrationRunner<TContext>` hosted service applies pending migrations idempotently on host startup; **Production startup throws** when migrations are missing (never silently `EnsureCreated` an unversioned schema); Dev-mode `EnsureCreatedAsync` fallback is opt-in
+- `IDesignTimeDbContextFactory<T>` per (DbContext, provider) combination — `dotnet ef migrations add` works against each provider package
+
+### Changed
+
+- **`PolarSharp.MultiTenant.PolarTenantInfo` and the v1.1.0 `WebhookXxxData` records remain UNCHANGED** in 1.2.0 — the original plan called to un-seal them and add `PolarXxxBase` inheritance as "additive," but the wire shapes of the v1.1.0 records differ from the new bases (nullable vs required, string vs typed enum, nested vs FK-id). Making them inherit would be a v2.0-level breaking change. Deferred to v2.0; v1.1.0 webhook consumers are fully compatible with 1.2.0.
+
+### Notes for hosts
+
+- **AOT publish with `PolarSharp.DataSeeding`:** the bundled `PolarTestApp` does NOT transitively reference `PolarSharp.DataSeeding`, so `dotnet publish -p:PublishAot=true` against the test app stays clean. The `Bogus` faker library used by `PolarSharp.DataSeeding` does some reflection internally — hosts who publish AOT with `PolarSharp.DataSeeding` installed may see reflection / trim warnings. Two supported mitigations: (1) suppress the warnings only in the host's csproj via `<TrimmerRootAssembly Include="Bogus" />`, or (2) gate the `AddPolarDataSeeding(...)` registration behind `#if DEBUG` so the package compiles out of the Production build entirely. `PolarSharp.DataSeeding` is a dev-time package — designed for sandbox / QA / demo environments, not production hot paths — so either approach is acceptable.
+
+### Tests
+
+- **441 / 441 tests pass** across all 29 packages (4 from v1.1.0 + 25 new in v1.2.0)
+- AOT publish: `dotnet publish -p:PublishAot=true` zero warnings
+- Build: 0 warnings, 0 errors across the entire solution
+
 ## [1.1.0] — 2026-05-12
 
 ### Added

@@ -16,6 +16,18 @@
   href: webhook-event-reference.md
 - name: Multi-Tenancy
   href: multi-tenancy.md
+- name: Universal Domain Model (BaseEntities)
+  href: base-entities.md
+- name: Identity and Authorization
+  href: identity-and-authorization.md
+- name: Tenant Onboarding
+  href: onboarding.md
+- name: Ecommerce Store Management
+  href: ecommerce-catalog.md
+- name: Reporting
+  href: reporting.md
+- name: EF Core Migrations
+  href: migrations.md
 - name: Localization
   href: localization.md
 - name: Middleware Pipeline Ordering
