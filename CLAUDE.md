@@ -83,6 +83,19 @@ The Narratives section is **distinct from the API Reference and the Articles** b
 - **No jargon without an explanation.** First use of any technical term gets a parenthetical or footnote. Subsequent uses can assume the term is known within the narrative.
 - **Short paragraphs, generous whitespace.** This is documentation people will read on their phones during onboarding meetings, not engineering reference material.
 
+### Critical framing rules — DO NOT VIOLATE in any Narrative or doc
+
+These are framing rules that have been explicitly established with the project owner and committed to multiple doc surfaces (see commit `1347e01`). They MUST be reflected in every piece of documentation, including Narratives:
+
+- **PolarSharp does NOT talk to Stripe. Ever. Anywhere.** Do not write any documentation that suggests, implies, or even casually mentions "your application uses Stripe" or "PolarSharp integrates with Stripe". When discussing payouts:
+  - The merchant signs up with **Polar.sh**, not Stripe.
+  - The merchant connects their bank account in **Polar.sh's own dashboard**, not in your application and not through any PolarSharp API.
+  - Polar.sh happens to use Stripe internally as the rails for moving money to merchant bank accounts. The merchant may see Stripe-branded screens **inside Polar.sh's dashboard** during the bank-account setup. That is normal and is a Polar.sh design detail, not a PolarSharp concern.
+  - Your application's only role in the payout story is: (1) showing a link to the right Polar.sh dashboard page via `IPolarBusinessProfileService.BuildBankingSetupDeepLink()`, and (2) asking Polar's API whether the setup is complete via `RefreshPayoutStatusAsync`. That's it.
+  - When writing Narratives about payouts, frame the topic as "connecting a bank account" or "setting up payouts" — never as "setting up Stripe" or "Stripe Connect onboarding".
+
+If a draft Narrative or doc accidentally references Stripe in a way that implies PolarSharp talks to Stripe, REWRITE IT before shipping. Use the inline XML docs on `IPolarBusinessProfileService.BuildBankingSetupDeepLink` + the "Banking and payouts" section in `docs/articles/ecommerce-catalog.md` as the reference for correct framing.
+
 ### When this requirement applies
 
 - Every new public type → inline XML docs at minimum

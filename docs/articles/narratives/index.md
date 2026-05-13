@@ -31,7 +31,7 @@ This section is brand-new. We're populating it as we build out the `PolarSharp.U
 - **`PolarTenantContextBar`** — the indicator at the top that tells you which merchant you're currently looking at (relevant when one person manages multiple merchants)
 - **`PolarPermissionGate`** — the rule-enforcer that hides parts of the screen from people who shouldn't be able to use them
 - **Onboarding a new merchant end-to-end** — what happens from "I want to sign up" through "I just received my first payment"
-- **Setting up payouts (the bank-account question)** — what PolarSharp does, what Polar.sh does, what Stripe has to do with it, and what the merchant actually has to click
+- **Connecting a bank account so the merchant can receive payouts** — the merchant does this themselves in Polar.sh's own dashboard (PolarSharp does not handle bank-account setup — it shows the merchant a link to the right page on Polar's website and later checks whether Polar reports the setup as complete). Why PolarSharp is intentionally hands-off here, and what the merchant actually sees on their screen.
 - **Translating your catalog** — how the multi-language story works, what the merchant decides vs. what runs automatically
 
 If you arrive at a "Coming soon" link, that narrative is on the schedule but hasn't been written yet. Check back after the next release, or open an issue in the GitHub repo if you'd like us to prioritise a particular one.
