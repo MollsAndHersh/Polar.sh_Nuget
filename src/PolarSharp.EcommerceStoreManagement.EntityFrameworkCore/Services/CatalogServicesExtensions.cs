@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +42,8 @@ public static class CatalogServicesExtensions
 
         services.Configure<LicenseValidatorOptions>(
             configuration.GetSection(LicenseValidatorOptions.SectionName));
+        services.Configure<BusinessProfileOptions>(
+            configuration.GetSection(BusinessProfileOptions.SectionName));
 
         services.AddMemoryCache();
         services.TryAddSingleton<TimeProvider>(_ => TimeProvider.System);
@@ -49,10 +52,26 @@ public static class CatalogServicesExtensions
         // Polar HTTP wrappers — TryAdd so hosts can register their own first.
         services.TryAddScoped<IPolarRefundsApi, PolarClientRefundsApi>();
         services.TryAddScoped<IPolarLicenseKeysApi, PolarClientLicenseKeysApi>();
+        services.TryAddScoped<IPolarOrganizationsApi, PolarClientOrganizationsApi>();
+
+        // Inventory event channel — a singleton bounded channel + reader/writer pair.
+        // Hosts that want a custom channel topology (e.g. unbounded, or with their own
+        // back-pressure policy) register IInventoryEventNotifier before calling this method.
+        services.TryAddSingleton(_ => Channel.CreateBounded<SkuStockChanged>(new BoundedChannelOptions(capacity: 1000)
+        {
+            FullMode = BoundedChannelFullMode.DropOldest,        // freshness over historical accuracy
+            SingleReader = true,                                   // the sync hosted service is the sole consumer
+            SingleWriter = false,                                  // multiple updaters can publish concurrently
+        }));
+        services.TryAddSingleton<ChannelReader<SkuStockChanged>>(sp => sp.GetRequiredService<Channel<SkuStockChanged>>().Reader);
+        services.TryAddSingleton<ChannelWriter<SkuStockChanged>>(sp => sp.GetRequiredService<Channel<SkuStockChanged>>().Writer);
+        services.TryAddSingleton<IInventoryEventNotifier, ChannelInventoryEventNotifier>();
 
         // The service implementations.
         services.AddScoped<IRefundService, RefundService>();
         services.AddScoped<ILicenseKeyValidator, LicenseKeyValidator>();
+        services.AddScoped<IPolarBusinessProfileService, PolarBusinessProfileService>();
+        services.AddScoped<IInventoryUpdater, InventoryUpdater>();
 
         return services;
     }
