@@ -54,6 +54,7 @@ internal sealed class ReportSnapshotService(
     private const string ResourceLicenseKeys = "license_keys";
     private const string ResourceBenefits = "benefits";
     private const string ResourceMeters = "meters";
+    private const string ResourceCheckoutLinks = "checkout_links";
 
     private readonly PolarReportingDbContext _db = db ?? throw new ArgumentNullException(nameof(db));
     private readonly IPolarReportingApi _polarApi = polarApi ?? throw new ArgumentNullException(nameof(polarApi));
@@ -80,6 +81,8 @@ internal sealed class ReportSnapshotService(
         var benefitsCount = await IngestBenefitsAsync(tenantId, ct).ConfigureAwait(false);
         // V20-005 Phase 1F: meters (Aggregation discriminated union)
         var metersCount = await IngestMetersAsync(tenantId, ct).ConfigureAwait(false);
+        // V20-005 Phase 1G: checkout-links (many union-wrapped fields)
+        var checkoutLinksCount = await IngestCheckoutLinksAsync(tenantId, ct).ConfigureAwait(false);
 
         await RefreshAggregatesAsync(tenantId, ct).ConfigureAwait(false);
 
@@ -97,6 +100,7 @@ internal sealed class ReportSnapshotService(
             LicenseKeysIngested: licenseKeysCount,
             BenefitsIngested: benefitsCount,
             MetersIngested: metersCount,
+            CheckoutLinksIngested: checkoutLinksCount,
             Duration: sw.Elapsed);
     }
 
@@ -341,6 +345,30 @@ internal sealed class ReportSnapshotService(
         return total;
     }
 
+    // V20-005 Phase 1G: checkout-links ingestion
+    private async Task<int> IngestCheckoutLinksAsync(string tenantId, CancellationToken ct)
+    {
+        var checkpoint = await LoadOrCreateCheckpointAsync(tenantId, ResourceCheckoutLinks, ct).ConfigureAwait(false);
+        var total = 0;
+        string? cursor = checkpoint.LastPolarId;
+
+        while (true)
+        {
+            var pageResult = await _polarApi.FetchCheckoutLinksSinceAsync(cursor, PageSize, ct).ConfigureAwait(false);
+            if (!TryUnwrapPage(pageResult, ResourceCheckoutLinks, out var rows)) break;
+            if (rows.Count == 0) break;
+
+            await UpsertCheckoutLinksAsync(tenantId, rows, ct).ConfigureAwait(false);
+            cursor = rows[^1].Id;
+            total += rows.Count;
+
+            if (rows.Count < PageSize) break;
+        }
+
+        await AdvanceCheckpointAsync(checkpoint, cursor, ct).ConfigureAwait(false);
+        return total;
+    }
+
     // ── Upserts: idempotent on the Polar wire id ─────────────────────────────────
 
     private async Task UpsertEventsAsync(string tenantId, IReadOnlyList<EventPayload> rows, CancellationToken ct)
@@ -574,6 +602,44 @@ internal sealed class ReportSnapshotService(
                     BenefitName = row.BenefitName,
                     BenefitKind = row.BenefitKind,
                     IsGranted = row.IsGranted,
+                });
+            }
+        }
+        await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+    }
+
+    // V20-005 Phase 1G: checkout-links upsert — idempotent on PolarCheckoutLinkId
+    private async Task UpsertCheckoutLinksAsync(string tenantId, IReadOnlyList<CheckoutLinkPayload> rows, CancellationToken ct)
+    {
+        var ids = rows.Select(r => r.Id).ToList();
+        var existing = await _db.CheckoutLinks.Where(cl => ids.Contains(cl.PolarCheckoutLinkId)).ToListAsync(ct).ConfigureAwait(false);
+        var byId = existing.ToDictionary(cl => cl.PolarCheckoutLinkId);
+
+        foreach (var row in rows)
+        {
+            var productIdsCsv = string.Join(',', row.ProductIds);
+            if (productIdsCsv.Length > 2048) productIdsCsv = productIdsCsv[..2048];  // entity constraint
+            if (byId.TryGetValue(row.Id, out var cl))
+            {
+                cl.Label = row.Label;
+                cl.ProductIdsCsv = productIdsCsv;
+                cl.Url = row.Url;
+                cl.SuccessUrl = row.SuccessUrl;
+                cl.AllowDiscountCodes = row.AllowDiscountCodes;
+            }
+            else
+            {
+                _db.CheckoutLinks.Add(new ReportCheckoutLinkEntity
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    PolarCheckoutLinkId = row.Id,
+                    Label = row.Label,
+                    ProductIdsCsv = productIdsCsv,
+                    Url = row.Url,
+                    SuccessUrl = row.SuccessUrl,
+                    AllowDiscountCodes = row.AllowDiscountCodes,
+                    CreatedAt = row.CreatedAt,
                 });
             }
         }

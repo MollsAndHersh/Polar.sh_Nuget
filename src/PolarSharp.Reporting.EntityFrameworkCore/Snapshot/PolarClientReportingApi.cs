@@ -144,8 +144,74 @@ internal sealed class PolarClientReportingApi(PolarClient polar, ILogger<PolarCl
     public Task<Result<IReadOnlyList<DiscountPayload>, PolarReportingApiError>> FetchDiscountsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
         EmptyAsync<DiscountPayload>(nameof(FetchDiscountsSinceAsync));
 
-    public Task<Result<IReadOnlyList<CheckoutLinkPayload>, PolarReportingApiError>> FetchCheckoutLinksSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<CheckoutLinkPayload>(nameof(FetchCheckoutLinksSinceAsync));
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1G: live wiring against <c>GET /v1/checkout-links/</c>. Polar's
+    /// CheckoutLink has multiple string-or-object union fields (<c>Label</c>,
+    /// <c>SuccessUrl</c>, <c>ModifiedAt</c>, <c>DiscountId</c>, <c>ReturnUrl</c>); each
+    /// extracts its <c>.String</c> / <c>.DateTimeOffset</c> variant. The top-level
+    /// <c>Url</c> is a plain <c>string?</c> with private setter — exposed via Polar's
+    /// JSON response. <c>Products</c> is a list of <c>CheckoutLinkProduct</c>; we collect
+    /// each product's Id into a CSV string for the snapshot row (entity has a 2048-char
+    /// ProductIdsCsv field). The sensitive <c>ClientSecret</c> field is deliberately NOT
+    /// mapped.
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<CheckoutLinkPayload>, PolarReportingApiError>> FetchCheckoutLinksSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _polar.CheckoutLinks.EmptyPathSegment.GetAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
+
+            var items = response?.Items ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<CheckoutLinkPayload>, PolarReportingApiError>.Success(Array.Empty<CheckoutLinkPayload>());
+
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ascending[i].Id, sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
+
+            var mapped = new List<CheckoutLinkPayload>(ascending.Count);
+            foreach (var cl in ascending)
+            {
+                var productIds = cl.Products?
+                    .Where(p => !string.IsNullOrEmpty(p.Id))
+                    .Select(p => p.Id!)
+                    .ToList() ?? [];
+                mapped.Add(new CheckoutLinkPayload(
+                    Id: cl.Id ?? string.Empty,
+                    Label: cl.Label?.String ?? "(unnamed checkout link)",
+                    ProductIds: productIds,
+                    Url: cl.Url,
+                    SuccessUrl: cl.SuccessUrl?.String,
+                    AllowDiscountCodes: cl.AllowDiscountCodes ?? true,
+                    CreatedAt: cl.CreatedAt ?? DateTimeOffset.UtcNow));
+            }
+            return Result<IReadOnlyList<CheckoutLinkPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<CheckoutLinkPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "checkout-links"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching checkout links.");
+            return Result<IReadOnlyList<CheckoutLinkPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
 
     /// <inheritdoc/>
     /// <remarks>
