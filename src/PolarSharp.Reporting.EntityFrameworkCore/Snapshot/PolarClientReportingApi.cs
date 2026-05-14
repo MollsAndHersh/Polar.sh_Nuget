@@ -116,8 +116,65 @@ internal sealed class PolarClientReportingApi(PolarClient polar, ILogger<PolarCl
     public Task<Result<IReadOnlyList<MeterPayload>, PolarReportingApiError>> FetchMetersSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
         EmptyAsync<MeterPayload>(nameof(FetchMetersSinceAsync));
 
-    public Task<Result<IReadOnlyList<CustomerMeterPayload>, PolarReportingApiError>> FetchCustomerMetersSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<CustomerMeterPayload>(nameof(FetchCustomerMetersSinceAsync));
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1C: live wiring against <c>GET /v1/customer-meters/</c>. Mostly flat
+    /// fields; only <c>ModifiedAt</c> is a string-or-DateTimeOffset union (extract
+    /// <c>.DateTimeOffset</c>). Polar's <c>ConsumedUnits</c> is <c>double?</c> wire-side; we
+    /// surface <c>decimal</c> in <c>CustomerMeterPayload</c> for consistent reporting math.
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<CustomerMeterPayload>, PolarReportingApiError>> FetchCustomerMetersSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _polar.CustomerMeters.EmptyPathSegment.GetAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
+
+            var items = response?.Items ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<CustomerMeterPayload>, PolarReportingApiError>.Success(Array.Empty<CustomerMeterPayload>());
+
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ascending[i].Id, sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
+
+            var mapped = new List<CustomerMeterPayload>(ascending.Count);
+            foreach (var cm in ascending)
+            {
+                mapped.Add(new CustomerMeterPayload(
+                    Id: cm.Id ?? string.Empty,
+                    CustomerId: cm.CustomerId ?? string.Empty,
+                    MeterId: cm.MeterId ?? string.Empty,
+                    ConsumedUnits: (decimal)(cm.ConsumedUnits ?? 0d),
+                    CreditedUnits: (decimal?)cm.CreditedUnits,
+                    CreatedAt: cm.CreatedAt ?? DateTimeOffset.UtcNow,
+                    ModifiedAt: cm.ModifiedAt?.DateTimeOffset));
+            }
+            return Result<IReadOnlyList<CustomerMeterPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<CustomerMeterPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "customer-meters"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching customer meters.");
+            return Result<IReadOnlyList<CustomerMeterPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 

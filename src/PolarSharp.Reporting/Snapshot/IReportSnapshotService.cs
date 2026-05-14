@@ -26,6 +26,7 @@ public sealed record SnapshotReport(
     int CustomersIngested,
     int BenefitGrantsIngested,
     int ProductsIngested,
+    int CustomerMetersIngested,
     TimeSpan Duration);
 
 /// <summary>Bound from <c>PolarSharp:Reporting</c> in appsettings.</summary>
