@@ -56,6 +56,8 @@ builder.Services
     .AddEntityFrameworkStores<PolarUserDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddAuthorization();
+
 // ── Reporting snapshot (SQLite) ─────────────────────────────────────────────
 builder.Services.AddPolarReportingSnapshot(builder.Configuration);
 builder.Services.UseSqliteReporting($"Data Source={reportingDbPath}");
