@@ -30,10 +30,18 @@ public static class SnapshotServicesExtensions
 
         services.Configure<PolarReportingOptions>(
             configuration.GetSection(PolarReportingOptions.SectionName));
+        services.Configure<SnapshotTriggerOptions>(
+            configuration.GetSection(SnapshotTriggerOptions.SectionName));
 
         services.TryAddSingleton<TimeProvider>(_ => TimeProvider.System);
         services.TryAddScoped<IPolarReportingApi, PolarClientReportingApi>();
         services.AddScoped<IReportSnapshotService, ReportSnapshotService>();
+
+        // V20-005 Phase 2: per-tenant trigger orchestrator. Singleton because per-tenant
+        // timers + heartbeat timestamps must survive across request scopes. The orchestrator
+        // opens its own DI scope per tick to resolve Scoped services (DbContext, snapshot
+        // service) with Finbuckle tenant context hydrated via IPolarTenantScopeInitializer.
+        services.AddSingleton<IReportSnapshotTrigger, PerTenantSnapshotOrchestrator>();
 
         return services;
     }
