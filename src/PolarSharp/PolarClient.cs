@@ -208,6 +208,11 @@ public sealed class PolarClient
     /// <see cref="HttpClient"/> instance configured only for Customer Portal endpoints.
     /// Organization Access Tokens and Customer Access Tokens never share an
     /// <see cref="HttpClient"/>.
+    /// <para>
+    /// <strong>Always dispose the returned client</strong> (e.g. <c>using var portal = …;</c>) —
+    /// each instance owns its own <see cref="HttpClient"/> and connection pool, so leaking
+    /// instances leaks pools.
+    /// </para>
     /// </remarks>
     public PolarCustomerPortalClient CreateCustomerPortalClient(string customerToken)
     {

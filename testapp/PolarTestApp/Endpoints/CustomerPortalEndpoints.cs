@@ -69,7 +69,7 @@ internal static class CustomerPortalEndpoints
                 });
             }
 
-            var portalClient = polar.CreateCustomerPortalClient(customerToken);
+            using var portalClient = polar.CreateCustomerPortalClient(customerToken);
             var result = await portalClient.Orders.EmptyPathSegment.GetAsync(cancellationToken: ct);
             return Results.Ok(result);
         })
@@ -95,7 +95,7 @@ internal static class CustomerPortalEndpoints
                 });
             }
 
-            var portalClient = polar.CreateCustomerPortalClient(customerToken);
+            using var portalClient = polar.CreateCustomerPortalClient(customerToken);
             var result = await portalClient.Subscriptions.EmptyPathSegment.GetAsync(cancellationToken: ct);
             return Results.Ok(result);
         })

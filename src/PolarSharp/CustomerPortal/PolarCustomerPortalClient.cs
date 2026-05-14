@@ -33,14 +33,16 @@ namespace PolarSharp.CustomerPortal;
 /// // Server-side: mint a customer session using the OAT-authenticated PolarClient
 /// var session = await polar.CustomerSessions.PostAsync(new CreateCustomerSession { CustomerId = "cus_xxx" });
 ///
-/// // Then give the portal client to the customer's session:
-/// var portal = polar.CreateCustomerPortalClient(session.Token);
+/// // Always dispose — each portal client owns its own HttpClient + connection pool.
+/// using var portal = polar.CreateCustomerPortalClient(session.Token);
 /// var orders = await portal.Orders.GetAsync();
 /// </code>
 /// </example>
-public sealed class PolarCustomerPortalClient
+public sealed class PolarCustomerPortalClient : IDisposable
 {
     private readonly PolarApiClient _inner;
+    private readonly HttpClient _httpClient;
+    private bool _disposed;
 
     /// <summary>
     /// Initialises a new <see cref="PolarCustomerPortalClient"/> authenticated with the supplied customer token.
@@ -56,15 +58,28 @@ public sealed class PolarCustomerPortalClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(customerToken);
 
-        var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Authorization =
+        _httpClient = new HttpClient();
+        _httpClient.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", customerToken);
-        httpClient.BaseAddress = new Uri("https://api.polar.sh/v1/customer-portal/");
+        _httpClient.BaseAddress = new Uri("https://api.polar.sh/v1/customer-portal/");
 
         var adapter = new HttpClientRequestAdapter(
             new Microsoft.Kiota.Abstractions.Authentication.AnonymousAuthenticationProvider(),
-            httpClient: httpClient);
+            httpClient: _httpClient);
         _inner = new PolarApiClient(adapter);
+    }
+
+    /// <summary>
+    /// Disposes the underlying <see cref="HttpClient"/> and its connection pool. Always
+    /// dispose portal clients (typically <c>using var portal = polar.CreateCustomerPortalClient(token);</c>)
+    /// — each instance owns its own <see cref="HttpClient"/>, so leaking instances leaks
+    /// connection pools.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _httpClient.Dispose();
+        _disposed = true;
     }
 
     // ── Customer Portal resources ──────────────────────────────────────────

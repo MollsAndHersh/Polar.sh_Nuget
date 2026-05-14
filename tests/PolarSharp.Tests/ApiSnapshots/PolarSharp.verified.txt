@@ -202,7 +202,7 @@
 }
 namespace PolarSharp.CustomerPortal
 {
-    public sealed class PolarCustomerPortalClient
+    public sealed class PolarCustomerPortalClient : System.IDisposable
     {
         public PolarSharp.Generated.V1.CustomerPortal.BenefitGrants.BenefitGrantsRequestBuilder BenefitGrants { get; }
         public PolarSharp.Generated.V1.CustomerPortal.Customers.CustomersRequestBuilder Customers { get; }
@@ -214,6 +214,7 @@ namespace PolarSharp.CustomerPortal
         public PolarSharp.Generated.V1.CustomerPortal.Organizations.OrganizationsRequestBuilder Organizations { get; }
         public PolarSharp.Generated.V1.CustomerPortal.Seats.SeatsRequestBuilder Seats { get; }
         public PolarSharp.Generated.V1.CustomerPortal.Subscriptions.SubscriptionsRequestBuilder Subscriptions { get; }
+        public void Dispose() { }
     }
 }
 namespace PolarSharp.Extensions
