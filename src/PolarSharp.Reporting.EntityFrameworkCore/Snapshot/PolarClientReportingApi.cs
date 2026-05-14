@@ -7,31 +7,387 @@ namespace PolarSharp.Reporting.EntityFrameworkCore.Snapshot;
 /// Default <see cref="IPolarReportingApi"/> implementation backed by the Kiota
 /// <see cref="PolarClient"/>. V20-005 Phase 1 wires the 7 new resources
 /// (benefits, discounts, checkout-links, products, license-keys, meters, customer-meters)
-/// to their live Polar HTTP endpoints. The original 5 (events, orders, subscriptions,
-/// customers, benefit-grants) remain best-effort stubs and ship as live impls in a
-/// Phase 1.5 follow-up.
+/// to their live Polar HTTP endpoints; V20-005 Phase 1.5 wires the original 5
+/// (events, orders, subscriptions, customers, benefit-grants).
 /// </summary>
+/// <remarks>
+/// Every fetcher follows the same shape: page=1 + Limit=pageSize against the live
+/// resource endpoint, reverse to ascending order (Polar returns DESC by created_at),
+/// skip past <c>sinceId</c> if found, map subtypes via discriminator probing where
+/// applicable, surface failures as typed <see cref="PolarReportingApiError"/>.
+/// </remarks>
 internal sealed class PolarClientReportingApi(PolarClient polar, ILogger<PolarClientReportingApi> logger) : IPolarReportingApi
 {
     private readonly PolarClient _polar = polar ?? throw new ArgumentNullException(nameof(polar));
     private readonly ILogger<PolarClientReportingApi> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-    // ── Existing 5 (stub — wired live in Phase 1.5) ──────────────────────────
+    // ── V20-005 Phase 1.5: original 5 resources (live) ───────────────────────
 
-    public Task<Result<IReadOnlyList<EventPayload>, PolarReportingApiError>> FetchEventsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<EventPayload>(nameof(FetchEventsSinceAsync));
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1.5: live wiring against <c>GET /v1/events/</c>. Polar's
+    /// <c>Event</c> is a 2-way discriminated union (<c>SystemEvent</c> + <c>UserEvent</c>);
+    /// both subtypes share the same shape (Id, Name, Source, Timestamp, OrganizationId).
+    /// We probe for whichever variant is populated and surface the event source as the
+    /// <c>Type</c> ("system" / "user") since Polar doesn't expose a richer discriminator
+    /// at the list-payload level. The <c>PayloadJson</c> field stays null in the snapshot
+    /// at this phase — Polar's list endpoint doesn't include the per-event payload blob;
+    /// fetching that requires per-event GETs which is deferred to a v2.x enrichment.
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<EventPayload>, PolarReportingApiError>> FetchEventsSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            // Events uses the newer GetAsGetResponseAsync API; `GetResponse` is itself a
+            // discriminated union of `ListResource_Event_` (page-based pagination) and
+            // `ListResourceWithCursorPagination_Event_` (cursor-based). Both variants
+            // expose `.Items` — extract from whichever is populated.
+            var response = await _polar.Events.EmptyPathSegment.GetAsGetResponseAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
 
-    public Task<Result<IReadOnlyList<OrderPayload>, PolarReportingApiError>> FetchOrdersSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<OrderPayload>(nameof(FetchOrdersSinceAsync));
+            var items =
+                response?.ListResourceEvent?.Items
+                ?? response?.ListResourceWithCursorPaginationEvent?.Items
+                ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<EventPayload>, PolarReportingApiError>.Success(Array.Empty<EventPayload>());
 
-    public Task<Result<IReadOnlyList<SubscriptionPayload>, PolarReportingApiError>> FetchSubscriptionsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<SubscriptionPayload>(nameof(FetchSubscriptionsSinceAsync));
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ExtractEventId(ascending[i]), sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
 
-    public Task<Result<IReadOnlyList<CustomerPayload>, PolarReportingApiError>> FetchCustomersSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<CustomerPayload>(nameof(FetchCustomersSinceAsync));
+            var mapped = new List<EventPayload>(ascending.Count);
+            foreach (var e in ascending)
+            {
+                var payload = MapEvent(e);
+                if (payload is not null) mapped.Add(payload);
+            }
+            return Result<IReadOnlyList<EventPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<EventPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "events"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching events.");
+            return Result<IReadOnlyList<EventPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
 
-    public Task<Result<IReadOnlyList<BenefitGrantPayload>, PolarReportingApiError>> FetchBenefitGrantsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<BenefitGrantPayload>(nameof(FetchBenefitGrantsSinceAsync));
+    private static string? ExtractEventId(global::PolarSharp.Generated.Models.Event e) =>
+        e.SystemEvent?.Id ?? e.UserEvent?.Id;
+
+    private EventPayload? MapEvent(global::PolarSharp.Generated.Models.Event e)
+    {
+        if (e.SystemEvent is { } s) return new EventPayload(
+            Id: s.Id ?? string.Empty,
+            Type: $"system:{s.Name ?? "unknown"}",
+            OccurredAt: s.Timestamp ?? DateTimeOffset.UtcNow,
+            PayloadJson: null);
+        if (e.UserEvent is { } u) return new EventPayload(
+            Id: u.Id ?? string.Empty,
+            Type: $"user:{u.Name ?? "unknown"}",
+            OccurredAt: u.Timestamp ?? DateTimeOffset.UtcNow,
+            PayloadJson: null);
+        _logger.LogWarning("Event row had no populated subtype variant — skipping in snapshot ingestion.");
+        return null;
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1.5: live wiring against <c>GET /v1/orders/</c>. Maps top-level
+    /// fields directly; <c>Status</c> is a Polar enum, lowercased for the snapshot's
+    /// wire-format string (Polar's wire format itself is lowercase snake_case, which
+    /// matches <c>OrderStatus.ToString().ToLowerInvariant()</c>). <c>InvoiceUrl</c> and
+    /// <c>FulfilledAt</c> are NOT exposed on Polar's Order list endpoint at this version
+    /// — they remain null in the snapshot. Per-line-item ingestion is best-effort:
+    /// <c>OrderItemSchema</c> exposes <c>Label</c> + <c>Amount</c> + <c>TaxAmount</c> but
+    /// not <c>ProductId</c> or <c>Quantity</c>. The snapshot entity's <c>ProductId</c>
+    /// column is NOT NULL (HasMaxLength(64).IsRequired); since Polar doesn't surface it,
+    /// we omit line items at this phase and let the per-order aggregate
+    /// <c>RefundedAmount</c> drive the drilldown grid. v2.x enrichment can join
+    /// <c>OrderItemSchema.ProductPriceId</c> against the prices snapshot to recover
+    /// ProductId. Refunds are similarly omitted at this phase — Polar's Order resource
+    /// has no nested refunds list; the aggregate <c>RefundedAmount</c> on the order row
+    /// is the source of truth.
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<OrderPayload>, PolarReportingApiError>> FetchOrdersSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _polar.Orders.EmptyPathSegment.GetAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
+
+            var items = response?.Items ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<OrderPayload>, PolarReportingApiError>.Success(Array.Empty<OrderPayload>());
+
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ascending[i].Id, sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
+
+            var mapped = new List<OrderPayload>(ascending.Count);
+            foreach (var o in ascending)
+            {
+                mapped.Add(new OrderPayload(
+                    Id: o.Id ?? string.Empty,
+                    Number: o.InvoiceNumber ?? string.Empty,
+                    CustomerId: o.CustomerId ?? string.Empty,
+                    Status: o.Status?.ToString()?.ToLowerInvariant() ?? "pending",
+                    Amount: o.TotalAmount ?? 0,
+                    TaxAmount: o.TaxAmount ?? 0,
+                    RefundedAmount: o.RefundedAmount ?? 0,
+                    Currency: o.Currency ?? string.Empty,
+                    InvoiceUrl: null,
+                    CreatedAt: o.CreatedAt ?? DateTimeOffset.UtcNow,
+                    FulfilledAt: null,
+                    LineItems: Array.Empty<OrderLineItemPayload>(),
+                    Refunds: Array.Empty<OrderRefundPayload>()));
+            }
+            return Result<IReadOnlyList<OrderPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<OrderPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "orders"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching orders.");
+            return Result<IReadOnlyList<OrderPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1.5: live wiring against <c>GET /v1/subscriptions/</c>. <c>Status</c>
+    /// is a <c>SubscriptionStatus</c> enum (incomplete / trialing / active / past_due /
+    /// canceled / unpaid / incomplete_expired); <c>.ToString().ToLowerInvariant()</c>
+    /// matches Polar's snake_case wire format. <c>StartedAt</c> is a union-wrapped
+    /// DateTimeOffset; <c>EndedAt</c> is the canceled-at field (distinct from <c>EndsAt</c>
+    /// which is the scheduled end of the current period).
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<SubscriptionPayload>, PolarReportingApiError>> FetchSubscriptionsSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _polar.Subscriptions.EmptyPathSegment.GetAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
+
+            var items = response?.Items ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<SubscriptionPayload>, PolarReportingApiError>.Success(Array.Empty<SubscriptionPayload>());
+
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ascending[i].Id, sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
+
+            var mapped = new List<SubscriptionPayload>(ascending.Count);
+            foreach (var s in ascending)
+            {
+                mapped.Add(new SubscriptionPayload(
+                    Id: s.Id ?? string.Empty,
+                    CustomerId: s.CustomerId ?? string.Empty,
+                    ProductId: s.ProductId ?? string.Empty,
+                    Status: s.Status?.ToString()?.ToLowerInvariant() ?? "incomplete",
+                    StartedAt: s.StartedAt?.DateTimeOffset ?? s.CreatedAt ?? DateTimeOffset.UtcNow,
+                    CanceledAt: s.EndedAt?.DateTimeOffset));
+            }
+            return Result<IReadOnlyList<SubscriptionPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<SubscriptionPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "subscriptions"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching subscriptions.");
+            return Result<IReadOnlyList<SubscriptionPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1.5: live wiring against <c>GET /v1/customers/</c>. Polar's
+    /// <c>Customer</c> is a discriminated union — <c>CustomerIndividual</c> + <c>CustomerTeam</c>.
+    /// We probe each variant for the Id/Email/Name/CreatedAt fields. The team variant
+    /// doesn't expose an <c>Email</c> field on the wire (teams aren't a single mailbox);
+    /// we surface an empty string in that case. Polar's Customer model has no
+    /// <c>Currency</c> field — that lives on associated orders/subscriptions; the
+    /// customer ingestion pass surfaces an empty string and the per-customer aggregate
+    /// roll-up (LifetimeValue) draws currency from the order-side.
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<CustomerPayload>, PolarReportingApiError>> FetchCustomersSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _polar.Customers.EmptyPathSegment.GetAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
+
+            var items = response?.Items ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<CustomerPayload>, PolarReportingApiError>.Success(Array.Empty<CustomerPayload>());
+
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ExtractCustomerId(ascending[i]), sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
+
+            var mapped = new List<CustomerPayload>(ascending.Count);
+            foreach (var c in ascending)
+            {
+                var payload = MapCustomer(c);
+                if (payload is not null) mapped.Add(payload);
+            }
+            return Result<IReadOnlyList<CustomerPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<CustomerPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "customers"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching customers.");
+            return Result<IReadOnlyList<CustomerPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
+
+    private static string? ExtractCustomerId(global::PolarSharp.Generated.Models.Customer c) =>
+        c.CustomerIndividual?.Id ?? c.CustomerTeam?.Id;
+
+    private CustomerPayload? MapCustomer(global::PolarSharp.Generated.Models.Customer c)
+    {
+        if (c.CustomerIndividual is { } ind) return new CustomerPayload(
+            Id: ind.Id ?? string.Empty,
+            Email: ind.Email ?? string.Empty,
+            Name: ind.Name?.String,
+            Currency: string.Empty,
+            CreatedAt: ind.CreatedAt ?? DateTimeOffset.UtcNow);
+        if (c.CustomerTeam is { } team) return new CustomerPayload(
+            Id: team.Id ?? string.Empty,
+            Email: string.Empty,
+            Name: null,
+            Currency: string.Empty,
+            CreatedAt: team.CreatedAt ?? DateTimeOffset.UtcNow);
+        _logger.LogWarning("Customer row had no populated subtype variant — skipping in snapshot ingestion.");
+        return null;
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1.5: live wiring against <c>GET /v1/benefit-grants/</c>. Polar's
+    /// org-level <c>BenefitGrant</c> (distinct from the customer-portal-side
+    /// <c>CustomerBenefitGrant</c>) is a single shape with union-wrapped <c>GrantedAt</c>
+    /// / <c>RevokedAt</c> / <c>OrderId</c> fields. Polar does NOT denormalize the parent
+    /// benefit's <c>Name</c> or <c>Kind</c> onto the grant payload — the snapshot
+    /// surfaces <c>BenefitId</c> as both the BenefitName and BenefitKind placeholder; a
+    /// v2.x enrichment can join against the benefits snapshot to populate richer columns.
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<BenefitGrantPayload>, PolarReportingApiError>> FetchBenefitGrantsSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _polar.BenefitGrants.EmptyPathSegment.GetAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
+
+            var items = response?.Items ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<BenefitGrantPayload>, PolarReportingApiError>.Success(Array.Empty<BenefitGrantPayload>());
+
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ascending[i].Id, sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
+
+            var mapped = new List<BenefitGrantPayload>(ascending.Count);
+            foreach (var g in ascending)
+            {
+                mapped.Add(new BenefitGrantPayload(
+                    Id: g.Id ?? string.Empty,
+                    CustomerId: g.CustomerId ?? string.Empty,
+                    OrderId: g.OrderId?.String,
+                    BenefitId: g.BenefitId ?? string.Empty,
+                    BenefitName: g.BenefitId ?? string.Empty,
+                    BenefitKind: "unknown",
+                    IsGranted: g.IsGranted ?? false,
+                    GrantedAt: g.GrantedAt?.DateTimeOffset,
+                    RevokedAt: g.RevokedAt?.DateTimeOffset));
+            }
+            return Result<IReadOnlyList<BenefitGrantPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<BenefitGrantPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "benefit-grants"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching benefit grants.");
+            return Result<IReadOnlyList<BenefitGrantPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
 
     // ── V20-005 Phase 1: 7 new resource impls ────────────────────────────────
     // Filled in resource-by-resource below. Each starts as a stub returning empty
@@ -621,12 +977,6 @@ internal sealed class PolarClientReportingApi(PolarClient polar, ILogger<PolarCl
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
-
-    private Task<Result<IReadOnlyList<T>, PolarReportingApiError>> EmptyAsync<T>(string method)
-    {
-        _logger.LogDebug("PolarClientReportingApi.{Method}: HTTP wiring deferred; returning empty page.", method);
-        return Task.FromResult(Result<IReadOnlyList<T>, PolarReportingApiError>.Success((IReadOnlyList<T>)Array.Empty<T>()));
-    }
 
     private static PolarReportingApiError MapApiException(ApiException ex, string resourceName)
     {
