@@ -278,8 +278,78 @@ internal sealed class PolarClientReportingApi(PolarClient polar, ILogger<PolarCl
         }
     }
 
-    public Task<Result<IReadOnlyList<MeterPayload>, PolarReportingApiError>> FetchMetersSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<MeterPayload>(nameof(FetchMetersSinceAsync));
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1F: live wiring against <c>GET /v1/meters/</c>. Polar's
+    /// <c>Meter.Aggregation</c> is a discriminated union on a field (not the top-level
+    /// shape) — variants: <c>CountAggregation</c>, <c>PropertyAggregation</c>,
+    /// <c>UniqueAggregation</c>. Each carries a <c>Func</c> field naming the actual
+    /// aggregation function (sum, max, avg, count, unique). We probe each variant in
+    /// order and surface the function name as the snapshot's <c>AggregationKind</c>.
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<MeterPayload>, PolarReportingApiError>> FetchMetersSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _polar.Meters.EmptyPathSegment.GetAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
+
+            var items = response?.Items ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<MeterPayload>, PolarReportingApiError>.Success(Array.Empty<MeterPayload>());
+
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ascending[i].Id, sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
+
+            var mapped = new List<MeterPayload>(ascending.Count);
+            foreach (var m in ascending)
+            {
+                mapped.Add(new MeterPayload(
+                    Id: m.Id ?? string.Empty,
+                    Name: m.Name ?? "(unnamed)",
+                    AggregationKind: ExtractAggregationKind(m.Aggregation),
+                    CreatedAt: m.CreatedAt ?? DateTimeOffset.UtcNow));
+            }
+            return Result<IReadOnlyList<MeterPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<MeterPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "meters"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching meters.");
+            return Result<IReadOnlyList<MeterPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// Probes the Meter_aggregation discriminator wrapper and returns the aggregation
+    /// function name (sum / count / avg / max / min / unique) as a lowercase wire string.
+    /// Defaults to "unknown" when no variant is populated.
+    /// </summary>
+    private static string ExtractAggregationKind(global::PolarSharp.Generated.Models.Meter.Meter_aggregation? agg)
+    {
+        if (agg is null) return "unknown";
+        if (agg.CountAggregation is { Func: { Length: > 0 } cf }) return cf.ToLowerInvariant();
+        if (agg.PropertyAggregation is { Func: { } pf }) return pf.ToString().ToLowerInvariant();
+        if (agg.UniqueAggregation is { Func: { Length: > 0 } uf }) return uf.ToLowerInvariant();
+        return "unknown";
+    }
 
     /// <inheritdoc/>
     /// <remarks>

@@ -53,6 +53,7 @@ internal sealed class ReportSnapshotService(
     private const string ResourceCustomerMeters = "customer_meters";
     private const string ResourceLicenseKeys = "license_keys";
     private const string ResourceBenefits = "benefits";
+    private const string ResourceMeters = "meters";
 
     private readonly PolarReportingDbContext _db = db ?? throw new ArgumentNullException(nameof(db));
     private readonly IPolarReportingApi _polarApi = polarApi ?? throw new ArgumentNullException(nameof(polarApi));
@@ -77,6 +78,8 @@ internal sealed class ReportSnapshotService(
         var licenseKeysCount = await IngestLicenseKeysAsync(tenantId, ct).ConfigureAwait(false);
         // V20-005 Phase 1E: benefits (discriminated union)
         var benefitsCount = await IngestBenefitsAsync(tenantId, ct).ConfigureAwait(false);
+        // V20-005 Phase 1F: meters (Aggregation discriminated union)
+        var metersCount = await IngestMetersAsync(tenantId, ct).ConfigureAwait(false);
 
         await RefreshAggregatesAsync(tenantId, ct).ConfigureAwait(false);
 
@@ -93,6 +96,7 @@ internal sealed class ReportSnapshotService(
             CustomerMetersIngested: customerMetersCount,
             LicenseKeysIngested: licenseKeysCount,
             BenefitsIngested: benefitsCount,
+            MetersIngested: metersCount,
             Duration: sw.Elapsed);
     }
 
@@ -303,6 +307,30 @@ internal sealed class ReportSnapshotService(
             if (rows.Count == 0) break;
 
             await UpsertBenefitsAsync(tenantId, rows, ct).ConfigureAwait(false);
+            cursor = rows[^1].Id;
+            total += rows.Count;
+
+            if (rows.Count < PageSize) break;
+        }
+
+        await AdvanceCheckpointAsync(checkpoint, cursor, ct).ConfigureAwait(false);
+        return total;
+    }
+
+    // V20-005 Phase 1F: meters ingestion (Aggregation discriminator on a field)
+    private async Task<int> IngestMetersAsync(string tenantId, CancellationToken ct)
+    {
+        var checkpoint = await LoadOrCreateCheckpointAsync(tenantId, ResourceMeters, ct).ConfigureAwait(false);
+        var total = 0;
+        string? cursor = checkpoint.LastPolarId;
+
+        while (true)
+        {
+            var pageResult = await _polarApi.FetchMetersSinceAsync(cursor, PageSize, ct).ConfigureAwait(false);
+            if (!TryUnwrapPage(pageResult, ResourceMeters, out var rows)) break;
+            if (rows.Count == 0) break;
+
+            await UpsertMetersAsync(tenantId, rows, ct).ConfigureAwait(false);
             cursor = rows[^1].Id;
             total += rows.Count;
 
@@ -546,6 +574,36 @@ internal sealed class ReportSnapshotService(
                     BenefitName = row.BenefitName,
                     BenefitKind = row.BenefitKind,
                     IsGranted = row.IsGranted,
+                });
+            }
+        }
+        await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+    }
+
+    // V20-005 Phase 1F: meters upsert — idempotent on PolarMeterId
+    private async Task UpsertMetersAsync(string tenantId, IReadOnlyList<MeterPayload> rows, CancellationToken ct)
+    {
+        var ids = rows.Select(r => r.Id).ToList();
+        var existing = await _db.Meters.Where(m => ids.Contains(m.PolarMeterId)).ToListAsync(ct).ConfigureAwait(false);
+        var byId = existing.ToDictionary(m => m.PolarMeterId);
+
+        foreach (var row in rows)
+        {
+            if (byId.TryGetValue(row.Id, out var m))
+            {
+                m.Name = row.Name;
+                m.AggregationKind = row.AggregationKind;
+            }
+            else
+            {
+                _db.Meters.Add(new ReportMeterEntity
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    PolarMeterId = row.Id,
+                    Name = row.Name,
+                    AggregationKind = row.AggregationKind,
+                    CreatedAt = row.CreatedAt,
                 });
             }
         }
