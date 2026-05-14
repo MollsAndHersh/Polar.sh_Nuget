@@ -48,6 +48,8 @@ internal sealed class ReportSnapshotService(
     private const string ResourceSubscriptions = "subscriptions";
     private const string ResourceCustomers = "customers";
     private const string ResourceBenefitGrants = "benefit_grants";
+    // V20-005 Phase 1B+:
+    private const string ResourceProducts = "products";
 
     private readonly PolarReportingDbContext _db = db ?? throw new ArgumentNullException(nameof(db));
     private readonly IPolarReportingApi _polarApi = polarApi ?? throw new ArgumentNullException(nameof(polarApi));
@@ -64,6 +66,8 @@ internal sealed class ReportSnapshotService(
         var subsCount = await IngestSubscriptionsAsync(tenantId, ct).ConfigureAwait(false);
         var custsCount = await IngestCustomersAsync(tenantId, ct).ConfigureAwait(false);
         var grantsCount = await IngestBenefitGrantsAsync(tenantId, ct).ConfigureAwait(false);
+        // V20-005 Phase 1B: products
+        var productsCount = await IngestProductsAsync(tenantId, ct).ConfigureAwait(false);
 
         await RefreshAggregatesAsync(tenantId, ct).ConfigureAwait(false);
 
@@ -76,6 +80,7 @@ internal sealed class ReportSnapshotService(
             SubscriptionsIngested: subsCount,
             CustomersIngested: custsCount,
             BenefitGrantsIngested: grantsCount,
+            ProductsIngested: productsCount,
             Duration: sw.Elapsed);
     }
 
@@ -190,6 +195,30 @@ internal sealed class ReportSnapshotService(
             if (rows.Count == 0) break;
 
             await UpsertBenefitGrantsAsync(tenantId, rows, ct).ConfigureAwait(false);
+            cursor = rows[^1].Id;
+            total += rows.Count;
+
+            if (rows.Count < PageSize) break;
+        }
+
+        await AdvanceCheckpointAsync(checkpoint, cursor, ct).ConfigureAwait(false);
+        return total;
+    }
+
+    // V20-005 Phase 1B: products ingestion
+    private async Task<int> IngestProductsAsync(string tenantId, CancellationToken ct)
+    {
+        var checkpoint = await LoadOrCreateCheckpointAsync(tenantId, ResourceProducts, ct).ConfigureAwait(false);
+        var total = 0;
+        string? cursor = checkpoint.LastPolarId;
+
+        while (true)
+        {
+            var pageResult = await _polarApi.FetchProductsSinceAsync(cursor, PageSize, ct).ConfigureAwait(false);
+            if (!TryUnwrapPage(pageResult, ResourceProducts, out var rows)) break;
+            if (rows.Count == 0) break;
+
+            await UpsertProductsAsync(tenantId, rows, ct).ConfigureAwait(false);
             cursor = rows[^1].Id;
             total += rows.Count;
 
@@ -433,6 +462,44 @@ internal sealed class ReportSnapshotService(
                     BenefitName = row.BenefitName,
                     BenefitKind = row.BenefitKind,
                     IsGranted = row.IsGranted,
+                });
+            }
+        }
+        await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+    }
+
+    // V20-005 Phase 1B: products upsert — idempotent on PolarProductId
+    private async Task UpsertProductsAsync(string tenantId, IReadOnlyList<ProductPayload> rows, CancellationToken ct)
+    {
+        var ids = rows.Select(r => r.Id).ToList();
+        var existing = await _db.Products.Where(p => ids.Contains(p.PolarProductId)).ToListAsync(ct).ConfigureAwait(false);
+        var byId = existing.ToDictionary(p => p.PolarProductId);
+
+        foreach (var row in rows)
+        {
+            if (byId.TryGetValue(row.Id, out var p))
+            {
+                p.Name = row.Name;
+                p.Description = row.Description;
+                p.IsRecurring = row.IsRecurring;
+                p.RecurringInterval = row.RecurringInterval;
+                p.IsArchived = row.IsArchived;
+                p.ModifiedAt = row.ModifiedAt;
+            }
+            else
+            {
+                _db.Products.Add(new ReportProductEntity
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    PolarProductId = row.Id,
+                    Name = row.Name,
+                    Description = row.Description,
+                    IsRecurring = row.IsRecurring,
+                    RecurringInterval = row.RecurringInterval,
+                    IsArchived = row.IsArchived,
+                    CreatedAt = row.CreatedAt,
+                    ModifiedAt = row.ModifiedAt,
                 });
             }
         }

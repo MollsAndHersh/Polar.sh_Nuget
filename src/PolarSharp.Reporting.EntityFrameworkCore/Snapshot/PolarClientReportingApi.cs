@@ -46,8 +46,69 @@ internal sealed class PolarClientReportingApi(PolarClient polar, ILogger<PolarCl
     public Task<Result<IReadOnlyList<CheckoutLinkPayload>, PolarReportingApiError>> FetchCheckoutLinksSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
         EmptyAsync<CheckoutLinkPayload>(nameof(FetchCheckoutLinksSinceAsync));
 
-    public Task<Result<IReadOnlyList<ProductPayload>, PolarReportingApiError>> FetchProductsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<ProductPayload>(nameof(FetchProductsSinceAsync));
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1B: live wiring against <c>GET /v1/products/</c>. Page-1 cursor
+    /// semantics — see the class-level remarks. Map: <c>Product</c> -&gt; <c>ProductPayload</c>.
+    /// <c>Description</c> is a string-or-object union; extract <c>.String</c>. <c>ModifiedAt</c>
+    /// is a DateTime-or-object union; extract <c>.DateTimeOffset</c>. <c>RecurringInterval</c>
+    /// is a Polar enum; we stringify it for our payload (wire-format value preserved).
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<ProductPayload>, PolarReportingApiError>> FetchProductsSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _polar.Products.EmptyPathSegment.GetAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
+
+            var items = response?.Items ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<ProductPayload>, PolarReportingApiError>.Success(Array.Empty<ProductPayload>());
+
+            // Polar returns descending by created_at; reverse to ascending so the snapshot
+            // service's `cursor = rows[^1].Id` advances to the newest ingested row.
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ascending[i].Id, sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
+
+            var mapped = new List<ProductPayload>(ascending.Count);
+            foreach (var p in ascending)
+            {
+                mapped.Add(new ProductPayload(
+                    Id: p.Id ?? string.Empty,
+                    Name: p.Name ?? string.Empty,
+                    Description: p.Description?.String,
+                    IsRecurring: p.IsRecurring ?? false,
+                    RecurringInterval: p.RecurringInterval?.ToString()?.ToLowerInvariant(),
+                    IsArchived: p.IsArchived ?? false,
+                    CreatedAt: p.CreatedAt ?? DateTimeOffset.UtcNow,
+                    ModifiedAt: p.ModifiedAt?.DateTimeOffset));
+            }
+            return Result<IReadOnlyList<ProductPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<ProductPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "products"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching products.");
+            return Result<IReadOnlyList<ProductPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
 
     public Task<Result<IReadOnlyList<LicenseKeyPayload>, PolarReportingApiError>> FetchLicenseKeysSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
         EmptyAsync<LicenseKeyPayload>(nameof(FetchLicenseKeysSinceAsync));

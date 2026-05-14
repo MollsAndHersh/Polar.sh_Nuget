@@ -14,7 +14,9 @@ public interface IReportSnapshotService
     Task<SnapshotReport> RunSnapshotAsync(string tenantId, CancellationToken ct = default);
 }
 
-/// <summary>Per-tenant snapshot run output.</summary>
+/// <summary>Per-tenant snapshot run output. The <c>*Ingested</c> counts surface how many rows
+/// the most-recent run upserted per resource. Phase 1B onwards extends this with counts for
+/// the 7 new resources as each goes live.</summary>
 public sealed record SnapshotReport(
     int EventsIngested,
     int OrdersIngested,
@@ -23,6 +25,7 @@ public sealed record SnapshotReport(
     int SubscriptionsIngested,
     int CustomersIngested,
     int BenefitGrantsIngested,
+    int ProductsIngested,
     TimeSpan Duration);
 
 /// <summary>Bound from <c>PolarSharp:Reporting</c> in appsettings.</summary>
