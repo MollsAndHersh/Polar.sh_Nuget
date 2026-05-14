@@ -43,7 +43,7 @@ public sealed class ReportSnapshotServiceTests
         // Checkpoints are created on first run; null LastPolarId means "nothing ingested yet".
         var db = scope.ServiceProvider.GetRequiredService<PolarReportingDbContext>();
         var checkpoints = await db.Checkpoints.AsNoTracking().ToListAsync();
-        Assert.Equal(11, checkpoints.Count);                         // one per resource (V20-005 Phase 1B–1G: +products, +customer_meters, +license_keys, +benefits, +meters, +checkout_links)
+        Assert.Equal(12, checkpoints.Count);                         // one per resource (V20-005 Phase 1B–1H: +products, +customer_meters, +license_keys, +benefits, +meters, +checkout_links, +discounts — full 7-new-resources scope live)
         Assert.All(checkpoints, c => Assert.Null(c.LastPolarId));
     }
 

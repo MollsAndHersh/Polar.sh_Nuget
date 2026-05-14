@@ -141,8 +141,151 @@ internal sealed class PolarClientReportingApi(PolarClient polar, ILogger<PolarCl
         static string Truncate(string s, int max) => s.Length <= max ? s : s[..max];
     }
 
-    public Task<Result<IReadOnlyList<DiscountPayload>, PolarReportingApiError>> FetchDiscountsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<DiscountPayload>(nameof(FetchDiscountsSinceAsync));
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1H: live wiring against <c>GET /v1/discounts/</c>. Polar's
+    /// <c>Discount</c> is a 4-way discriminated union wrapper:
+    /// <c>DiscountFixedOnceForeverDuration</c> + <c>DiscountFixedRepeatDuration</c> +
+    /// <c>DiscountPercentageOnceForeverDuration</c> + <c>DiscountPercentageRepeatDuration</c>.
+    /// Fixed variants carry <c>Amount</c> + <c>Currency</c>; Percentage variants carry
+    /// <c>BasisPoints</c> (percentage × 100). The remaining fields (Id / Name / Code /
+    /// MaxRedemptions / RedemptionsCount / StartsAt / EndsAt / CreatedAt) are uniform
+    /// across all four. The wrapper probes each variant and extracts both shared and
+    /// variant-specific fields.
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<DiscountPayload>, PolarReportingApiError>> FetchDiscountsSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _polar.Discounts.EmptyPathSegment.GetAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
+
+            var items = response?.Items ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<DiscountPayload>, PolarReportingApiError>.Success(Array.Empty<DiscountPayload>());
+
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ExtractDiscountId(ascending[i]), sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
+
+            var mapped = new List<DiscountPayload>(ascending.Count);
+            foreach (var d in ascending)
+            {
+                var payload = MapDiscount(d);
+                if (payload is not null) mapped.Add(payload);
+            }
+            return Result<IReadOnlyList<DiscountPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<DiscountPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "discounts"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching discounts.");
+            return Result<IReadOnlyList<DiscountPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
+
+    private static string? ExtractDiscountId(global::PolarSharp.Generated.Models.Discount d) =>
+        d.DiscountFixedOnceForeverDuration?.Id
+        ?? d.DiscountFixedRepeatDuration?.Id
+        ?? d.DiscountPercentageOnceForeverDuration?.Id
+        ?? d.DiscountPercentageRepeatDuration?.Id;
+
+    /// <summary>
+    /// Probes each of the 4 Discount subtype variants and produces a DiscountPayload from
+    /// whichever is populated. Returns null if no variant is populated (defensive — Polar
+    /// could ship a 5th discount type and we'd skip-with-warning rather than fail).
+    /// </summary>
+    private DiscountPayload? MapDiscount(global::PolarSharp.Generated.Models.Discount d)
+    {
+        // Note: Polar deprecated single-currency `Amount` + `Currency` on Fixed discount
+        // subtypes (Kiota flagged both [Obsolete]); they're replaced with a multi-currency
+        // `Amounts` collection. The v2.0 snapshot surfaces `AmountOff = null` and
+        // `Currency = null` for Fixed variants — flagged as v2.x enrichment to ingest the
+        // Amounts collection into a per-currency expanded representation. PercentOff /
+        // RedemptionsSoFar / MaxRedemptions / dates still map cleanly.
+        if (d.DiscountFixedOnceForeverDuration is { } fo)
+        {
+            return new DiscountPayload(
+                Id: fo.Id ?? string.Empty,
+                Name: fo.Name ?? "(unnamed discount)",
+                Code: fo.Code?.String,
+                Type: "fixed",
+                AmountOff: null,
+                PercentOff: null,
+                Currency: null,
+                RedemptionsSoFar: fo.RedemptionsCount,
+                MaxRedemptions: fo.MaxRedemptions?.Integer,
+                StartsAt: fo.StartsAt?.DateTimeOffset,
+                EndsAt: fo.EndsAt?.DateTimeOffset,
+                CreatedAt: fo.CreatedAt ?? DateTimeOffset.UtcNow);
+        }
+        if (d.DiscountFixedRepeatDuration is { } fr)
+        {
+            return new DiscountPayload(
+                Id: fr.Id ?? string.Empty,
+                Name: fr.Name ?? "(unnamed discount)",
+                Code: fr.Code?.String,
+                Type: "fixed",
+                AmountOff: null,
+                PercentOff: null,
+                Currency: null,
+                RedemptionsSoFar: fr.RedemptionsCount,
+                MaxRedemptions: fr.MaxRedemptions?.Integer,
+                StartsAt: fr.StartsAt?.DateTimeOffset,
+                EndsAt: fr.EndsAt?.DateTimeOffset,
+                CreatedAt: fr.CreatedAt ?? DateTimeOffset.UtcNow);
+        }
+        if (d.DiscountPercentageOnceForeverDuration is { } po)
+        {
+            return new DiscountPayload(
+                Id: po.Id ?? string.Empty,
+                Name: po.Name ?? "(unnamed discount)",
+                Code: po.Code?.String,
+                Type: "percentage",
+                AmountOff: null,
+                PercentOff: po.BasisPoints is { } bp ? bp / 100m : null,
+                Currency: null,
+                RedemptionsSoFar: po.RedemptionsCount,
+                MaxRedemptions: po.MaxRedemptions?.Integer,
+                StartsAt: po.StartsAt?.DateTimeOffset,
+                EndsAt: po.EndsAt?.DateTimeOffset,
+                CreatedAt: po.CreatedAt ?? DateTimeOffset.UtcNow);
+        }
+        if (d.DiscountPercentageRepeatDuration is { } pr)
+        {
+            return new DiscountPayload(
+                Id: pr.Id ?? string.Empty,
+                Name: pr.Name ?? "(unnamed discount)",
+                Code: pr.Code?.String,
+                Type: "percentage",
+                AmountOff: null,
+                PercentOff: pr.BasisPoints is { } bp ? bp / 100m : null,
+                Currency: null,
+                RedemptionsSoFar: pr.RedemptionsCount,
+                MaxRedemptions: pr.MaxRedemptions?.Integer,
+                StartsAt: pr.StartsAt?.DateTimeOffset,
+                EndsAt: pr.EndsAt?.DateTimeOffset,
+                CreatedAt: pr.CreatedAt ?? DateTimeOffset.UtcNow);
+        }
+        _logger.LogWarning("Discount row had no populated subtype variant — skipping in snapshot ingestion.");
+        return null;
+    }
 
     /// <inheritdoc/>
     /// <remarks>
