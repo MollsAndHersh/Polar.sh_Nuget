@@ -224,7 +224,26 @@ internal sealed class PerTenantSnapshotOrchestrator : IReportSnapshotTrigger, IA
         {
             using var scope = _scopeFactory.CreateScope();
             var initializer = scope.ServiceProvider.GetRequiredService<IPolarTenantScopeInitializer>();
-            await initializer.InitializeAsync(tenantId, scope.ServiceProvider, ct).ConfigureAwait(false);
+            // Two-phase: async resolve, then SYNC apply in this frame so the AsyncLocal
+            // mutation persists past the next await. See IPolarTenantScopeInitializer
+            // remarks for the AsyncLocal scoping rationale.
+            var tenant = await initializer.ResolveTenantAsync(tenantId, ct).ConfigureAwait(false);
+            if (tenant is null)
+            {
+                sw.Stop();
+                return new SnapshotCompletedEvent
+                {
+                    TenantId = tenantId,
+                    CompletedAt = _time.GetUtcNow(),
+                    Reason = reason,
+                    Success = false,
+                    ResourcesIngested = 0,
+                    RowsIngested = 0,
+                    Duration = sw.Elapsed,
+                    ErrorMessage = $"Tenant '{tenantId}' not found in store.",
+                };
+            }
+            scope.ServiceProvider.SetCurrentTenant(tenant);
 
             var snapshot = scope.ServiceProvider.GetRequiredService<IReportSnapshotService>();
             var report = await snapshot.RunSnapshotAsync(tenantId, ct).ConfigureAwait(false);

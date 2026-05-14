@@ -1,35 +1,43 @@
+using PolarSharp.MultiTenant;
+
 namespace PolarSharp.MultiTenant.EntityFrameworkCore;
 
 /// <summary>
-/// Shared abstraction for hydrating a Finbuckle multi-tenant context in execution contexts
-/// that don't have an active HTTP request — primarily <c>IHostedService</c> background
-/// workers (snapshot poller, webhook reconciler, fake-data sync service, etc.) and CLI
-/// export jobs.
+/// Per-scope tenant context hydration for non-HTTP background contexts — the snapshot
+/// orchestrator's per-tick scope, hosted-service workers, CLI export jobs.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Reuses the same Finbuckle resolution machinery that <c>PolarSharp.Webhooks</c>'s
-/// <c>IWebhookTenantScopeInitializer</c> uses, without coupling the webhooks package to
-/// <c>PolarSharp.MultiTenant.EntityFrameworkCore</c>. The concrete implementation in
-/// <c>PolarSharp.MultiTenant</c>'s Finbuckle bridge implements BOTH interfaces — webhooks
-/// and reporting share the machinery without webhooks gaining a new dependency.
+/// <strong>Two-phase by design.</strong> The async tenant lookup happens in
+/// <see cref="ResolveTenantAsync"/>; the synchronous apply happens via
+/// <see cref="TenantScopeExtensions.SetCurrentTenant"/> on the scope's
+/// <see cref="System.IServiceProvider"/>. This split is required because Finbuckle's
+/// <c>IMultiTenantContextSetter</c> writes to an <see cref="System.Threading.AsyncLocal{T}"/>:
+/// mutations made inside an awaited <c>async</c> method DO NOT flow back to the caller after
+/// the await (the AsyncLocal value is scoped to the async-state-machine that performed the
+/// write). The caller MUST apply the tenant in their own frame.
 /// </para>
 /// <para>
-/// <strong>Standalone webhooks preserved:</strong> the <c>IWebhookTenantScopeInitializer</c>
-/// in <c>PolarSharp.Webhooks</c> is UNCHANGED. A host running webhooks without multi-tenant
-/// installed gets the same null-impl fallback as v1.1.0.
+/// Canonical pattern:
+/// <code>
+/// using var scope = scopeFactory.CreateScope();
+/// var initializer = scope.ServiceProvider.GetRequiredService&lt;IPolarTenantScopeInitializer&gt;();
+/// var tenant = await initializer.ResolveTenantAsync(tenantId, ct);
+/// if (tenant is null) return;                                // unknown tenant — abort tick
+/// scope.ServiceProvider.SetCurrentTenant(tenant);            // SYNC, in caller frame
+/// var dbContext = scope.ServiceProvider.GetRequiredService&lt;PolarReportingDbContext&gt;();
+/// </code>
 /// </para>
 /// </remarks>
 public interface IPolarTenantScopeInitializer
 {
     /// <summary>
-    /// Hydrates the Finbuckle tenant context for the supplied tenant within the given service
-    /// scope so that DbContexts and tenant-scoped services resolve correctly inside background
-    /// workers.
+    /// Resolves the tenant from the registered <see cref="Finbuckle.MultiTenant.Abstractions.IMultiTenantStore{T}"/>
+    /// by primary key. Returns <see langword="null"/> when no tenant matches the supplied id —
+    /// callers should treat this as a soft failure (skip the tick) rather than throw.
     /// </summary>
-    /// <param name="tenantId">The tenant's primary identifier (GUID string).</param>
-    /// <param name="scope">The current DI service scope.</param>
+    /// <param name="tenantId">The tenant's primary key (GUID string).</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <exception cref="InvalidOperationException">Thrown when no tenant exists with the supplied ID.</exception>
-    Task InitializeAsync(string tenantId, IServiceProvider scope, CancellationToken ct = default);
+    /// <returns>The resolved <see cref="PolarTenantInfo"/>, or <see langword="null"/> when not found.</returns>
+    Task<PolarTenantInfo?> ResolveTenantAsync(string tenantId, CancellationToken ct = default);
 }

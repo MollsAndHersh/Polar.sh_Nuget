@@ -202,7 +202,8 @@ public sealed class PerTenantSnapshotOrchestratorTests
 
     private sealed class StubScopeInitializer : IPolarTenantScopeInitializer
     {
-        public Task InitializeAsync(string tenantId, IServiceProvider scope, CancellationToken ct = default) => Task.CompletedTask;
+        public Task<PolarTenantInfo?> ResolveTenantAsync(string tenantId, CancellationToken ct = default) =>
+            Task.FromResult<PolarTenantInfo?>(new PolarTenantInfo { Id = tenantId, Identifier = tenantId, Name = tenantId });
     }
 
     private sealed class StubAccessor(string tenantId) : IMultiTenantContextAccessor

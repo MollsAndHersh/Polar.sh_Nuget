@@ -1,20 +1,21 @@
 using Microsoft.EntityFrameworkCore;
+using PolarSharp.MultiTenant.EntityFrameworkCore;
 using PolarSharp.MultiTenant.Identity;
+using PolarSharp.Reporting.EntityFrameworkCore;
 
 namespace PolarSnapshotTestApp.Seed;
 
 /// <summary>
-/// Test-app Identity DB bring-up. Reporting DB migration deferred — see remarks.
+/// Test-app DB bring-up. Identity uses <c>EnsureCreatedAsync</c> for simplicity;
+/// Reporting uses the full migration set so snapshot tables match production schema.
 /// </summary>
 /// <remarks>
-/// PolarReportingDbContext extends TenantAwareDbContextBase, which requires an active
-/// tenant in the per-scope IMultiTenantContextAccessor at construction time. With the
-/// shipped DefaultPolarTenantScopeInitializer the orchestrator's per-tick path works
-/// (the orchestrator opens its own service-provider scope), but startup-context
-/// migration via IHostedService still needs more work — Finbuckle's AsyncLocal accessor
-/// behavior in the IHostedService startup scope doesn't reliably surface the tenant
-/// set via IMultiTenantContextSetter for subsequent same-scope DbContext construction.
-/// Tracked as a follow-up; the bridge wiring still demonstrates end-to-end via login.
+/// <c>PolarReportingDbContext</c> extends <c>TenantAwareDbContextBase</c>, which
+/// requires an active tenant in the per-scope <c>IMultiTenantContextAccessor</c> at
+/// construction time. We resolve a bootstrap tenant via <c>IPolarTenantScopeInitializer</c>
+/// (async) and apply it to the scope synchronously via <see cref="TenantScopeExtensions.SetCurrentTenant"/>
+/// — this keeps the AsyncLocal mutation in this method's frame so the next
+/// <c>GetRequiredService&lt;PolarReportingDbContext&gt;()</c> sees the tenant.
 /// </remarks>
 internal sealed class TestAppDbInitializer(IServiceProvider sp, ILogger<TestAppDbInitializer> logger) : IHostedService
 {
@@ -25,6 +26,22 @@ internal sealed class TestAppDbInitializer(IServiceProvider sp, ILogger<TestAppD
         var identityDb = scope.ServiceProvider.GetRequiredService<PolarUserDbContext>();
         await identityDb.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
         logger.LogInformation("PolarSnapshotTestApp: Identity SQLite DB ready ({Path}).", identityDb.Database.GetConnectionString());
+
+        var initializer = scope.ServiceProvider.GetRequiredService<IPolarTenantScopeInitializer>();
+        var tenant = await initializer.ResolveTenantAsync("00000000-0000-0000-0000-000000000001", cancellationToken).ConfigureAwait(false);
+        if (tenant is null)
+        {
+            logger.LogWarning("PolarSnapshotTestApp: bootstrap tenant not found; skipping Reporting DB migration.");
+            return;
+        }
+        scope.ServiceProvider.SetCurrentTenant(tenant);
+
+        var reportingDb = scope.ServiceProvider.GetRequiredService<PolarReportingDbContext>();
+        // Test app uses EnsureCreatedAsync (not MigrateAsync) — the Reporting model has drifted
+        // from its checked-in migration and the test app shouldn't run real migrations anyway.
+        // Production hosts use MigrateAsync against the EF migration set.
+        await reportingDb.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
+        logger.LogInformation("PolarSnapshotTestApp: Reporting SQLite DB ready ({Path}).", reportingDb.Database.GetConnectionString());
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
