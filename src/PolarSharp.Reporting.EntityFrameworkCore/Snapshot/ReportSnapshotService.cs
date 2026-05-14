@@ -51,6 +51,7 @@ internal sealed class ReportSnapshotService(
     // V20-005 Phase 1B+:
     private const string ResourceProducts = "products";
     private const string ResourceCustomerMeters = "customer_meters";
+    private const string ResourceLicenseKeys = "license_keys";
 
     private readonly PolarReportingDbContext _db = db ?? throw new ArgumentNullException(nameof(db));
     private readonly IPolarReportingApi _polarApi = polarApi ?? throw new ArgumentNullException(nameof(polarApi));
@@ -71,6 +72,8 @@ internal sealed class ReportSnapshotService(
         var productsCount = await IngestProductsAsync(tenantId, ct).ConfigureAwait(false);
         // V20-005 Phase 1C: customer-meters
         var customerMetersCount = await IngestCustomerMetersAsync(tenantId, ct).ConfigureAwait(false);
+        // V20-005 Phase 1D: license-keys
+        var licenseKeysCount = await IngestLicenseKeysAsync(tenantId, ct).ConfigureAwait(false);
 
         await RefreshAggregatesAsync(tenantId, ct).ConfigureAwait(false);
 
@@ -85,6 +88,7 @@ internal sealed class ReportSnapshotService(
             BenefitGrantsIngested: grantsCount,
             ProductsIngested: productsCount,
             CustomerMetersIngested: customerMetersCount,
+            LicenseKeysIngested: licenseKeysCount,
             Duration: sw.Elapsed);
     }
 
@@ -247,6 +251,30 @@ internal sealed class ReportSnapshotService(
             if (rows.Count == 0) break;
 
             await UpsertCustomerMetersAsync(tenantId, rows, ct).ConfigureAwait(false);
+            cursor = rows[^1].Id;
+            total += rows.Count;
+
+            if (rows.Count < PageSize) break;
+        }
+
+        await AdvanceCheckpointAsync(checkpoint, cursor, ct).ConfigureAwait(false);
+        return total;
+    }
+
+    // V20-005 Phase 1D: license-keys ingestion
+    private async Task<int> IngestLicenseKeysAsync(string tenantId, CancellationToken ct)
+    {
+        var checkpoint = await LoadOrCreateCheckpointAsync(tenantId, ResourceLicenseKeys, ct).ConfigureAwait(false);
+        var total = 0;
+        string? cursor = checkpoint.LastPolarId;
+
+        while (true)
+        {
+            var pageResult = await _polarApi.FetchLicenseKeysSinceAsync(cursor, PageSize, ct).ConfigureAwait(false);
+            if (!TryUnwrapPage(pageResult, ResourceLicenseKeys, out var rows)) break;
+            if (rows.Count == 0) break;
+
+            await UpsertLicenseKeysAsync(tenantId, rows, ct).ConfigureAwait(false);
             cursor = rows[^1].Id;
             total += rows.Count;
 
@@ -490,6 +518,46 @@ internal sealed class ReportSnapshotService(
                     BenefitName = row.BenefitName,
                     BenefitKind = row.BenefitKind,
                     IsGranted = row.IsGranted,
+                });
+            }
+        }
+        await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+    }
+
+    // V20-005 Phase 1D: license-keys upsert — idempotent on PolarLicenseKeyId
+    private async Task UpsertLicenseKeysAsync(string tenantId, IReadOnlyList<LicenseKeyPayload> rows, CancellationToken ct)
+    {
+        var ids = rows.Select(r => r.Id).ToList();
+        var existing = await _db.LicenseKeys.Where(lk => ids.Contains(lk.PolarLicenseKeyId)).ToListAsync(ct).ConfigureAwait(false);
+        var byId = existing.ToDictionary(lk => lk.PolarLicenseKeyId);
+
+        foreach (var row in rows)
+        {
+            if (byId.TryGetValue(row.Id, out var lk))
+            {
+                lk.CustomerId = row.CustomerId;
+                lk.BenefitId = row.BenefitId;
+                lk.DisplayKey = row.DisplayKey;
+                lk.Status = row.Status;
+                lk.LimitActivations = row.LimitActivations;
+                lk.ActivationsUsed = row.ActivationsUsed;
+                lk.ExpiresAt = row.ExpiresAt;
+            }
+            else
+            {
+                _db.LicenseKeys.Add(new ReportLicenseKeyEntity
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    PolarLicenseKeyId = row.Id,
+                    CustomerId = row.CustomerId,
+                    BenefitId = row.BenefitId,
+                    DisplayKey = row.DisplayKey,
+                    Status = row.Status,
+                    LimitActivations = row.LimitActivations,
+                    ActivationsUsed = row.ActivationsUsed,
+                    ExpiresAt = row.ExpiresAt,
+                    CreatedAt = row.CreatedAt,
                 });
             }
         }

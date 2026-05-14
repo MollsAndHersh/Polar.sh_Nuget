@@ -110,8 +110,72 @@ internal sealed class PolarClientReportingApi(PolarClient polar, ILogger<PolarCl
         }
     }
 
-    public Task<Result<IReadOnlyList<LicenseKeyPayload>, PolarReportingApiError>> FetchLicenseKeysSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<LicenseKeyPayload>(nameof(FetchLicenseKeysSinceAsync));
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1D: live wiring against <c>GET /v1/license-keys/</c>. Multiple
+    /// union-wrapped fields: <c>ExpiresAt</c> + <c>ModifiedAt</c> + <c>LastValidatedAt</c>
+    /// (DateTimeOffset-or-object); <c>LimitActivations</c> + <c>LimitUsage</c>
+    /// (Integer-or-object). Extract the populated variant on each. The raw <c>Key</c> is
+    /// deliberately NOT mapped — we surface <c>DisplayKey</c> (Polar's masked-for-UI form)
+    /// so the snapshot never carries the sensitive raw key string. <c>Usage</c> is mapped
+    /// to <c>ActivationsUsed</c>; semantically it's "validation count" in Polar's model
+    /// (distinct from raw activation count), but it's the only usage-counter Polar
+    /// surfaces at the list level — close-enough for the snapshot.
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<LicenseKeyPayload>, PolarReportingApiError>> FetchLicenseKeysSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _polar.LicenseKeys.EmptyPathSegment.GetAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
+
+            var items = response?.Items ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<LicenseKeyPayload>, PolarReportingApiError>.Success(Array.Empty<LicenseKeyPayload>());
+
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ascending[i].Id, sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
+
+            var mapped = new List<LicenseKeyPayload>(ascending.Count);
+            foreach (var lk in ascending)
+            {
+                mapped.Add(new LicenseKeyPayload(
+                    Id: lk.Id ?? string.Empty,
+                    CustomerId: lk.CustomerId ?? string.Empty,
+                    BenefitId: lk.BenefitId,
+                    DisplayKey: lk.DisplayKey,
+                    Status: lk.Status?.ToString()?.ToLowerInvariant() ?? "granted",
+                    LimitActivations: lk.LimitActivations?.Integer,
+                    ActivationsUsed: lk.Usage,
+                    ExpiresAt: lk.ExpiresAt?.DateTimeOffset,
+                    CreatedAt: lk.CreatedAt ?? DateTimeOffset.UtcNow));
+            }
+            return Result<IReadOnlyList<LicenseKeyPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<LicenseKeyPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "license-keys"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching license keys.");
+            return Result<IReadOnlyList<LicenseKeyPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
 
     public Task<Result<IReadOnlyList<MeterPayload>, PolarReportingApiError>> FetchMetersSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
         EmptyAsync<MeterPayload>(nameof(FetchMetersSinceAsync));
