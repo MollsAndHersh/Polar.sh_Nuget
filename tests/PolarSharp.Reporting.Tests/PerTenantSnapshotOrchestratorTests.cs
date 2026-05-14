@@ -33,7 +33,13 @@ public sealed class PerTenantSnapshotOrchestratorTests
         var fake = new FakeSnapshotService();
         var services = new ServiceCollection();
         services.AddSingleton<TimeProvider>(time ?? TimeProvider.System);
-        services.AddSingleton<IMultiTenantContextAccessor>(new StubAccessor(TenantA));
+        // Real Finbuckle accessor backs the reader interface AND the setter; the
+        // orchestrator's per-tick path calls scope.SetCurrentTenant which writes via
+        // IMultiTenantContextSetter, so all three resolve to the same singleton.
+        services.AddSingleton<AsyncLocalMultiTenantContextAccessor<PolarTenantInfo>>();
+        services.AddSingleton<IMultiTenantContextAccessor>(sp => sp.GetRequiredService<AsyncLocalMultiTenantContextAccessor<PolarTenantInfo>>());
+        services.AddSingleton<IMultiTenantContextAccessor<PolarTenantInfo>>(sp => sp.GetRequiredService<AsyncLocalMultiTenantContextAccessor<PolarTenantInfo>>());
+        services.AddSingleton<IMultiTenantContextSetter>(sp => sp.GetRequiredService<AsyncLocalMultiTenantContextAccessor<PolarTenantInfo>>());
         services.AddSingleton<IPolarTenantScopeInitializer, StubScopeInitializer>();
         services.AddDbContext<PolarReportingDbContext>(opts => opts.UseSqlite(conn));
         services.AddScoped<IReportSnapshotService>(_ => fake);

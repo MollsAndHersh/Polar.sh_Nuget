@@ -37,11 +37,8 @@ internal sealed class TestAppDbInitializer(IServiceProvider sp, ILogger<TestAppD
         scope.ServiceProvider.SetCurrentTenant(tenant);
 
         var reportingDb = scope.ServiceProvider.GetRequiredService<PolarReportingDbContext>();
-        // Test app uses EnsureCreatedAsync (not MigrateAsync) — the Reporting model has drifted
-        // from its checked-in migration and the test app shouldn't run real migrations anyway.
-        // Production hosts use MigrateAsync against the EF migration set.
-        await reportingDb.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
-        logger.LogInformation("PolarSnapshotTestApp: Reporting SQLite DB ready ({Path}).", reportingDb.Database.GetConnectionString());
+        await reportingDb.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+        logger.LogInformation("PolarSnapshotTestApp: Reporting SQLite DB migrated ({Path}).", reportingDb.Database.GetConnectionString());
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
