@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PolarSharp.MultiTenant.EntityFrameworkCore;
 using PolarSharp.Reporting.EntityFrameworkCore.Entities;
 
@@ -68,5 +69,38 @@ public class PolarReportingDbContext : TenantAwareDbContextBase
         ArgumentNullException.ThrowIfNull(modelBuilder);
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PolarReportingDbContext).Assembly);
+
+        // SQLite doesn't support ORDER BY on DateTimeOffset columns (EF Core limitation —
+        // SQLite stores them as TEXT and refuses ORDER BY translation). The drilldown
+        // queries (ListCustomersAsync sort by LastOrderAt, ListOrdersForCustomerAsync sort
+        // by CreatedAt) need server-side ordering, so we apply a value converter that
+        // stores DateTimeOffset as long (UtcTicks) for SQLite ONLY. SqlServer + Postgres
+        // both support DateTimeOffset natively in ORDER BY and keep the original column
+        // type. Conversion is lossless — UtcTicks round-trips through DateTimeOffset.
+        if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+        {
+            ApplySqliteDateTimeOffsetConverter(modelBuilder);
+        }
+    }
+
+    private static void ApplySqliteDateTimeOffsetConverter(ModelBuilder modelBuilder)
+    {
+        var nonNullable = new ValueConverter<DateTimeOffset, long>(
+            v => v.UtcTicks,
+            v => new DateTimeOffset(v, TimeSpan.Zero));
+        var nullable = new ValueConverter<DateTimeOffset?, long?>(
+            v => v.HasValue ? v.Value.UtcTicks : null,
+            v => v.HasValue ? new DateTimeOffset(v.Value, TimeSpan.Zero) : null);
+
+        foreach (var entity in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var prop in entity.GetProperties())
+            {
+                if (prop.ClrType == typeof(DateTimeOffset))
+                    prop.SetValueConverter(nonNullable);
+                else if (prop.ClrType == typeof(DateTimeOffset?))
+                    prop.SetValueConverter(nullable);
+            }
+        }
     }
 }
