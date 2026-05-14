@@ -37,8 +37,109 @@ internal sealed class PolarClientReportingApi(PolarClient polar, ILogger<PolarCl
     // Filled in resource-by-resource below. Each starts as a stub returning empty
     // so the file compiles cleanly during incremental wiring; replaced one-at-a-time.
 
-    public Task<Result<IReadOnlyList<BenefitPayload>, PolarReportingApiError>> FetchBenefitsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
-        EmptyAsync<BenefitPayload>(nameof(FetchBenefitsSinceAsync));
+    /// <inheritdoc/>
+    /// <remarks>
+    /// V20-005 Phase 1E: live wiring against <c>GET /v1/benefits/</c>. <c>Benefit</c> is a
+    /// discriminated union wrapping seven subtypes (BenefitCustom, BenefitDiscord,
+    /// BenefitDownloadables, BenefitFeatureFlag, BenefitGitHubRepository, BenefitLicenseKeys,
+    /// BenefitMeterCredit) — exactly one subtype property is non-null per row. We probe each
+    /// in order and extract the shared fields (Id, Description, IsActive, CreatedAt). The
+    /// discriminator becomes the <c>Kind</c> value, mapped to Polar's wire-format string.
+    /// </remarks>
+    public async Task<Result<IReadOnlyList<BenefitPayload>, PolarReportingApiError>> FetchBenefitsSinceAsync(string? sinceId, int pageSize, CancellationToken ct)
+    {
+        try
+        {
+            var response = await _polar.Benefits.EmptyPathSegment.GetAsync(cfg =>
+            {
+                cfg.QueryParameters.Limit = pageSize;
+                cfg.QueryParameters.Page = 1;
+            }, ct).ConfigureAwait(false);
+
+            var items = response?.Items ?? [];
+            if (items.Count == 0) return Result<IReadOnlyList<BenefitPayload>, PolarReportingApiError>.Success(Array.Empty<BenefitPayload>());
+
+            var ascending = items.AsEnumerable().Reverse().ToList();
+            if (!string.IsNullOrEmpty(sinceId))
+            {
+                var idx = -1;
+                for (var i = 0; i < ascending.Count; i++)
+                {
+                    if (string.Equals(ExtractBenefitId(ascending[i]), sinceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        idx = i; break;
+                    }
+                }
+                if (idx >= 0) ascending = [.. ascending.Skip(idx + 1)];
+            }
+
+            var mapped = new List<BenefitPayload>(ascending.Count);
+            foreach (var b in ascending)
+            {
+                var payload = MapBenefit(b);
+                if (payload is not null) mapped.Add(payload);
+            }
+            return Result<IReadOnlyList<BenefitPayload>, PolarReportingApiError>.Success(mapped);
+        }
+        catch (ApiException ex)
+        {
+            return Result<IReadOnlyList<BenefitPayload>, PolarReportingApiError>.Failure(MapApiException(ex, "benefits"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error fetching benefits.");
+            return Result<IReadOnlyList<BenefitPayload>, PolarReportingApiError>.Failure(new PolarReportingApiError(
+                PolarReportingApiErrorKind.UnexpectedFailure, $"{ex.GetType().Name}: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// Extracts the Polar id from whichever subtype variant is populated on the
+    /// <see cref="global::PolarSharp.Generated.Models.Benefit"/> wrapper.
+    /// </summary>
+    private static string? ExtractBenefitId(global::PolarSharp.Generated.Models.Benefit b) =>
+        b.BenefitCustom?.Id
+        ?? b.BenefitDiscord?.Id
+        ?? b.BenefitDownloadables?.Id
+        ?? b.BenefitFeatureFlag?.Id
+        ?? b.BenefitGitHubRepository?.Id
+        ?? b.BenefitLicenseKeys?.Id
+        ?? b.BenefitMeterCredit?.Id;
+
+    /// <summary>
+    /// Probes each subtype on the Benefit discriminator wrapper, returning a populated
+    /// payload for the first non-null variant. Returns null if the wrapper has no populated
+    /// variant (Polar returned a row with an unknown <c>type</c> discriminator — we log
+    /// + skip rather than fail).
+    /// </summary>
+    private BenefitPayload? MapBenefit(global::PolarSharp.Generated.Models.Benefit b)
+    {
+        // Each subtype has the same shared shape (Id, Description, Selectable, CreatedAt,
+        // ModifiedAt). The `Name` we surface is the Description truncated to fit the
+        // entity's 256-char limit; Polar's Benefit model has no separate display-name
+        // field for most subtypes.
+        if (b.BenefitCustom is { } c)              return Build(c.Id, c.Description, "custom", c.Selectable, c.CreatedAt, c.ModifiedAt?.DateTimeOffset);
+        if (b.BenefitDiscord is { } d)             return Build(d.Id, d.Description, "discord", d.Selectable, d.CreatedAt, d.ModifiedAt?.DateTimeOffset);
+        if (b.BenefitDownloadables is { } dl)      return Build(dl.Id, dl.Description, "downloadables", dl.Selectable, dl.CreatedAt, dl.ModifiedAt?.DateTimeOffset);
+        if (b.BenefitFeatureFlag is { } ff)        return Build(ff.Id, ff.Description, "feature_flag", ff.Selectable, ff.CreatedAt, ff.ModifiedAt?.DateTimeOffset);
+        if (b.BenefitGitHubRepository is { } gh)   return Build(gh.Id, gh.Description, "github_repository", gh.Selectable, gh.CreatedAt, gh.ModifiedAt?.DateTimeOffset);
+        if (b.BenefitLicenseKeys is { } lk)        return Build(lk.Id, lk.Description, "license_keys", lk.Selectable, lk.CreatedAt, lk.ModifiedAt?.DateTimeOffset);
+        if (b.BenefitMeterCredit is { } mc)        return Build(mc.Id, mc.Description, "meter_credit", mc.Selectable, mc.CreatedAt, mc.ModifiedAt?.DateTimeOffset);
+        _logger.LogWarning("Benefit row had no populated subtype variant — skipping in snapshot ingestion.");
+        return null;
+
+        static BenefitPayload Build(string? id, string? description, string kind, bool? selectable, DateTimeOffset? createdAt, DateTimeOffset? modifiedAt) =>
+            new(
+                Id: id ?? string.Empty,
+                Name: Truncate(description ?? kind, 256),
+                Kind: kind,
+                Description: description,
+                IsActive: selectable ?? true,
+                CreatedAt: createdAt ?? DateTimeOffset.UtcNow,
+                ModifiedAt: modifiedAt);
+
+        static string Truncate(string s, int max) => s.Length <= max ? s : s[..max];
+    }
 
     public Task<Result<IReadOnlyList<DiscountPayload>, PolarReportingApiError>> FetchDiscountsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
         EmptyAsync<DiscountPayload>(nameof(FetchDiscountsSinceAsync));

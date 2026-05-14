@@ -52,6 +52,7 @@ internal sealed class ReportSnapshotService(
     private const string ResourceProducts = "products";
     private const string ResourceCustomerMeters = "customer_meters";
     private const string ResourceLicenseKeys = "license_keys";
+    private const string ResourceBenefits = "benefits";
 
     private readonly PolarReportingDbContext _db = db ?? throw new ArgumentNullException(nameof(db));
     private readonly IPolarReportingApi _polarApi = polarApi ?? throw new ArgumentNullException(nameof(polarApi));
@@ -74,6 +75,8 @@ internal sealed class ReportSnapshotService(
         var customerMetersCount = await IngestCustomerMetersAsync(tenantId, ct).ConfigureAwait(false);
         // V20-005 Phase 1D: license-keys
         var licenseKeysCount = await IngestLicenseKeysAsync(tenantId, ct).ConfigureAwait(false);
+        // V20-005 Phase 1E: benefits (discriminated union)
+        var benefitsCount = await IngestBenefitsAsync(tenantId, ct).ConfigureAwait(false);
 
         await RefreshAggregatesAsync(tenantId, ct).ConfigureAwait(false);
 
@@ -89,6 +92,7 @@ internal sealed class ReportSnapshotService(
             ProductsIngested: productsCount,
             CustomerMetersIngested: customerMetersCount,
             LicenseKeysIngested: licenseKeysCount,
+            BenefitsIngested: benefitsCount,
             Duration: sw.Elapsed);
     }
 
@@ -275,6 +279,30 @@ internal sealed class ReportSnapshotService(
             if (rows.Count == 0) break;
 
             await UpsertLicenseKeysAsync(tenantId, rows, ct).ConfigureAwait(false);
+            cursor = rows[^1].Id;
+            total += rows.Count;
+
+            if (rows.Count < PageSize) break;
+        }
+
+        await AdvanceCheckpointAsync(checkpoint, cursor, ct).ConfigureAwait(false);
+        return total;
+    }
+
+    // V20-005 Phase 1E: benefits ingestion (discriminated union resource)
+    private async Task<int> IngestBenefitsAsync(string tenantId, CancellationToken ct)
+    {
+        var checkpoint = await LoadOrCreateCheckpointAsync(tenantId, ResourceBenefits, ct).ConfigureAwait(false);
+        var total = 0;
+        string? cursor = checkpoint.LastPolarId;
+
+        while (true)
+        {
+            var pageResult = await _polarApi.FetchBenefitsSinceAsync(cursor, PageSize, ct).ConfigureAwait(false);
+            if (!TryUnwrapPage(pageResult, ResourceBenefits, out var rows)) break;
+            if (rows.Count == 0) break;
+
+            await UpsertBenefitsAsync(tenantId, rows, ct).ConfigureAwait(false);
             cursor = rows[^1].Id;
             total += rows.Count;
 
@@ -518,6 +546,42 @@ internal sealed class ReportSnapshotService(
                     BenefitName = row.BenefitName,
                     BenefitKind = row.BenefitKind,
                     IsGranted = row.IsGranted,
+                });
+            }
+        }
+        await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+    }
+
+    // V20-005 Phase 1E: benefits upsert — idempotent on PolarBenefitId
+    private async Task UpsertBenefitsAsync(string tenantId, IReadOnlyList<BenefitPayload> rows, CancellationToken ct)
+    {
+        var ids = rows.Select(r => r.Id).ToList();
+        var existing = await _db.Benefits.Where(b => ids.Contains(b.PolarBenefitId)).ToListAsync(ct).ConfigureAwait(false);
+        var byId = existing.ToDictionary(b => b.PolarBenefitId);
+
+        foreach (var row in rows)
+        {
+            if (byId.TryGetValue(row.Id, out var b))
+            {
+                b.Name = row.Name;
+                b.Kind = row.Kind;
+                b.Description = row.Description;
+                b.IsActive = row.IsActive;
+                b.ModifiedAt = row.ModifiedAt;
+            }
+            else
+            {
+                _db.Benefits.Add(new ReportBenefitEntity
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    PolarBenefitId = row.Id,
+                    Name = row.Name,
+                    Kind = row.Kind,
+                    Description = row.Description,
+                    IsActive = row.IsActive,
+                    CreatedAt = row.CreatedAt,
+                    ModifiedAt = row.ModifiedAt,
                 });
             }
         }
