@@ -273,6 +273,27 @@ public sealed class ReportSnapshotServiceTests
         public Task<Result<IReadOnlyList<BenefitGrantPayload>, PolarReportingApiError>> FetchBenefitGrantsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
             NextPage(_grantPages);
 
+        // V20-005 Phase 1A: the 7 new interface methods are stubs in the test fake. Until
+        // tests for the live ingestion of those resources land (Phase 1B+), every call here
+        // returns an empty success page — matching the production stub behavior.
+        public Task<Result<IReadOnlyList<BenefitPayload>, PolarReportingApiError>> FetchBenefitsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
+            Empty<BenefitPayload>();
+        public Task<Result<IReadOnlyList<DiscountPayload>, PolarReportingApiError>> FetchDiscountsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
+            Empty<DiscountPayload>();
+        public Task<Result<IReadOnlyList<CheckoutLinkPayload>, PolarReportingApiError>> FetchCheckoutLinksSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
+            Empty<CheckoutLinkPayload>();
+        public Task<Result<IReadOnlyList<ProductPayload>, PolarReportingApiError>> FetchProductsSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
+            Empty<ProductPayload>();
+        public Task<Result<IReadOnlyList<LicenseKeyPayload>, PolarReportingApiError>> FetchLicenseKeysSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
+            Empty<LicenseKeyPayload>();
+        public Task<Result<IReadOnlyList<MeterPayload>, PolarReportingApiError>> FetchMetersSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
+            Empty<MeterPayload>();
+        public Task<Result<IReadOnlyList<CustomerMeterPayload>, PolarReportingApiError>> FetchCustomerMetersSinceAsync(string? sinceId, int pageSize, CancellationToken ct) =>
+            Empty<CustomerMeterPayload>();
+
+        private static Task<Result<IReadOnlyList<T>, PolarReportingApiError>> Empty<T>() =>
+            Task.FromResult(Result<IReadOnlyList<T>, PolarReportingApiError>.Success((IReadOnlyList<T>)Array.Empty<T>()));
+
         private static Task<Result<IReadOnlyList<T>, PolarReportingApiError>> NextPage<T>(Queue<IReadOnlyList<T>> queue)
         {
             var page = queue.Count > 0 ? queue.Dequeue() : (IReadOnlyList<T>)Array.Empty<T>();

@@ -33,8 +33,31 @@ public class PolarReportingDbContext : TenantAwareDbContextBase
     /// <summary>Mirrored Polar customers with pre-aggregated columns.</summary>
     public DbSet<ReportCustomerEntity> Customers => Set<ReportCustomerEntity>();
 
-    /// <summary>Benefit grants emitted by mirrored orders.</summary>
+    /// <summary>Benefit grants emitted by mirrored orders (and standalone via /v1/benefit-grants/).</summary>
     public DbSet<ReportBenefitGrantEntity> BenefitGrants => Set<ReportBenefitGrantEntity>();
+
+    // ── V20-005 Phase 1: 7 new resource snapshots ───────────────────────────────
+
+    /// <summary>Mirrored Polar benefit definitions (per-tenant catalog).</summary>
+    public DbSet<ReportBenefitEntity> Benefits => Set<ReportBenefitEntity>();
+
+    /// <summary>Mirrored Polar discount definitions.</summary>
+    public DbSet<ReportDiscountEntity> Discounts => Set<ReportDiscountEntity>();
+
+    /// <summary>Mirrored Polar checkout-link configurations.</summary>
+    public DbSet<ReportCheckoutLinkEntity> CheckoutLinks => Set<ReportCheckoutLinkEntity>();
+
+    /// <summary>Mirrored Polar product catalog (Polar-side state — distinct from the host's own catalog managed by PolarCatalogPublisher).</summary>
+    public DbSet<ReportProductEntity> Products => Set<ReportProductEntity>();
+
+    /// <summary>Mirrored Polar license keys (utilization + expiry pipeline reports).</summary>
+    public DbSet<ReportLicenseKeyEntity> LicenseKeys => Set<ReportLicenseKeyEntity>();
+
+    /// <summary>Mirrored Polar usage-billing meter definitions.</summary>
+    public DbSet<ReportMeterEntity> Meters => Set<ReportMeterEntity>();
+
+    /// <summary>Mirrored per-customer per-meter tallies.</summary>
+    public DbSet<ReportCustomerMeterEntity> CustomerMeters => Set<ReportCustomerMeterEntity>();
 
     /// <summary>Per-tenant per-resource snapshot checkpoints.</summary>
     public DbSet<ReportSnapshotCheckpointEntity> Checkpoints => Set<ReportSnapshotCheckpointEntity>();

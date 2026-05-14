@@ -112,6 +112,119 @@ internal sealed class ReportBenefitGrantConfig : IEntityTypeConfiguration<Report
     }
 }
 
+// ── V20-005 Phase 1: configurations for the 7 new resource snapshots ──────────────
+
+internal sealed class ReportBenefitConfig : IEntityTypeConfiguration<ReportBenefitEntity>
+{
+    public void Configure(EntityTypeBuilder<ReportBenefitEntity> b)
+    {
+        b.ToTable("polar_report_benefits");
+        b.HasKey(e => e.Id);
+        b.HasIndex(e => new { e.TenantId, e.PolarBenefitId }).IsUnique();
+        b.HasIndex(e => new { e.TenantId, e.Kind, e.IsActive });
+        b.Property(e => e.PolarBenefitId).HasMaxLength(64).IsRequired();
+        b.Property(e => e.Name).HasMaxLength(256).IsRequired();
+        b.Property(e => e.Kind).HasMaxLength(32).IsRequired();
+        b.Property(e => e.Description).HasMaxLength(1024);
+    }
+}
+
+internal sealed class ReportDiscountConfig : IEntityTypeConfiguration<ReportDiscountEntity>
+{
+    public void Configure(EntityTypeBuilder<ReportDiscountEntity> b)
+    {
+        b.ToTable("polar_report_discounts");
+        b.HasKey(e => e.Id);
+        b.HasIndex(e => new { e.TenantId, e.PolarDiscountId }).IsUnique();
+        b.HasIndex(e => new { e.TenantId, e.Code });
+        b.HasIndex(e => new { e.TenantId, e.EndsAt });
+        b.Property(e => e.PolarDiscountId).HasMaxLength(64).IsRequired();
+        b.Property(e => e.Name).HasMaxLength(256).IsRequired();
+        b.Property(e => e.Code).HasMaxLength(64);
+        b.Property(e => e.Type).HasMaxLength(16).IsRequired();
+        b.Property(e => e.Currency).HasMaxLength(3);
+        b.Property(e => e.PercentOff).HasPrecision(5, 2);
+    }
+}
+
+internal sealed class ReportCheckoutLinkConfig : IEntityTypeConfiguration<ReportCheckoutLinkEntity>
+{
+    public void Configure(EntityTypeBuilder<ReportCheckoutLinkEntity> b)
+    {
+        b.ToTable("polar_report_checkout_links");
+        b.HasKey(e => e.Id);
+        b.HasIndex(e => new { e.TenantId, e.PolarCheckoutLinkId }).IsUnique();
+        b.HasIndex(e => new { e.TenantId, e.CreatedAt });
+        b.Property(e => e.PolarCheckoutLinkId).HasMaxLength(64).IsRequired();
+        b.Property(e => e.Label).HasMaxLength(256).IsRequired();
+        b.Property(e => e.ProductIdsCsv).HasMaxLength(2048).IsRequired();
+        b.Property(e => e.Url).HasMaxLength(2048);
+        b.Property(e => e.SuccessUrl).HasMaxLength(2048);
+    }
+}
+
+internal sealed class ReportProductConfig : IEntityTypeConfiguration<ReportProductEntity>
+{
+    public void Configure(EntityTypeBuilder<ReportProductEntity> b)
+    {
+        b.ToTable("polar_report_products");
+        b.HasKey(e => e.Id);
+        b.HasIndex(e => new { e.TenantId, e.PolarProductId }).IsUnique();
+        b.HasIndex(e => new { e.TenantId, e.IsArchived });
+        b.HasIndex(e => new { e.TenantId, e.IsRecurring });
+        b.Property(e => e.PolarProductId).HasMaxLength(64).IsRequired();
+        b.Property(e => e.Name).HasMaxLength(256).IsRequired();
+        b.Property(e => e.Description).HasMaxLength(2048);
+        b.Property(e => e.RecurringInterval).HasMaxLength(16);
+    }
+}
+
+internal sealed class ReportLicenseKeyConfig : IEntityTypeConfiguration<ReportLicenseKeyEntity>
+{
+    public void Configure(EntityTypeBuilder<ReportLicenseKeyEntity> b)
+    {
+        b.ToTable("polar_report_license_keys");
+        b.HasKey(e => e.Id);
+        b.HasIndex(e => new { e.TenantId, e.PolarLicenseKeyId }).IsUnique();
+        b.HasIndex(e => new { e.TenantId, e.CustomerId });
+        b.HasIndex(e => new { e.TenantId, e.Status, e.ExpiresAt });
+        b.Property(e => e.PolarLicenseKeyId).HasMaxLength(64).IsRequired();
+        b.Property(e => e.CustomerId).HasMaxLength(64).IsRequired();
+        b.Property(e => e.BenefitId).HasMaxLength(64);
+        b.Property(e => e.DisplayKey).HasMaxLength(128);
+        b.Property(e => e.Status).HasMaxLength(16).IsRequired();
+    }
+}
+
+internal sealed class ReportMeterConfig : IEntityTypeConfiguration<ReportMeterEntity>
+{
+    public void Configure(EntityTypeBuilder<ReportMeterEntity> b)
+    {
+        b.ToTable("polar_report_meters");
+        b.HasKey(e => e.Id);
+        b.HasIndex(e => new { e.TenantId, e.PolarMeterId }).IsUnique();
+        b.Property(e => e.PolarMeterId).HasMaxLength(64).IsRequired();
+        b.Property(e => e.Name).HasMaxLength(256).IsRequired();
+        b.Property(e => e.AggregationKind).HasMaxLength(32).IsRequired();
+    }
+}
+
+internal sealed class ReportCustomerMeterConfig : IEntityTypeConfiguration<ReportCustomerMeterEntity>
+{
+    public void Configure(EntityTypeBuilder<ReportCustomerMeterEntity> b)
+    {
+        b.ToTable("polar_report_customer_meters");
+        b.HasKey(e => e.Id);
+        b.HasIndex(e => new { e.TenantId, e.PolarCustomerMeterId }).IsUnique();
+        b.HasIndex(e => new { e.TenantId, e.CustomerId, e.MeterId });
+        b.Property(e => e.PolarCustomerMeterId).HasMaxLength(64).IsRequired();
+        b.Property(e => e.CustomerId).HasMaxLength(64).IsRequired();
+        b.Property(e => e.MeterId).HasMaxLength(64).IsRequired();
+        b.Property(e => e.ConsumedUnits).HasPrecision(20, 4);
+        b.Property(e => e.CreditedUnits).HasPrecision(20, 4);
+    }
+}
+
 internal sealed class ReportSnapshotCheckpointConfig : IEntityTypeConfiguration<ReportSnapshotCheckpointEntity>
 {
     public void Configure(EntityTypeBuilder<ReportSnapshotCheckpointEntity> b)

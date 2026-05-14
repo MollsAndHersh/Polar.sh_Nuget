@@ -55,5 +55,15 @@ public sealed class AddPolarReportingTests
         public Task<Result<IReadOnlyList<SubscriptionPayload>, PolarReportingApiError>> FetchSubscriptionsSinceAsync(string? s, int n, CancellationToken c) => throw new NotImplementedException();
         public Task<Result<IReadOnlyList<CustomerPayload>, PolarReportingApiError>> FetchCustomersSinceAsync(string? s, int n, CancellationToken c) => throw new NotImplementedException();
         public Task<Result<IReadOnlyList<BenefitGrantPayload>, PolarReportingApiError>> FetchBenefitGrantsSinceAsync(string? s, int n, CancellationToken c) => throw new NotImplementedException();
+
+        // V20-005 Phase 1A: the 7 new interface methods. This stub is only used for DI-
+        // resolution tests (services must instantiate), never invoked, so NotImplemented is fine.
+        public Task<Result<IReadOnlyList<BenefitPayload>, PolarReportingApiError>> FetchBenefitsSinceAsync(string? s, int n, CancellationToken c) => throw new NotImplementedException();
+        public Task<Result<IReadOnlyList<DiscountPayload>, PolarReportingApiError>> FetchDiscountsSinceAsync(string? s, int n, CancellationToken c) => throw new NotImplementedException();
+        public Task<Result<IReadOnlyList<CheckoutLinkPayload>, PolarReportingApiError>> FetchCheckoutLinksSinceAsync(string? s, int n, CancellationToken c) => throw new NotImplementedException();
+        public Task<Result<IReadOnlyList<ProductPayload>, PolarReportingApiError>> FetchProductsSinceAsync(string? s, int n, CancellationToken c) => throw new NotImplementedException();
+        public Task<Result<IReadOnlyList<LicenseKeyPayload>, PolarReportingApiError>> FetchLicenseKeysSinceAsync(string? s, int n, CancellationToken c) => throw new NotImplementedException();
+        public Task<Result<IReadOnlyList<MeterPayload>, PolarReportingApiError>> FetchMetersSinceAsync(string? s, int n, CancellationToken c) => throw new NotImplementedException();
+        public Task<Result<IReadOnlyList<CustomerMeterPayload>, PolarReportingApiError>> FetchCustomerMetersSinceAsync(string? s, int n, CancellationToken c) => throw new NotImplementedException();
     }
 }
