@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsLibrary>true</IsLibrary>
+    <PackageId>PolarSharp.Reporting.Identity</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Molls and Hersh, LLC</Authors>
+    <Description>Bridges PolarSharp.MultiTenant.Identity sign-in / sign-out events into the PolarSharp.Reporting per-tenant snapshot orchestrator. Auto-fires snapshot triggers on user login/logout and emits per-request heartbeats via middleware so periodic polling stops when a user goes idle. Install only when both PolarSharp.MultiTenant.Identity AND PolarSharp.Reporting are in use.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>polar;identity;reporting;snapshot;multi-tenant;saas;sdk;aot</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>PolarSharp.Reporting.Identity</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PolarSharp.MultiTenant.Identity\PolarSharp.MultiTenant.Identity.csproj" />
+    <ProjectReference Include="..\PolarSharp.Reporting\PolarSharp.Reporting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PolarSharp.Reporting.Identity.Tests" />
+  </ItemGroup>
+
+</Project>
