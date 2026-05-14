@@ -38,6 +38,7 @@
   <Folder Name="/testapp/">
     <Project Path="testapp/PolarTestApp/PolarTestApp.csproj" />
     <Project Path="testapp/PolarWebhooksTestApp/PolarWebhooksTestApp.csproj" />
+    <Project Path="testapp/PolarSnapshotTestApp/PolarSnapshotTestApp.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PolarSharp.Benchmarks/PolarSharp.Benchmarks.csproj" />

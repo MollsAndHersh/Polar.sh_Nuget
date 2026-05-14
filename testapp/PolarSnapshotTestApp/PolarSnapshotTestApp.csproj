@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <UserSecretsId>PolarSnapshotTestApp-secrets</UserSecretsId>
+    <!-- Demo/test app — disable strict warning policy inherited from Directory.Build.props.
+         This app exercises the V20-005 Phase 3 reporting-identity bridge end-to-end via
+         EF Core (Identity + Reporting SQLite). EF Core is not fully AOT-safe by design,
+         so this app is NOT included in the AOT smoke test in CI (PolarTestApp covers the
+         AOT-safe library code path). -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);IL2104;IL2026;IL3050</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <ProjectReference Include="..\..\src\PolarSharp\PolarSharp.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.MultiTenant\PolarSharp.MultiTenant.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.MultiTenant.EntityFrameworkCore\PolarSharp.MultiTenant.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.MultiTenant.Identity\PolarSharp.MultiTenant.Identity.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.MultiTenant.Identity.Sqlite\PolarSharp.MultiTenant.Identity.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.Reporting\PolarSharp.Reporting.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.Reporting.EntityFrameworkCore\PolarSharp.Reporting.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.Reporting.EntityFrameworkCore.Sqlite\PolarSharp.Reporting.EntityFrameworkCore.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\PolarSharp.Reporting.Identity\PolarSharp.Reporting.Identity.csproj" />
+    <PackageReference Include="Scalar.AspNetCore" />
+  </ItemGroup>
+
+</Project>
