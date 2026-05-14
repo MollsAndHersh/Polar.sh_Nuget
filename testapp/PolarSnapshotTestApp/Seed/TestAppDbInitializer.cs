@@ -4,21 +4,17 @@ using PolarSharp.MultiTenant.Identity;
 namespace PolarSnapshotTestApp.Seed;
 
 /// <summary>
-/// Test-app Identity DB bring-up. Identity uses <c>EnsureCreatedAsync</c> for
-/// simplicity (test app); Reporting DB migration is intentionally NOT run here.
+/// Test-app Identity DB bring-up. Reporting DB migration deferred — see remarks.
 /// </summary>
 /// <remarks>
-/// The Reporting DbContext (<c>PolarReportingDbContext</c>) extends
-/// <c>TenantAwareDbContextBase</c>, which requires an active tenant in the per-scope
-/// <c>IMultiTenantContextAccessor</c> at construction time. The orchestrator's
-/// per-tick path uses <c>IPolarTenantScopeInitializer</c> to hydrate it — but
-/// that interface ships without a concrete implementation in the codebase
-/// (V20-005 Phase 2 design declared the abstraction; no host-default impl landed).
-/// Until a default impl ships, hosts must (a) supply their own
-/// <c>IPolarTenantScopeInitializer</c>, AND (b) handle Reporting DB migration
-/// inside an HTTP request scope where Finbuckle has already hydrated the tenant.
-/// This test app demonstrates the bridge's wiring + login/logout flow but does
-/// NOT yet drive a real snapshot end-to-end against the Reporting DB.
+/// PolarReportingDbContext extends TenantAwareDbContextBase, which requires an active
+/// tenant in the per-scope IMultiTenantContextAccessor at construction time. With the
+/// shipped DefaultPolarTenantScopeInitializer the orchestrator's per-tick path works
+/// (the orchestrator opens its own service-provider scope), but startup-context
+/// migration via IHostedService still needs more work — Finbuckle's AsyncLocal accessor
+/// behavior in the IHostedService startup scope doesn't reliably surface the tenant
+/// set via IMultiTenantContextSetter for subsequent same-scope DbContext construction.
+/// Tracked as a follow-up; the bridge wiring still demonstrates end-to-end via login.
 /// </remarks>
 internal sealed class TestAppDbInitializer(IServiceProvider sp, ILogger<TestAppDbInitializer> logger) : IHostedService
 {

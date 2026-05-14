@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using PolarSharp.MultiTenant.EntityFrameworkCore;
 using PolarSharp.Reporting.Snapshot;
 
 namespace PolarSharp.Reporting.EntityFrameworkCore.Snapshot;
@@ -36,6 +37,10 @@ public static class SnapshotServicesExtensions
         services.TryAddSingleton<TimeProvider>(_ => TimeProvider.System);
         services.TryAddScoped<IPolarReportingApi, PolarClientReportingApi>();
         services.AddScoped<IReportSnapshotService, ReportSnapshotService>();
+
+        // Default tenant-scope initializer used by the orchestrator's per-tick scope.
+        // TryAdd so hosts that wire a custom IPolarTenantScopeInitializer keep theirs.
+        services.TryAddScoped<IPolarTenantScopeInitializer, DefaultPolarTenantScopeInitializer>();
 
         // V20-005 Phase 2: per-tenant trigger orchestrator. Singleton because per-tenant
         // timers + heartbeat timestamps must survive across request scopes. The orchestrator
