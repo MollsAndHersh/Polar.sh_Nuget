@@ -13,7 +13,6 @@
     <PackageTags>polar;multitenant;mariadb;mysql;efcore;saas;aot</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.MultiTenant.EntityFrameworkCore.MariaDb</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

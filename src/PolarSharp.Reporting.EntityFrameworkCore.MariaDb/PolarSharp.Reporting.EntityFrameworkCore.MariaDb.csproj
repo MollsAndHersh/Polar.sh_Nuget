@@ -13,7 +13,6 @@
     <PackageTags>polar;reporting;mariadb;mysql;efcore;saas;aot</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.Reporting.EntityFrameworkCore.MariaDb</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
