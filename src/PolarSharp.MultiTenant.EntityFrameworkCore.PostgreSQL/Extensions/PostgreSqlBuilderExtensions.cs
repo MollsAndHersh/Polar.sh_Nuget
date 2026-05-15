@@ -38,9 +38,16 @@ public static class PostgreSqlBuilderExtensions
 
         EfTenantStoreBuilderExtensions.AddCoreServices(builder.Services, builder.Configuration);
 
-        builder.Services.AddDbContext<PolarTenantDbContext>(opts =>
+        // V20-008 Layer 2: session interceptor sets app.current_tenant_id +
+        // app.is_app_master_admin on every connection open so the EnableRowLevelSecurity
+        // migration's POLICY enforces tenant isolation at the DB layer (defense in depth
+        // alongside the EF query filter).
+        builder.Services.AddScoped<PostgreSqlTenantSessionInterceptor>();
+
+        builder.Services.AddDbContext<PolarTenantDbContext>((sp, opts) =>
             opts.UseNpgsql(connectionString, npg =>
-                npg.MigrationsAssembly(typeof(PostgreSqlBuilderExtensions).Assembly.GetName().Name)));
+                    npg.MigrationsAssembly(typeof(PostgreSqlBuilderExtensions).Assembly.GetName().Name))
+                .AddInterceptors(sp.GetRequiredService<PostgreSqlTenantSessionInterceptor>()));
         builder.Services.AddScoped<IMultiTenantStore<PolarTenantInfo>, EfMultiTenantStore>();
 
         builder.Services.AddHealthChecks()

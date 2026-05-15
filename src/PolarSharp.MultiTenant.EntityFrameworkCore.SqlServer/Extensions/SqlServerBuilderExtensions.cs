@@ -43,9 +43,16 @@ public static class SqlServerBuilderExtensions
 
         EfTenantStoreBuilderExtensions.AddCoreServices(builder.Services, builder.Configuration);
 
-        builder.Services.AddDbContext<PolarTenantDbContext>(opts =>
+        // V20-008 Layer 2: session interceptor sets SESSION_CONTEXT('tenant_id') +
+        // SESSION_CONTEXT('is_app_master_admin') on every connection open so the
+        // EnableRowLevelSecurity migration's SECURITY POLICY enforces tenant isolation
+        // at the DB layer (defense in depth alongside the EF query filter).
+        builder.Services.AddScoped<SqlServerTenantSessionInterceptor>();
+
+        builder.Services.AddDbContext<PolarTenantDbContext>((sp, opts) =>
             opts.UseSqlServer(connectionString, sql =>
-                sql.MigrationsAssembly(typeof(SqlServerBuilderExtensions).Assembly.GetName().Name)));
+                    sql.MigrationsAssembly(typeof(SqlServerBuilderExtensions).Assembly.GetName().Name))
+                .AddInterceptors(sp.GetRequiredService<SqlServerTenantSessionInterceptor>()));
         builder.Services.AddScoped<IMultiTenantStore<PolarTenantInfo>, EfMultiTenantStore>();
 
         // EF Core health check
