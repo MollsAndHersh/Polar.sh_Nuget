@@ -17,9 +17,13 @@ public static class SqlServerReportingExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
-        services.AddDbContext<PolarReportingDbContext>(opts =>
+        // V20-008 Layer 2.
+        services.AddScoped<global::PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer.SqlServerTenantSessionInterceptor>();
+
+        services.AddDbContext<PolarReportingDbContext>((sp, opts) =>
             opts.UseSqlServer(connectionString, sql =>
-                sql.MigrationsAssembly(typeof(SqlServerReportingExtensions).Assembly.GetName().Name)));
+                    sql.MigrationsAssembly(typeof(SqlServerReportingExtensions).Assembly.GetName().Name))
+                .AddInterceptors(sp.GetRequiredService<global::PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer.SqlServerTenantSessionInterceptor>()));
         services.AddHealthChecks()
             .AddDbContextCheck<PolarReportingDbContext>(name: "polar-reporting-sql", tags: ["polar-sql", "polar-reporting"]);
         services.AddScoped<IPolarReportingClient, EfPolarReportingClient>();

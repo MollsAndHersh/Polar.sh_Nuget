@@ -17,9 +17,13 @@ public static class PostgreSqlReportingExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
-        services.AddDbContext<PolarReportingDbContext>(opts =>
+        // V20-008 Layer 2.
+        services.AddScoped<global::PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL.PostgreSqlTenantSessionInterceptor>();
+
+        services.AddDbContext<PolarReportingDbContext>((sp, opts) =>
             opts.UseNpgsql(connectionString, npg =>
-                npg.MigrationsAssembly(typeof(PostgreSqlReportingExtensions).Assembly.GetName().Name)));
+                    npg.MigrationsAssembly(typeof(PostgreSqlReportingExtensions).Assembly.GetName().Name))
+                .AddInterceptors(sp.GetRequiredService<global::PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL.PostgreSqlTenantSessionInterceptor>()));
         services.AddHealthChecks()
             .AddDbContextCheck<PolarReportingDbContext>(name: "polar-reporting-sql", tags: ["polar-sql", "polar-reporting"]);
         services.AddScoped<IPolarReportingClient, EfPolarReportingClient>();

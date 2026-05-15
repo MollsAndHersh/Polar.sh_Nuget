@@ -18,7 +18,7 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL;
 /// is reused. <c>set_config(..., false)</c> sets a session-level (not transaction-local)
 /// value so it persists for subsequent statements within the connection.
 /// </remarks>
-internal sealed class PostgreSqlTenantSessionInterceptor(
+public sealed class PostgreSqlTenantSessionInterceptor(
     IMultiTenantContextAccessor tenantAccessor,
     IAppMasterAdminCrossTenantContext crossTenantContext)
     : DbConnectionInterceptor

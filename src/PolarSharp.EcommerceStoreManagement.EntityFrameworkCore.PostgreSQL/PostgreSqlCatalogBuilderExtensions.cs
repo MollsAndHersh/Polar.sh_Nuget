@@ -13,13 +13,17 @@ public static class PostgreSqlCatalogBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
+        // V20-008 Layer 2.
+        services.AddScoped<global::PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL.PostgreSqlTenantSessionInterceptor>();
+
         services.AddDbContext<PolarCatalogDbContext>((sp, opts) =>
         {
             opts.UseNpgsql(connectionString, npg =>
                 npg.MigrationsAssembly(typeof(PostgreSqlCatalogBuilderExtensions).Assembly.GetName().Name));
+            opts.AddInterceptors(sp.GetRequiredService<global::PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL.PostgreSqlTenantSessionInterceptor>());
             // TASK-V20-013: wire the audit-log interceptor when registered.
-            var interceptor = sp.GetService<AuditLogSaveChangesInterceptor>();
-            if (interceptor is not null) opts.AddInterceptors(interceptor);
+            var auditInterceptor = sp.GetService<AuditLogSaveChangesInterceptor>();
+            if (auditInterceptor is not null) opts.AddInterceptors(auditInterceptor);
         });
         services.AddHealthChecks()
             .AddDbContextCheck<PolarCatalogDbContext>(name: "polar-catalog-sql", tags: ["polar-sql", "polar-catalog"]);

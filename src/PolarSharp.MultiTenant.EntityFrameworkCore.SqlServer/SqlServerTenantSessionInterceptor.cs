@@ -25,7 +25,7 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer;
 /// connection is reused. The cost is a single round-trip with parameterised values.
 /// </para>
 /// </remarks>
-internal sealed class SqlServerTenantSessionInterceptor(
+public sealed class SqlServerTenantSessionInterceptor(
     IMultiTenantContextAccessor tenantAccessor,
     IAppMasterAdminCrossTenantContext crossTenantContext)
     : DbConnectionInterceptor

@@ -96,9 +96,15 @@ public static class SqlServerIdentityBuilderExtensions
 
     private static PolarIdentityBuilder RegisterDbContext(PolarIdentityBuilder builder, string connectionString)
     {
-        builder.Services.AddDbContext<PolarUserDbContext>(opts =>
+        // V20-008 Layer 2: same session interceptor the multi-tenant base package wires
+        // into PolarTenantDbContext. Registering here too so PolarUserDbContext's RLS
+        // policies see SESSION_CONTEXT(N'tenant_id') + (N'is_app_master_admin') per request.
+        builder.Services.AddScoped<global::PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer.SqlServerTenantSessionInterceptor>();
+
+        builder.Services.AddDbContext<PolarUserDbContext>((sp, opts) =>
             opts.UseSqlServer(connectionString, sql =>
-                sql.MigrationsAssembly(typeof(SqlServerIdentityBuilderExtensions).Assembly.GetName().Name)));
+                    sql.MigrationsAssembly(typeof(SqlServerIdentityBuilderExtensions).Assembly.GetName().Name))
+                .AddInterceptors(sp.GetRequiredService<global::PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer.SqlServerTenantSessionInterceptor>()));
 
         builder.Services.AddHealthChecks()
             .AddDbContextCheck<PolarUserDbContext>(

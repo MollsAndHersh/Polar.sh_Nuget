@@ -20,13 +20,17 @@ public static class SqlServerCatalogBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
+        // V20-008 Layer 2: tenant session interceptor for SESSION_CONTEXT-driven RLS.
+        services.AddScoped<global::PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer.SqlServerTenantSessionInterceptor>();
+
         services.AddDbContext<PolarCatalogDbContext>((sp, opts) =>
         {
             opts.UseSqlServer(connectionString, sql =>
                 sql.MigrationsAssembly(typeof(SqlServerCatalogBuilderExtensions).Assembly.GetName().Name));
+            opts.AddInterceptors(sp.GetRequiredService<global::PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer.SqlServerTenantSessionInterceptor>());
             // TASK-V20-013: wire the audit-log interceptor when registered.
-            var interceptor = sp.GetService<AuditLogSaveChangesInterceptor>();
-            if (interceptor is not null) opts.AddInterceptors(interceptor);
+            var auditInterceptor = sp.GetService<AuditLogSaveChangesInterceptor>();
+            if (auditInterceptor is not null) opts.AddInterceptors(auditInterceptor);
         });
         services.AddHealthChecks()
             .AddDbContextCheck<PolarCatalogDbContext>(name: "polar-catalog-sql", tags: ["polar-sql", "polar-catalog"]);

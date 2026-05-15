@@ -53,9 +53,13 @@ public static class PostgreSqlIdentityBuilderExtensions
 
     private static PolarIdentityBuilder RegisterDbContext(PolarIdentityBuilder builder, string connectionString)
     {
-        builder.Services.AddDbContext<PolarUserDbContext>(opts =>
+        // V20-008 Layer 2: see SqlServer counterpart docs.
+        builder.Services.AddScoped<global::PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL.PostgreSqlTenantSessionInterceptor>();
+
+        builder.Services.AddDbContext<PolarUserDbContext>((sp, opts) =>
             opts.UseNpgsql(connectionString, npg =>
-                npg.MigrationsAssembly(typeof(PostgreSqlIdentityBuilderExtensions).Assembly.GetName().Name)));
+                    npg.MigrationsAssembly(typeof(PostgreSqlIdentityBuilderExtensions).Assembly.GetName().Name))
+                .AddInterceptors(sp.GetRequiredService<global::PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL.PostgreSqlTenantSessionInterceptor>()));
 
         builder.Services.AddHealthChecks()
             .AddDbContextCheck<PolarUserDbContext>(
