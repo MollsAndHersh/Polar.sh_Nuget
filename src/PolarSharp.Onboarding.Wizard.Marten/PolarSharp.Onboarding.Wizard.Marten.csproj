@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsLibrary>true</IsLibrary>
+    <PackageId>PolarSharp.Onboarding.Wizard.Marten</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Molls and Hersh, LLC</Authors>
+    <Description>Marten-backed event-sourced OnboardingSession storage (Postgres-only).</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>polar;onboarding;wizard;marten;eventsourcing;postgresql;saas</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>PolarSharp.Onboarding.Wizard.Marten</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PolarSharp.Onboarding\PolarSharp.Onboarding.csproj" />
+    <PackageReference Include="Marten" />
+  </ItemGroup>
+
+</Project>

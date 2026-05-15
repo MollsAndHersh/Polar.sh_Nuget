@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsLibrary>true</IsLibrary>
+    <PackageId>PolarSharp.PrepaidWallets.Polar.Checkout</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Molls and Hersh, LLC</Authors>
+    <Description>Bridge: wallet-only / hybrid / disabled checkout modes; refund-as-credit; subscription debit.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>polar;prepaidwallets;checkout;bridge;saas</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>PolarSharp.PrepaidWallets.Polar.Checkout</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PolarSharp.PrepaidWallets\PolarSharp.PrepaidWallets.csproj" />
+    <ProjectReference Include="..\PolarSharp.EcommerceStoreManagement\PolarSharp.EcommerceStoreManagement.csproj" />
+  </ItemGroup>
+
+</Project>

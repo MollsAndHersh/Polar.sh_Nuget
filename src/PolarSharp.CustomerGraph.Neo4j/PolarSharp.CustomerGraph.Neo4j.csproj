@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsLibrary>true</IsLibrary>
+    <PackageId>PolarSharp.CustomerGraph.Neo4j</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Molls and Hersh, LLC</Authors>
+    <Description>Neo4j provider for PolarSharp.CustomerGraph — per-tenant DATABASE on Neo4j Enterprise; label-based isolation on Community.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>polar;customer;graph;neo4j;saas</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>PolarSharp.CustomerGraph.Neo4j</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PolarSharp.CustomerGraph\PolarSharp.CustomerGraph.csproj" />
+    <PackageReference Include="Neo4j.Driver" />
+  </ItemGroup>
+
+</Project>

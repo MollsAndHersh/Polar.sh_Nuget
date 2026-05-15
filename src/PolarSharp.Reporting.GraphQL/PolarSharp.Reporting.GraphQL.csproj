@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsLibrary>true</IsLibrary>
+    <PackageId>PolarSharp.Reporting.GraphQL</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Molls and Hersh, LLC</Authors>
+    <Description>Hot Chocolate GraphQL schema for PolarSharp.Reporting — KPIs + hierarchical drilldown via single query.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>polar;reporting;graphql;hotchocolate;saas</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>PolarSharp.Reporting.GraphQL</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PolarSharp.Reporting\PolarSharp.Reporting.csproj" />
+    <PackageReference Include="HotChocolate.AspNetCore" />
+  </ItemGroup>
+
+</Project>

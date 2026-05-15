@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsLibrary>true</IsLibrary>
+    <PackageId>PolarSharp.CustomerGraph</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Molls and Hersh, LLC</Authors>
+    <Description>Pluggable customer-graph abstraction — typed query API for graph-backed customer relationship analysis.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mollsandhersh/Polar.sh_Nuget</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>polar;customer;graph;saas;aot</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>PolarSharp.CustomerGraph</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PolarSharp.BaseEntities\PolarSharp.BaseEntities.csproj" />
+  </ItemGroup>
+
+</Project>

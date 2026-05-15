@@ -60,5 +60,22 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.7" />
     <!-- Benchmarks -->
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+    <!-- v1.3.0 expansion: MariaDB / MySQL provider (Oracle's official EF Core 10 build; Pomelo has not yet shipped EF Core 10) -->
+    <PackageVersion Include="MySql.EntityFrameworkCore" Version="10.0.7" />
+    <!-- v1.3.0 expansion: Cosmos DB provider -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Cosmos" Version="10.0.7" />
+    <!-- v1.3.0 expansion: Marten event store -->
+    <PackageVersion Include="Marten" Version="8.37.0" />
+    <!-- v1.3.0 expansion: Customer graph (Neo4j) -->
+    <PackageVersion Include="Neo4j.Driver" Version="6.1.0" />
+    <!-- v1.3.0 expansion: GraphQL (Hot Chocolate / Strawberry Shake) -->
+    <PackageVersion Include="HotChocolate.AspNetCore" Version="15.1.16" />
+    <PackageVersion Include="HotChocolate.Execution" Version="15.1.16" />
+    <PackageVersion Include="StrawberryShake.Server" Version="15.1.16" />
+    <PackageVersion Include="StrawberryShake.Transport.Http" Version="15.1.16" />
+    <!-- v1.3.0 expansion: PrepaidWallets (CQRS + validation) -->
+    <PackageVersion Include="MediatR" Version="12.5.0" />
+    <PackageVersion Include="MediatR.Contracts" Version="2.0.1" />
+    <PackageVersion Include="FluentValidation" Version="11.11.0" />
   </ItemGroup>
 </Project>
