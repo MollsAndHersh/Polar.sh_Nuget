@@ -13,7 +13,6 @@
     <PackageTags>polar;customer;graph;neo4j;saas</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.CustomerGraph.Neo4j</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PolarSharp.CustomerGraph\PolarSharp.CustomerGraph.csproj" />
     <PackageReference Include="Neo4j.Driver" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
 </Project>

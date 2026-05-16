@@ -13,7 +13,6 @@
     <PackageTags>polar;customer;graph;projection;hostedservice;saas</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.CustomerGraph.Projection</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +22,8 @@
   <ItemGroup>
     <ProjectReference Include="..\PolarSharp.CustomerGraph\PolarSharp.CustomerGraph.csproj" />
     <ProjectReference Include="..\PolarSharp.Webhooks\PolarSharp.Webhooks.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
 </Project>
