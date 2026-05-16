@@ -13,7 +13,6 @@
     <PackageTags>polar;prepaidwallets;marten;eventsourcing;postgresql</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.PrepaidWallets.EventStore.Marten</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -13,7 +13,6 @@
     <PackageTags>polar;prepaidwallets;cqrs;eventsourcing;mediatr;saas</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.PrepaidWallets</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
