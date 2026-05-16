@@ -25,8 +25,26 @@ direct) **move** to the new repo via a single namespace rename.
 
 | Tier | Namespace pattern | Lift action | Allowed dependencies | Packages |
 |---|---|---|---|---|
-| **Wallet core** | `PolarSharp.PrepaidWallets.*` (no `.Polar.` infix anywhere in the name) | **Moves** to a new `PrepaidWallets/*` repo. Single namespace rename: `PolarSharp.PrepaidWallets` → `PrepaidWallets`. | MediatR, EF Core, Marten, HotChocolate, Microsoft.Extensions.*. **Zero** PolarSharp.* refs. | 10 packages: Abstractions, PrepaidWallets, EventStore.Marten, EventStore.EntityFrameworkCore (+ 5 provider variants: SqlServer/Sqlite/PostgreSQL/MariaDb/CosmosDb), Reporting |
-| **Polar bridges** | `PolarSharp.PrepaidWallets.Polar.*` | **Stays** with PolarSharp. After lift, `<ProjectReference>` swaps to `<PackageReference Include="PrepaidWallets.X">` against the new external NuGet feed. | Wallet core (or external lib post-lift) + PolarSharp internals (ICurrentUser, IPolarReportingClient, ICustomerTransactionContext, etc.) | 4 packages: Polar.Identity, Polar.Checkout, Polar.Reporting, Polar.GraphQL |
+| **Wallet core** | `PolarSharp.PrepaidWallets.*` (no `.Polar.` infix anywhere in the name) | **Moves** to a new `PrepaidWallets/*` repo. Single namespace rename: `PolarSharp.PrepaidWallets` → `PrepaidWallets`. | MediatR, EF Core, Marten, HotChocolate, Scriban, Fluid, Microsoft.AspNetCore.Identity, Microsoft.AspNetCore.Authorization, Microsoft.AspNetCore.Components, Microsoft.AspNetCore.SignalR, Microsoft.Extensions.Localization.Abstractions, SendGrid, MailKit, Azure.Communication.Email, AWSSDK.SimpleEmailV2, Twilio, Stripe.net, PayPalCheckoutSdk, Microsoft.Extensions.*. **Zero** PolarSharp.* refs. | **28 packages** *(updated 2026-05-15 amendments 3 + 4 + 5 + 6)*: Abstractions, PrepaidWallets, EventStore.Marten, EventStore.EntityFrameworkCore (+ 5 provider variants: SqlServer/Sqlite/PostgreSQL/MariaDb/CosmosDb), Reporting, AspNetCore.Identity, AspNetCore.GraphQL, Notifications, Notifications.Email.SendGrid, Notifications.Email.MailKit, Notifications.Email.Azure, Notifications.Email.AwsSes, Notifications.Sms.Twilio, Notifications.Webhook, **Notifications.Templates.Scriban, Notifications.Templates.Fluid, Funding.Stripe, Funding.PayPal, AspNetCore.SignalR, Blazor.Customer, Blazor.Admin, SaaSInvoicing, PrefundedTenant** |
+| **Polar bridges** | `PolarSharp.PrepaidWallets.Polar.*` | **Stays** with PolarSharp. After lift, `<ProjectReference>` swaps to `<PackageReference Include="PrepaidWallets.X">` against the new external NuGet feed. | Wallet core (or external lib post-lift) + PolarSharp internals (ICurrentUser, IPolarReportingClient, ICustomerTransactionContext, etc.) | **8 packages** *(updated 2026-05-15 amendments 1 + 3 + 5 + 6)*: Polar.Identity, Polar.Checkout, Polar.Reporting, Polar.GraphQL, Polar.PurchaseOrder, Polar.Notifications, **Polar.Translation, Polar.SaaSInvoicing** |
+
+> **Schema scope of wallet core** *(2026-05-15 amendments 1 + 3)*: wallet core owns these 10 tables, all of which move with the lift:
+>
+> - `wallet_events` + `wallet_snapshots` (the original event-store tables)
+> - `wallet_products` (snapshotted at debit-time from EcommerceStoreManagement; flat-variant shape with `parent_product_id` FK; SKU + axes denormalized)
+> - `wallet_orders` + `wallet_order_lines` (cart snapshot per debit; carries `tokens_at_purchase` for audit immutability)
+> - `wallet_purchase_orders` + `wallet_purchase_order_lines` (B2B PO entity with line items; status lifecycle: open → partial_credit → fully_credited → voided)
+> - **`wallet_notifications`** (delivery audit + dead-letter store for the queued/retried dispatcher)
+> - **`wallet_notification_preferences`** (per-recipient per-event-type per-channel opt-in/out)
+> - **`wallet_notification_recipients`** (denormalized recipient contact info: email, phone, locale, webhook URLs)
+>
+> Bridges populate these tables. Wallet core never queries upstream. Post-lift, an external host populates them via whatever upstream system they use.
+
+> **Localization scope of wallet core** *(2026-05-15 amendment 3)*: every wallet package commits to `IStringLocalizer<T>` for every user-facing string — validation errors, audit log descriptions, GraphQL errors, health-check status, notification message templates, reporting column headers + status strings. Each package ships `Resources/SR.resx` (en-US default) + `Resources/SR.es-MX.resx`. The `IStringLocalizer<T>` abstraction is in `Microsoft.Extensions.Localization.Abstractions` (Microsoft.* dep — lift-safe). Resource files move with the lift verbatim.
+
+> **Notification dispatcher posture** *(2026-05-15 amendment 3)*: queued + retried via bounded `Channel<NotificationEnvelope>` per tenant + `WalletNotificationDispatcherService` IHostedService; same shape as the v1.1.0 webhook delivery and v1.3 graph projection daemon. Dead-letters to `wallet_notifications` after 3 retries (configurable). Bidirectional sender model: System / HostOperator / Tenant / Customer all dispatch through the same pipeline with appropriate authorization scoping. Multi-tenancy is OPTIONAL — single-tenant hosts use the same dispatcher with `WalletAudienceScope.HostOperator` covering both single-tenant operator AND multi-tenant SaaSAdmin authority.
+
+> **SaaS payment model and Option D recursion** *(2026-05-15 amendment 6)*: the SaaS chooses ONE settlement mode platform-wide via `PolarSharp:SaaS:SettlementMode` — `StripeConnect` (A; Stripe-only platform), `BundledMonthlyInvoice` (B; all processors; bundled into tenant's existing SaaS subscription invoice), `StandalonePolarOrder` (C; all processors for tenant-customers; separate Polar Order for SaaS-to-tenant settlement), or `TenantPrefundedWallet` (D; meta-recursive — tenants are customers in the SaaS's meta-tenant wallet context; SaaS fees debit tenant wallets in real-time; progressive 5-stage balance escalation with auto-suspension of tenant admin UI when grace period expires). Per-tenant SaaS fee rates (`FundingCutPercent`, `NonPrepaidTransactionCutPercent`, `MaintenanceFeeCutPercent`, `RefundSurchargeCutPercent`) live on `TenantBusinessProfile.SaaSFeeRates` and are settable only by AppMasterAdmin via the NEW `PolarPermission.ManageTenantBilling`. The `IBalanceEscalationPolicy` framework is generic and reusable: defaults ship for both tenant-wallet (5-stage) and customer-wallet (3-stage) low-balance scenarios. All this lift-safe scope sits in `PolarSharp.PrepaidWallets.SaaSInvoicing` + `PolarSharp.PrepaidWallets.PrefundedTenant` (move with the lift); the Polar-specific settlement bridge lives in `PolarSharp.PrepaidWallets.Polar.SaaSInvoicing` (stays).
 
 ---
 
@@ -70,7 +88,7 @@ When you decide to lift, here's exactly what happens:
 ```bash
 # In a new PrepaidWallets repo:
 git clone the-new-repo && cd the-new-repo
-cp -r ../PolarSharp/src/PolarSharp.PrepaidWallets.{Abstractions,EventStore.*,Reporting} ./src/
+cp -r ../PolarSharp/src/PolarSharp.PrepaidWallets.{Abstractions,EventStore.*,Reporting,AspNetCore.*,Notifications*,Funding.*,Blazor.*,SaaSInvoicing,PrefundedTenant} ./src/
 cp -r ../PolarSharp/src/PolarSharp.PrepaidWallets ./src/
 
 # Strip the PolarSharp. prefix from directory names + namespaces
@@ -80,6 +98,12 @@ find ./src -type f \( -name "*.cs" -o -name "*.csproj" -o -name "*.md" \) -exec 
 
 # Wire CI + publish to NuGet
 ```
+
+> **2026-05-15 note (amendments 2 + 3)**: the lift now ALSO carries:
+> - 2 lift-safe `AspNetCore.*` packages (`PolarSharp.PrepaidWallets.AspNetCore.Identity` + `PolarSharp.PrepaidWallets.AspNetCore.GraphQL`) — give single-tenant ASP.NET Core hosts a complete wallet integration without depending on PolarSharp.MultiTenant.*
+> - 7 lift-safe `Notifications*` packages (`PolarSharp.PrepaidWallets.Notifications`, `Notifications.Email.SendGrid`, `Notifications.Email.MailKit`, `Notifications.Email.Azure`, `Notifications.Email.AwsSes`, `Notifications.Sms.Twilio`, `Notifications.Webhook`) — queued+retried multi-channel dispatcher with full IStringLocalizer support
+>
+> All 9 of these packages have ZERO PolarSharp.* dependencies and go with the wallet core lift. The bash globs `AspNetCore.*` and `Notifications*` above pick them up automatically.
 
 That moves all 10 wallet-core packages to the new repo. Then **back in PolarSharp**,
 the 4 `.Polar.*` bridge packages each bump their dependency:
@@ -99,9 +123,10 @@ internally swapped what it depends on, but its own surface didn't change.
 
 ## Files that get touched in the lift
 
-### Files that MOVE (10 packages × ~20 files each ≈ 200 files)
+### Files that MOVE (28 packages × ~20 files each ≈ 560 files; updated 2026-05-15 amendments 2 + 3 + 4 + 5 + 6)
 
 ```
+# Original wallet core (10 packages)
 src/PolarSharp.PrepaidWallets.Abstractions/
 src/PolarSharp.PrepaidWallets/
 src/PolarSharp.PrepaidWallets.EventStore.Marten/
@@ -113,24 +138,58 @@ src/PolarSharp.PrepaidWallets.EventStore.EntityFrameworkCore.MariaDb/
 src/PolarSharp.PrepaidWallets.EventStore.EntityFrameworkCore.CosmosDb/
 src/PolarSharp.PrepaidWallets.Reporting/
 
-tests/PolarSharp.PrepaidWallets.*.Tests/   ← entire test suite for wallet core
+# Single-tenant lift-safe bridges (amendment 2; 2 packages)
+src/PolarSharp.PrepaidWallets.AspNetCore.Identity/
+src/PolarSharp.PrepaidWallets.AspNetCore.GraphQL/
+
+# Notification dispatcher + channels (amendment 3; 7 packages)
+src/PolarSharp.PrepaidWallets.Notifications/
+src/PolarSharp.PrepaidWallets.Notifications.Email.SendGrid/
+src/PolarSharp.PrepaidWallets.Notifications.Email.MailKit/
+src/PolarSharp.PrepaidWallets.Notifications.Email.Azure/
+src/PolarSharp.PrepaidWallets.Notifications.Email.AwsSes/
+src/PolarSharp.PrepaidWallets.Notifications.Sms.Twilio/
+src/PolarSharp.PrepaidWallets.Notifications.Webhook/
+
+# Template engines (amendment 4; 2 packages)
+src/PolarSharp.PrepaidWallets.Notifications.Templates.Scriban/
+src/PolarSharp.PrepaidWallets.Notifications.Templates.Fluid/
+
+# Funding processors (amendment 5; 2 packages)
+src/PolarSharp.PrepaidWallets.Funding.Stripe/
+src/PolarSharp.PrepaidWallets.Funding.PayPal/
+
+# Real-time UI push + Blazor RCLs (amendment 5; 3 packages)
+src/PolarSharp.PrepaidWallets.AspNetCore.SignalR/
+src/PolarSharp.PrepaidWallets.Blazor.Customer/
+src/PolarSharp.PrepaidWallets.Blazor.Admin/
+
+# SaaS payment story (amendment 6; 2 packages)
+src/PolarSharp.PrepaidWallets.SaaSInvoicing/       # accrual ledger + monthly invoice composer (supports settlement modes A/B/C/D)
+src/PolarSharp.PrepaidWallets.PrefundedTenant/     # Option D meta-recursive tenant-wallet + progressive balance escalation framework
+
+tests/PolarSharp.PrepaidWallets.*.Tests/   ← entire test suite for wallet core (excludes the .Polar.* bridges below)
 ```
 
-### Files that STAY (4 bridge packages)
+### Files that STAY (8 bridge packages; updated 2026-05-15 amendments 1 + 3 + 5 + 6)
 
 ```
 src/PolarSharp.PrepaidWallets.Polar.Identity/
 src/PolarSharp.PrepaidWallets.Polar.Checkout/
 src/PolarSharp.PrepaidWallets.Polar.Reporting/
 src/PolarSharp.PrepaidWallets.Polar.GraphQL/
+src/PolarSharp.PrepaidWallets.Polar.PurchaseOrder/      # amendment 1: B2B PO admin
+src/PolarSharp.PrepaidWallets.Polar.Notifications/      # amendment 3: per-tenant BYOK + Identity-aware recipient resolver
+src/PolarSharp.PrepaidWallets.Polar.Translation/        # amendment 5: bridges wallet template translation to PolarSharp's 3-tier translation resolver
+src/PolarSharp.PrepaidWallets.Polar.SaaSInvoicing/      # amendment 6: Polar-specific settlement delivery for modes B and C
 
 tests/PolarSharp.PrepaidWallets.Polar.*.Tests/
 ```
 
 ### Files in PolarSharp that need 1-line edits per bridge package
 
-For each of the 4 bridge csproj files: replace ProjectReference → PackageReference
-(see diff above). That's 4 csproj edits, 1 line each.
+For each of the 8 bridge csproj files: replace ProjectReference → PackageReference
+(see diff above). That's 8 csproj edits, 1 line each.
 
 ### Files that are NEW in PolarSharp post-lift
 
