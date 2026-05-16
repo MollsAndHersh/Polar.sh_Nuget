@@ -13,7 +13,6 @@
     <PackageTags>polar;nlquery;ai;llm;cqrs;saas;aot</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.NaturalLanguageQuery</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

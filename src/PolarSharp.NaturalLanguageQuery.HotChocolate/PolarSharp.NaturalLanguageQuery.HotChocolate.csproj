@@ -13,7 +13,6 @@
     <PackageTags>polar;nlquery;graphql;hotchocolate;ai;llm;saas</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.NaturalLanguageQuery.HotChocolate</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
