@@ -13,7 +13,6 @@
     <PackageTags>polar;prepaidwallets;efcore;mariadb;mysql;eventsourcing</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.PrepaidWallets.EventStore.EntityFrameworkCore.MariaDb</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

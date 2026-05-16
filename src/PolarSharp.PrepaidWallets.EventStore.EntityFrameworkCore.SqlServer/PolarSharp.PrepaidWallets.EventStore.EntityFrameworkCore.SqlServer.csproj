@@ -13,7 +13,6 @@
     <PackageTags>polar;prepaidwallets;efcore;sqlserver;eventsourcing</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.PrepaidWallets.EventStore.EntityFrameworkCore.SqlServer</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

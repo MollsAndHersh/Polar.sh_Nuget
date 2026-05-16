@@ -13,7 +13,6 @@
     <PackageTags>polar;prepaidwallets;efcore;cosmosdb;nosql;eventsourcing</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.PrepaidWallets.EventStore.EntityFrameworkCore.CosmosDb</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
