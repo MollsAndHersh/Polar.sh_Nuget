@@ -13,7 +13,6 @@
     <PackageTags>polar;onboarding;wizard;marten;eventsourcing;postgresql;saas</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.Onboarding.Wizard.Marten</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
