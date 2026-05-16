@@ -13,7 +13,6 @@
     <PackageTags>polar;graphql;strawberryshake;client;codegen</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.GraphQL.Client</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
