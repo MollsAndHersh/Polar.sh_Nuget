@@ -13,7 +13,6 @@
     <PackageTags>polar;multitenant;cosmosdb;nosql;efcore;saas;aot</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>PolarSharp.MultiTenant.EntityFrameworkCore.CosmosDb</RootNamespace>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
