@@ -6,6 +6,7 @@ using PolarSharp.EcommerceStorefronts.Abstractions.Customers;
 using PolarSharp.EcommerceStorefronts.Cart;
 using PolarSharp.EcommerceStorefronts.Checkout;
 using PolarSharp.EcommerceStorefronts.Customers;
+using PolarSharp.EcommerceStorefronts.Pipelines.OrderProcessing;
 
 namespace PolarSharp.EcommerceStorefronts.Extensions;
 
@@ -44,7 +45,11 @@ public static class StorefrontServiceCollectionExtensions
         }
 
         services.TryAddScoped<IStorefrontCartService, DefaultStorefrontCartService>();
-        services.TryAddScoped<IStorefrontCheckoutService, DefaultStorefrontCheckoutService>();
+        // The checkout service depends on an OPTIONAL OrderProcessingPipeline; use a
+        // factory so the constructor's default-null parameter is honoured when the
+        // pipeline package has not been registered.
+        services.TryAddScoped<IStorefrontCheckoutService>(sp =>
+            new DefaultStorefrontCheckoutService(sp.GetService<OrderProcessingPipeline>()));
         services.TryAddScoped<IStorefrontCustomerService, DefaultStorefrontCustomerService>();
         services.TryAddScoped<IStorefrontClient, StorefrontClient>();
 

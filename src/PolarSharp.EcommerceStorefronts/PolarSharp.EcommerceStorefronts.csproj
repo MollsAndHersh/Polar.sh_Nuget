@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PolarSharp.EcommerceStorefronts.Abstractions\PolarSharp.EcommerceStorefronts.Abstractions.csproj" />
+    <ProjectReference Include="..\PolarSharp.EcommerceStorefronts.Pipelines.OrderProcessing\PolarSharp.EcommerceStorefronts.Pipelines.OrderProcessing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
