@@ -20,6 +20,54 @@ The lift-and-shift architecture inverts the trade-off: pay the boundary-discipli
 
 The closest prior art is the "anti-corruption layer" from Domain-Driven Design and the "ports and adapters" / hexagonal architecture pattern from Alistair Cockburn — both of which advocate for isolating a core domain behind explicit interface boundaries. The lift-and-shift pattern extends this with: (a) a *visible* boundary signaling mechanism (namespace separator), and (b) *mechanical* CI enforcement of the boundary as a first-class build gate.
 
+## Mental model: the household-and-divorce analogy
+
+A useful way to think about the prior and post states of a lift-and-shift is by analogy to a couple before and after a divorce. The analogy is imperfect — no families are nuget packages, no developers are spouses — but it captures something the more technical framings miss: the *qualitative* difference in what is easy and what is hard at each stage, and the importance of doing certain kinds of work *before* the separation rather than after.
+
+### The unified household (pre-lift)
+
+Before a couple separates, everyone lives under one roof. House rules are stipulated and enforced top-down: bedtimes, chore charts, dietary expectations, the rule that everyone eats dinner at the same table. The arrangement makes certain kinds of work cheap. Coordinating schedules is trivial. Spotting when someone is unwell is immediate. A missing toothbrush gets noticed because it lives in a shared bathroom. The interdependence is the very thing that makes the dynamics legible and the rules enforceable.
+
+A single monorepo holding many interrelated packages under one unifying solution file behaves the same way. While the packages live together:
+
+- **Cross-package boundaries are easy to discover** because every file is one IDE click away. A developer wondering "what calls this method?" answers the question in seconds across the entire estate.
+- **Gaps in coverage become visible** as soon as someone wires the packages together for a real scenario. A missing interface, an unhandled edge case, an undocumented assumption — all of these surface during integration because the integration happens in the same repository the developer is already working in.
+- **Regression, unit, and smoke tests can be authored holistically.** A test that exercises three packages together lives in one place, runs in one CI pipeline, and breaks visibly when any of the three packages misbehaves.
+- **Specialized test and demo applications can illustrate the full wiring story.** A "kitchen sink" example app that registers every package, demonstrates the happy path, and exercises the error paths is straightforward to build and maintain when every package is one project reference away.
+- **The full specification can be developed and re-developed iteratively.** When a missing feature surfaces late, adding it across multiple packages happens in a single pull request. The team does not have to coordinate releases across six repositories to ship one logical change.
+- **Rules and expectations can be enforced through influence rather than contracts.** Code review, shared style guides, "we agreed last sprint not to do that" — these soft mechanisms work because everyone is in the same room. The closest analog in a multi-repo world is a written contract negotiated up front, which is much heavier.
+
+This is the **prior state**, and a great deal of the architectural value of the lift-shift pattern comes from doing the hard work of design, implementation, and comprehensive testing *while still in this state*. The unified household is the right venue for stipulating boundaries, codifying expectations, building comprehensive demo applications, and confirming through executable tests that the whole estate works end-to-end. The CI dependency guard described later in this document exists precisely so that this prior-state work can proceed with full coordination ergonomics while still preserving the option to separate cleanly later.
+
+### Families of packages move together
+
+When a household does separate, related members usually stay together. The spouse moving out typically takes the children, the family pet, and the household items that belong with them — not a random scattering of objects. The new household is recognizably *that part of the original household*, reassembled with its internal relationships intact.
+
+A lift-and-shift extraction works the same way. A feature family — a parent package and its supporting siblings, providers, adapters, and integrations — moves together to a single new repository. The packages that belonged together before the lift still belong together after the lift; the relationships between them are preserved verbatim. A wallet feature with a dozen storage providers and notification channels moves as one family. An ecommerce feature with its catalog providers, search adapters, theme presets, and pipeline stages moves as one family. Splitting a feature family across two new repositories during the lift would defeat the entire purpose of having designed the family as a cohesive unit in the first place.
+
+### Setting up the new household
+
+In the new home, things are different in ways that go beyond a change of address. The rules that one party had assumed were universal turn out to have been *house rules* — specific to the prior arrangement, not laws of nature. Coordinating with the other household now requires explicit messages instead of shouting across the kitchen. Schedules need to be agreed in advance instead of discovered ad hoc. The interdependence that made everything legible has been replaced by a clear boundary and intentional contact across it.
+
+The first concrete act of the post-lift state mirrors moving into a new home: setting it up so the family that just arrived can actually live there. In the new repository, that means:
+
+1. **Creating a fresh solution file.** A new `.slnx` (or `.sln`) in the new repository, owned by the new repository.
+2. **Adding every lifted project to the new solution.** Each `.csproj` that came over in the family lift gets added to the new solution file.
+3. **Wiring up the project references between the lifted packages.** Inside the new solution, every relationship that previously existed between the packages — `ProjectReference` to a sibling, shared interface implementations, transitive dependency chains — is recreated explicitly. The shape of the internal dependency graph is preserved exactly as it existed in the prior solution, but now bounded entirely within the new repository.
+4. **Verifying internal cohesion.** The new solution builds, tests, and publishes without reaching into the prior repository for anything. If a build error reveals a forgotten dependency on the prior estate, that dependency was a coupling the lift-shift design was meant to prevent — and it needs to be removed, abstracted away, or duplicated as a lift-safe equivalent before the new household is truly self-sufficient.
+
+### The new household after settlement
+
+What was previously a `ProjectReference` from a sibling package in the parent monorepo becomes a normal NuGet `PackageReference` from a published feed, and the lifted family is consumed like any other third-party library. Including, critically, by the original parent project itself: the parent's integration bridges can be re-pointed at the published lifted library and continue to fulfill their role unchanged. The family that left the household can come back as a guest — invited, useful, but no longer a resident, and bound now by the same external contract as any other consumer.
+
+The post-lift state is not the end of the relationship between the two estates. It is the beginning of a different kind of relationship: bounded by explicit contracts (published NuGet versions, semantic-versioning commitments, changelog entries) instead of in-monorepo intimacy. Done well, the parent project ends up *more* stable in this arrangement, because what was previously a tightly-coupled internal subsystem is now an externally-versioned dependency that can only change in ways the parent has explicitly opted into.
+
+### Why this framing matters
+
+The household analogy makes one thing visible that pure architectural framings tend to obscure: **the lift itself is not the goal**. The lift is an option, exercised when external circumstances make it the right call (a second consumer, an organizational change, a divergent release cadence, an acquisition, a deprecation). The *real* purpose of the pattern is to preserve the cheap-coordination, easy-testing, full-spec-development virtues of the unified household for as long as it serves the project, while leaving open the option of a cleanly-executed separation when the time comes.
+
+Designing for liftability is the same kind of forethought as a couple keeping their important documents organized, their financial accounts well-titled, and their household inventory clear from the start of the relationship. Most of the time it is a minor ongoing cost — a slight tax on day-to-day life. On the day it matters, it is the difference between a clean transition and a years-long ordeal. The mechanical enforcement described in the rest of this document (the namespace separator and the CI dependency guard) is the equivalent of the practical disciplines that make any such transition feasible: not assumed, but verified.
+
 ## Problem
 
 Consider a SDK that grows to encompass many concerns — payments, identity, catalog, reporting, prepaid wallets, embedded widgets, search, etc. Some of these concerns are tightly coupled to the SDK's primary purpose; others are genuinely independent (a wallet is a wallet; an embeddable widget is an embeddable widget). The independent concerns might one day:
