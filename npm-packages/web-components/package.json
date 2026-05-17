@@ -1,0 +1,20 @@
+{
+  "name": "@polarsharp/web-components",
+  "version": "1.0.0",
+  "description": "Stencil-compiled Web Components bundle for PolarSharp storefronts (lift-safe; embed-anywhere)",
+  "license": "MIT",
+  "author": "Molls and Hersh, LLC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mollsandhersh/Polar.sh_Nuget"
+  },
+  "devDependencies": {
+    "@stencil/core": "^4.20.0",
+    "typescript": "^5.4.0"
+  },
+  "scripts": {
+    "build": "stencil build",
+    "start": "stencil build --dev --watch --serve",
+    "test": "stencil test --spec --e2e"
+  }
+}

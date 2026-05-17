@@ -77,5 +77,10 @@
     <PackageVersion Include="MediatR" Version="12.5.0" />
     <PackageVersion Include="MediatR.Contracts" Version="2.0.1" />
     <PackageVersion Include="FluentValidation" Version="11.11.0" />
+    <!-- v1.4.0 expansion: EcommerceStorefronts third-party provider SDKs -->
+    <PackageVersion Include="MeiliSearch" Version="0.18.0" />
+    <PackageVersion Include="Shippo" Version="4.0.2" />
+    <PackageVersion Include="EasyPost-Official" Version="7.7.3" />
+    <PackageVersion Include="TaxJar" Version="4.0.0" />
   </ItemGroup>
 </Project>

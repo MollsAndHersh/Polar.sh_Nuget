@@ -1,0 +1,11 @@
+{
+  "name": "@polarsharp/web-components-shared",
+  "version": "1.0.0",
+  "description": "Shared utilities + types for @polarsharp/web-components and theme packages",
+  "license": "MIT",
+  "author": "Molls and Hersh, LLC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mollsandhersh/Polar.sh_Nuget"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@polarsharp/web-components-theme-tailwind",
+  "version": "1.0.0",
+  "description": "Tailwind CSS theme preset for @polarsharp/web-components",
+  "license": "MIT",
+  "author": "Molls and Hersh, LLC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mollsandhersh/Polar.sh_Nuget"
+  }
+}
