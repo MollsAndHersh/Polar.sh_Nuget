@@ -24,4 +24,9 @@
     <ProjectReference Include="..\PolarSharp.EcommerceStorefronts.Abstractions\PolarSharp.EcommerceStorefronts.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- DI + Options abstractions for AddPolarStorefrontsCore(). -->
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+  </ItemGroup>
+
 </Project>

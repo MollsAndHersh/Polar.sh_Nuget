@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PolarSharp.EcommerceStorefronts.Abstractions\PolarSharp.EcommerceStorefronts.Abstractions.csproj" />
+    <ProjectReference Include="..\PolarSharp.EcommerceStorefronts\PolarSharp.EcommerceStorefronts.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
