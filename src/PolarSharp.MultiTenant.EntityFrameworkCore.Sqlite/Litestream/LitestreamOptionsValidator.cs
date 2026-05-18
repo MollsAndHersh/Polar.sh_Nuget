@@ -80,6 +80,19 @@ internal sealed class LitestreamOptionsValidator : IValidateOptions<LitestreamOp
         ValidateRange(failures, nameof(LitestreamOptions.HealthCheckMaxLagSeconds),
             options.HealthCheckMaxLagSeconds, min: 1, max: 3600);
 
+        if (options.AutoRegenerateOnTenantChange)
+        {
+            RequireNonEmpty(failures, nameof(LitestreamOptions.ConfigOutputPath), options.ConfigOutputPath);
+            RequireNonEmpty(failures, nameof(LitestreamOptions.LitestreamPidFilePath), options.LitestreamPidFilePath);
+            if (options.AutoRegenerateDebounceWindow <= TimeSpan.Zero)
+            {
+                failures.Add(
+                    $"{nameof(LitestreamOptions.AutoRegenerateDebounceWindow)} " +
+                    $"'{options.AutoRegenerateDebounceWindow}' must be greater than zero when " +
+                    $"{nameof(LitestreamOptions.AutoRegenerateOnTenantChange)} is true.");
+            }
+        }
+
         return failures.Count == 0
             ? ValidateOptionsResult.Success
             : ValidateOptionsResult.Fail(failures);

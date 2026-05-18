@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.Litestream;
@@ -35,6 +36,11 @@ public static class LitestreamServiceCollectionExtensions
     ///   <item><see cref="LitestreamConfigGenerator"/> as a singleton.</item>
     ///   <item><see cref="LitestreamHealthCheck"/> as a health check tagged
     ///   <c>polar-sql</c> and <c>polar-litestream</c>.</item>
+    ///   <item><see cref="LitestreamConfigAutoRegeneratorHostedService"/> as an
+    ///   <see cref="IHostedService"/>. The hosted service self-disables when either
+    ///   <see cref="LitestreamOptions.UseLitestream"/> or
+    ///   <see cref="LitestreamOptions.AutoRegenerateOnTenantChange"/> is
+    ///   <see langword="false"/>, so the registration is always safe.</item>
     /// </list>
     /// </remarks>
     /// <example>
@@ -70,6 +76,9 @@ public static class LitestreamServiceCollectionExtensions
                 name: "litestream",
                 failureStatus: HealthStatus.Unhealthy,
                 tags: ["polar-sql", "polar-litestream"]);
+
+        // Self-disables when UseLitestream OR AutoRegenerateOnTenantChange is false; always safe to register.
+        services.AddHostedService<LitestreamConfigAutoRegeneratorHostedService>();
 
         return services;
     }

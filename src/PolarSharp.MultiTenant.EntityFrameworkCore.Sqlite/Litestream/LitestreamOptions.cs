@@ -119,6 +119,46 @@ public sealed class LitestreamOptions
     /// <c>Degraded</c>. Default 30 seconds. Must be in the range <c>[1, 3600]</c>.
     /// </summary>
     public int HealthCheckMaxLagSeconds { get; set; } = 30;
+
+    /// <summary>
+    /// When true, an IHostedService watches the SQLite database directory and automatically
+    /// regenerates the litestream.yml + signals Litestream to reload its config whenever
+    /// .db files are added or removed (e.g., new tenants onboarded, tenants removed).
+    /// Default: false (simple manual-regeneration model is the default).
+    /// </summary>
+    /// <remarks>
+    /// When enabled, the auto-regenerator service runs alongside the host application,
+    /// using FileSystemWatcher to observe the database directory. Debounced regeneration
+    /// avoids signal storms when multiple files change in quick succession (e.g., a bulk
+    /// tenant onboarding script).
+    /// </remarks>
+    public bool AutoRegenerateOnTenantChange { get; set; }
+
+    /// <summary>
+    /// Filesystem path where the auto-regenerator writes the generated litestream.yml.
+    /// Default: "/etc/litestream.yml" (matches Litestream's default config-file lookup).
+    /// The directory must be writable by the host process.
+    /// </summary>
+    public string ConfigOutputPath { get; set; } = "/etc/litestream.yml";
+
+    /// <summary>
+    /// Filesystem path to Litestream's PID file, used by the auto-regenerator to signal
+    /// the process to reload its configuration (SIGHUP on POSIX; not supported on Windows —
+    /// see remarks). Default: "/var/run/litestream.pid".
+    /// </summary>
+    /// <remarks>
+    /// Litestream supports SIGHUP for config reload on POSIX systems (Linux / macOS / BSD).
+    /// On Windows, signal-based reload is not natively supported; the auto-regenerator
+    /// logs a Warning on Windows and the operator must restart Litestream manually for
+    /// config changes to take effect. Most production Litestream deployments run on Linux.
+    /// </remarks>
+    public string LitestreamPidFilePath { get; set; } = "/var/run/litestream.pid";
+
+    /// <summary>
+    /// Debounce window for the auto-regenerator. Multiple .db file changes within this
+    /// window collapse into a single regeneration. Default: 2 seconds.
+    /// </summary>
+    public TimeSpan AutoRegenerateDebounceWindow { get; set; } = TimeSpan.FromSeconds(2);
 }
 
 /// <summary>
