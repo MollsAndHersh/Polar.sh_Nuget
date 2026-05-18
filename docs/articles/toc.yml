@@ -61,5 +61,7 @@
   items:
     - name: What are Implementation Narratives?
       href: narratives/index.md
+    - name: Choosing your PolarSharp DI wiring
+      href: narratives/choosing-your-polarsharp-di-wiring.md
 - name: Disclaimer
   href: disclaimer.md

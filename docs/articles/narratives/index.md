@@ -21,6 +21,12 @@ A few rules we keep ourselves to, so these stay readable:
 - **Short paragraphs, generous whitespace.** These docs should be readable on a phone during an onboarding meeting, not just on a developer's wide monitor.
 - **A "Things to know" section at the end.** Every narrative ends with the gotchas, optional settings, and edge cases — listed in plain language so you can scan them quickly.
 
+## Setting up PolarSharp in your app
+
+Narratives that walk through how the pieces fit together when you wire PolarSharp into your own application.
+
+- [**Choosing your PolarSharp DI wiring**](choosing-your-polarsharp-di-wiring.md) — the three most common deployment shapes (minimum, middle, and full) laid out side by side, with a plain-language explanation of why multiple PolarSharp packages can all "register MediatR" without conflicting and what actually happens when you install a package but forget to wire it up. The narrative everyone reading their startup file for the first time wishes existed.
+
 ## Coming soon
 
 This section is brand-new. We're populating it as we build out the `PolarSharp.UI.Components` package and the flagship `PolarSaasDemo` reference application. Expect the first narratives to land alongside v1.4.0, covering:
