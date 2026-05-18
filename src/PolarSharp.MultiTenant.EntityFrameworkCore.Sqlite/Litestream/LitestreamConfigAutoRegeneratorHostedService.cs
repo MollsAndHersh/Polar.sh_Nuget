@@ -1,15 +1,19 @@
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading.Channels;
+using Finbuckle.MultiTenant.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PolarSharp.MultiTenant;
+using PolarSharp.MultiTenant.Lifecycle;
 
 namespace PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.Litestream;
 
 /// <summary>
 /// Opt-in <see cref="IHostedService"/> that keeps a generated <c>litestream.yml</c> in lock-step
-/// with the contents of the SQLite database directory.
+/// with the contents of the SQLite database directory AND the tenant lifecycle status.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -19,15 +23,32 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.Litestream;
 /// exits — registration is always safe.
 /// </para>
 /// <para>
-/// The service uses a <see cref="FileSystemWatcher"/> over the configured SQLite directory,
-/// listening for <c>*.db</c> Created and Deleted events. Bursts of events (e.g., a bulk
-/// tenant onboarding script) collapse into a single regeneration via a debounce window
-/// configured by <see cref="LitestreamOptions.AutoRegenerateDebounceWindow"/>. On every
-/// regeneration the service:
+/// Regeneration is triggered from two sources, both fed through the shared
+/// <see cref="LitestreamRegenCoordinator"/> channel:
 /// </para>
 /// <list type="number">
-///   <item>Calls <see cref="LitestreamConfigGenerator.Generate(string, LitestreamOptions)"/>
-///   against the current directory contents.</item>
+///   <item>
+///   <b>File-system events.</b> A <see cref="FileSystemWatcher"/> over the configured SQLite
+///   directory listens for <c>*.db</c> Created and Deleted events (e.g., new tenants
+///   onboarded, tenants fully removed).
+///   </item>
+///   <item>
+///   <b>Tenant lifecycle events.</b> <see cref="LitestreamTenantLifecycleHandler"/>
+///   subscribes to MediatR <see cref="TenantStatusChangedNotification"/> events and
+///   updates the coordinator's exclusion set when tenants are
+///   Suspended/Inactive/Deleted or reactivated to Active.
+///   </item>
+/// </list>
+/// <para>
+/// Bursts of events (e.g., a bulk tenant-status batch update) collapse into a single
+/// regeneration via a debounce window configured by
+/// <see cref="LitestreamOptions.AutoRegenerateDebounceWindow"/>. On every regeneration the
+/// service:
+/// </para>
+/// <list type="number">
+///   <item>Reads the coordinator's current exclusion-set snapshot.</item>
+///   <item>Calls <see cref="LitestreamConfigGenerator.Generate(string, LitestreamOptions, IReadOnlySet{Guid}?)"/>
+///   against the current directory contents and exclusion set.</item>
 ///   <item>Writes the resulting YAML atomically to
 ///   <see cref="LitestreamOptions.ConfigOutputPath"/> (temp file + <see cref="File.Move(string, string, bool)"/>).</item>
 ///   <item>On POSIX hosts, reads the PID from
@@ -37,15 +58,20 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.Litestream;
 ///   the operator must restart Litestream manually for config changes to take effect.</item>
 /// </list>
 /// <para>
-/// A single initial regeneration runs unconditionally at <see cref="StartAsync"/> so the
-/// YAML reflects the on-disk state after a host restart (in case tenants were added or
-/// removed while the host was down).
+/// At <see cref="StartAsync"/> the service:
 /// </para>
+/// <list type="bullet">
+///   <item>Queries the <see cref="IMultiTenantStore{TTenantInfo}"/> for tenants whose
+///   <see cref="PolarTenantInfo.Status"/> is not <see cref="TenantStatus.Active"/> and seeds
+///   the coordinator's exclusion set, so a host restart after suspensions still produces
+///   correct YAML on the first regen.</item>
+///   <item>Enqueues a startup-initial-sync signal so the YAML reflects on-disk state and
+///   seeded exclusions immediately.</item>
+/// </list>
 /// <para>
-/// Stage C.1 covers <em>file</em> events only. Stage C.4 layers in MediatR
-/// <c>TenantStatusChangedNotification</c> subscriptions so suspended tenants stop
-/// replicating without their <c>.db</c> file being removed from disk; that work lives in a
-/// separate stage and is not part of this service yet.
+/// Per the Stage C design decision, existing cloud snapshots are PRESERVED when a tenant is
+/// suspended (subject to <see cref="LitestreamOptions.RetentionDays"/>) — only new WAL
+/// replication stops.
 /// </para>
 /// </remarks>
 internal sealed class LitestreamConfigAutoRegeneratorHostedService : IHostedService, IDisposable
@@ -55,37 +81,46 @@ internal sealed class LitestreamConfigAutoRegeneratorHostedService : IHostedServ
     private readonly IOptionsMonitor<LitestreamOptions> _optionsMonitor;
     private readonly SqliteMasterDatabaseLocator _locator;
     private readonly LitestreamConfigGenerator _generator;
+    private readonly LitestreamRegenCoordinator _coordinator;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<LitestreamConfigAutoRegeneratorHostedService> _logger;
 
     private FileSystemWatcher? _watcher;
-    private Channel<RegenReason>? _channel;
     private CancellationTokenSource? _cts;
     private Task? _loopTask;
 
     /// <summary>Initializes a new <see cref="LitestreamConfigAutoRegeneratorHostedService"/>.</summary>
     /// <param name="optionsMonitor">Resolved Litestream options. Read on each regen so live-reload of options is honored.</param>
     /// <param name="locator">Provides the resolved SQLite database directory the watcher observes.</param>
-    /// <param name="generator">The generator that renders the YAML from the options + directory contents.</param>
+    /// <param name="generator">The generator that renders the YAML from the options + directory contents + exclusion set.</param>
+    /// <param name="coordinator">The shared regen-coordinator holding the exclusion set and signal channel.</param>
+    /// <param name="serviceProvider">Root service provider used to resolve a scoped <see cref="IMultiTenantStore{TTenantInfo}"/> for startup exclusion seeding.</param>
     /// <param name="logger">Logger.</param>
     public LitestreamConfigAutoRegeneratorHostedService(
         IOptionsMonitor<LitestreamOptions> optionsMonitor,
         SqliteMasterDatabaseLocator locator,
         LitestreamConfigGenerator generator,
+        LitestreamRegenCoordinator coordinator,
+        IServiceProvider serviceProvider,
         ILogger<LitestreamConfigAutoRegeneratorHostedService> logger)
     {
         ArgumentNullException.ThrowIfNull(optionsMonitor);
         ArgumentNullException.ThrowIfNull(locator);
         ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(coordinator);
+        ArgumentNullException.ThrowIfNull(serviceProvider);
         ArgumentNullException.ThrowIfNull(logger);
 
         _optionsMonitor = optionsMonitor;
         _locator = locator;
         _generator = generator;
+        _coordinator = coordinator;
+        _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
     /// <inheritdoc/>
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
         var options = _optionsMonitor.CurrentValue;
 
@@ -96,7 +131,7 @@ internal sealed class LitestreamConfigAutoRegeneratorHostedService : IHostedServ
                 "AutoRegenerateOnTenantChange={AutoRegenerate}). Hosted service exiting.",
                 options.UseLitestream,
                 options.AutoRegenerateOnTenantChange);
-            return Task.CompletedTask;
+            return;
         }
 
         var directory = _locator.DatabaseDirectory;
@@ -106,15 +141,10 @@ internal sealed class LitestreamConfigAutoRegeneratorHostedService : IHostedServ
                 "Litestream auto-regenerator cannot start: database directory '{Directory}' " +
                 "does not exist or is not readable. Service will not run.",
                 directory);
-            return Task.CompletedTask;
+            return;
         }
 
-        _channel = Channel.CreateUnbounded<RegenReason>(new UnboundedChannelOptions
-        {
-            SingleReader = true,
-            SingleWriter = false,
-            AllowSynchronousContinuations = false,
-        });
+        await SeedExclusionsFromStoreAsync(cancellationToken).ConfigureAwait(false);
 
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _loopTask = Task.Run(() => RegenLoopAsync(_cts.Token), CancellationToken.None);
@@ -128,18 +158,17 @@ internal sealed class LitestreamConfigAutoRegeneratorHostedService : IHostedServ
         _watcher.Deleted += OnDbDeleted;
         _watcher.EnableRaisingEvents = true;
 
-        // Kick off an immediate sync so the YAML reflects on-disk state at startup.
-        EnqueueRegen(new RegenReason(RegenTrigger.StartupInitialSync, null));
+        // Kick off an immediate sync so the YAML reflects on-disk state + seeded exclusions at startup.
+        _coordinator.SignalRegen(new RegenSignal(RegenTrigger.StartupInitialSync, TenantId: null, Detail: null));
 
         _logger.LogInformation(
             "Litestream auto-regenerator started. Watching '{Directory}' for *.db Created/Deleted " +
-            "events; debounce window {Debounce}; config output '{Output}'; PID file '{Pid}'.",
+            "events; subscribed to TenantStatusChangedNotification via coordinator; debounce window " +
+            "{Debounce}; config output '{Output}'; PID file '{Pid}'.",
             directory,
             options.AutoRegenerateDebounceWindow,
             options.ConfigOutputPath,
             options.LitestreamPidFilePath);
-
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
@@ -151,8 +180,6 @@ internal sealed class LitestreamConfigAutoRegeneratorHostedService : IHostedServ
             _watcher.Created -= OnDbCreated;
             _watcher.Deleted -= OnDbDeleted;
         }
-
-        _channel?.Writer.TryComplete();
 
         if (_cts is not null)
         {
@@ -184,36 +211,67 @@ internal sealed class LitestreamConfigAutoRegeneratorHostedService : IHostedServ
         _cts?.Dispose();
     }
 
-    private void OnDbCreated(object sender, FileSystemEventArgs e)
-        => EnqueueRegen(new RegenReason(RegenTrigger.FileCreated, e.Name));
-
-    private void OnDbDeleted(object sender, FileSystemEventArgs e)
-        => EnqueueRegen(new RegenReason(RegenTrigger.FileDeleted, e.Name));
-
-    private void EnqueueRegen(RegenReason reason)
+    private async Task SeedExclusionsFromStoreAsync(CancellationToken cancellationToken)
     {
-        if (_channel is null)
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var store = scope.ServiceProvider.GetService<IMultiTenantStore<PolarTenantInfo>>();
+        if (store is null)
         {
+            _logger.LogDebug(
+                "Litestream auto-regenerator: IMultiTenantStore<PolarTenantInfo> not registered; " +
+                "skipping startup exclusion seeding. Tenant lifecycle handler will populate the set on the first event.");
             return;
         }
-        _channel.Writer.TryWrite(reason);
+
+        try
+        {
+            var all = await store.GetAllAsync().ConfigureAwait(false);
+            var nonActive = all
+                .Where(t => t.Status != TenantStatus.Active)
+                .Select(t => t.TenantId)
+                .Where(id => id != Guid.Empty)
+                .ToArray();
+
+            if (nonActive.Length > 0)
+            {
+                _coordinator.SeedExclusions(nonActive);
+            }
+            else
+            {
+                _logger.LogDebug(
+                    "Litestream auto-regenerator: startup tenant-store query returned no non-Active tenants; " +
+                    "exclusion set remains empty.");
+            }
+        }
+#pragma warning disable CA1031
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            // Best-effort seeding — log and continue. The lifecycle handler will repopulate on the next status change.
+            _logger.LogWarning(ex,
+                "Litestream auto-regenerator: startup exclusion seeding from tenant store failed; " +
+                "continuing with empty exclusion set. Subsequent lifecycle events will repopulate.");
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
     }
+
+    private void OnDbCreated(object sender, FileSystemEventArgs e)
+        => _coordinator.SignalRegen(new RegenSignal(RegenTrigger.FileCreated, TenantId: null, Detail: e.Name));
+
+    private void OnDbDeleted(object sender, FileSystemEventArgs e)
+        => _coordinator.SignalRegen(new RegenSignal(RegenTrigger.FileDeleted, TenantId: null, Detail: e.Name));
 
     private async Task RegenLoopAsync(CancellationToken cancellationToken)
     {
-        if (_channel is null)
-        {
-            return;
-        }
-
-        var reader = _channel.Reader;
+        var reader = _coordinator.Reader;
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            RegenReason firstReason;
+            RegenSignal firstSignal;
             try
             {
-                firstReason = await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                firstSignal = await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -225,9 +283,9 @@ internal sealed class LitestreamConfigAutoRegeneratorHostedService : IHostedServ
             }
 
             // Debounce: collapse any further events that arrive within the debounce window
-            // into the same regeneration. The "latest" reason wins for logging purposes.
+            // into the same regeneration. The "latest" signal wins for logging purposes.
             var debounce = _optionsMonitor.CurrentValue.AutoRegenerateDebounceWindow;
-            var latestReason = firstReason;
+            var latestSignal = firstSignal;
             if (debounce > TimeSpan.Zero)
             {
                 using var debounceCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -237,7 +295,7 @@ internal sealed class LitestreamConfigAutoRegeneratorHostedService : IHostedServ
                     try
                     {
                         var next = await reader.ReadAsync(debounceCts.Token).ConfigureAwait(false);
-                        latestReason = next;
+                        latestSignal = next;
                     }
                     catch (OperationCanceledException) when (debounceCts.IsCancellationRequested
                         && !cancellationToken.IsCancellationRequested)
@@ -258,41 +316,48 @@ internal sealed class LitestreamConfigAutoRegeneratorHostedService : IHostedServ
 
             try
             {
-                Regenerate(latestReason);
+                Regenerate(latestSignal);
             }
 #pragma warning disable CA1031
             catch (Exception ex)
 #pragma warning restore CA1031
             {
                 _logger.LogError(ex,
-                    "Litestream auto-regenerator failed to regenerate config (trigger: {Trigger}, file: {File}).",
-                    latestReason.Trigger,
-                    latestReason.FileName ?? "<none>");
+                    "Litestream auto-regenerator failed to regenerate config (trigger: {Trigger}, tenant: {Tenant}, detail: {Detail}).",
+                    latestSignal.Trigger,
+                    latestSignal.TenantId?.ToString() ?? "<none>",
+                    latestSignal.Detail ?? "<none>");
             }
         }
     }
 
-    private void Regenerate(RegenReason reason)
+    private void Regenerate(RegenSignal signal)
     {
         var options = _optionsMonitor.CurrentValue;
         var directory = _locator.DatabaseDirectory;
+        var exclusions = _coordinator.GetCurrentExclusions();
 
-        var yaml = _generator.Generate(directory, options);
+        var yaml = _generator.Generate(directory, options, exclusions);
         WriteAtomic(options.ConfigOutputPath, yaml);
 
-        var reasonDescription = reason.Trigger switch
+        var signalDescription = signal.Trigger switch
         {
             RegenTrigger.FileCreated => string.Format(CultureInfo.InvariantCulture,
-                "file Created: {0}", reason.FileName ?? "<unknown>"),
+                "file Created: {0}", signal.Detail ?? "<unknown>"),
             RegenTrigger.FileDeleted => string.Format(CultureInfo.InvariantCulture,
-                "file Deleted: {0}", reason.FileName ?? "<unknown>"),
+                "file Deleted: {0}", signal.Detail ?? "<unknown>"),
+            RegenTrigger.TenantExcluded => string.Format(CultureInfo.InvariantCulture,
+                "tenant {0} excluded ({1})", signal.TenantId, signal.Detail ?? "<no reason>"),
+            RegenTrigger.TenantReincluded => string.Format(CultureInfo.InvariantCulture,
+                "tenant {0} re-included", signal.TenantId),
             _ => "startup initial sync",
         };
 
         _logger.LogInformation(
-            "Litestream auto-regenerator wrote '{Output}' ({Trigger}).",
+            "Litestream auto-regenerator wrote '{Output}' ({Trigger}; {ExclusionCount} tenant(s) excluded).",
             options.ConfigOutputPath,
-            reasonDescription);
+            signalDescription,
+            exclusions.Count);
 
         SignalLitestream(options);
     }
@@ -391,15 +456,6 @@ internal sealed class LitestreamConfigAutoRegeneratorHostedService : IHostedServ
 
         _logger.LogInformation(
             "Sent SIGHUP to Litestream process (PID {Pid}) for config reload.", pid);
-    }
-
-    private readonly record struct RegenReason(RegenTrigger Trigger, string? FileName);
-
-    private enum RegenTrigger
-    {
-        StartupInitialSync = 0,
-        FileCreated = 1,
-        FileDeleted = 2,
     }
 
     private static class NativeMethods

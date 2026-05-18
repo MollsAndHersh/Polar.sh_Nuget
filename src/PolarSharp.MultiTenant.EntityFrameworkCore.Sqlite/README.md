@@ -174,7 +174,18 @@ Opt in by setting:
 
 **Windows limitation.** POSIX `SIGHUP` has no native Windows equivalent. On Windows hosts the auto-regenerator still writes the new YAML to `ConfigOutputPath`, but logs a Warning instead of signalling the Litestream process — operators must restart Litestream manually for the change to take effect. Most production Litestream deployments run on Linux, where the SIGHUP path works out of the box.
 
-**Scope.** Stage C.1 ships the **file-event** side of the auto-regenerator. It handles `.db` file CREATE and DELETE events (e.g., new tenants onboarded, tenants removed). It does **not** yet handle tenant SUSPENSION events — where the `.db` file stays on disk but should stop replicating. Suspension awareness is Stage C.4's job and lands once the tenant-lifecycle notification infrastructure (Stage C.2 + C.3) is in place; for now, a suspended tenant whose file remains on disk continues to be included in the generated config.
+### Tenant lifecycle integration (Stage C.4)
+
+Beyond `.db` file Created/Deleted events, the auto-regenerator subscribes to MediatR `TenantStatusChangedNotification` events published by `PolarSharp.MultiTenant.Lifecycle.ITenantStatusService`. Status changes drive the same regeneration pipeline as file events, with the per-tenant inclusion/exclusion state held in a shared `LitestreamRegenCoordinator` singleton:
+
+- **Suspended / Inactive / Deleted** — the tenant's `.db` file is **excluded** from the regenerated YAML. The file stays on disk (so business data is preserved), but Litestream stops pushing new WAL changes on the next config reload. A YAML comment (`# tenant {id} excluded from replication (suspended/inactive/deleted)`) is emitted in the would-be location so an operator inspecting the generated file sees the omission explicitly.
+- **Active (reactivation)** — the tenant's `.db` file is **re-included** in the regenerated YAML, and replication resumes on the next config reload.
+
+**Snapshot retention.** Per the locked design decision, existing cloud snapshots for an excluded tenant are **preserved** on the replica target — they remain subject to the configured `RetentionDays`. Excluding a tenant only stops new WAL changes from being pushed; nothing is deleted from S3 / Azure / GCS / SFTP / local-disk as a side effect of suspension. Reactivating a tenant within the retention window therefore restores from the last full snapshot rather than starting from zero.
+
+**Restart-after-suspension behavior.** When the host process starts, the auto-regenerator queries the registered `IMultiTenantStore<PolarTenantInfo>` for tenants whose `Status` is not `Active` and seeds the exclusion set before the initial sync. This ensures that the very first YAML written after a host restart correctly excludes any tenants that were already suspended when the host went down — there is no window where a suspended tenant would briefly resume replication on restart.
+
+**No-op when disabled.** The `LitestreamTenantLifecycleHandler` is registered unconditionally as part of `AddPolarSqliteLitestream(...)`, but checks `UseLitestream` and `AutoRegenerateOnTenantChange` on every notification and exits early when either is `false`. Hosts that have Litestream disabled pay only the cost of the MediatR dispatch.
 
 ## License
 

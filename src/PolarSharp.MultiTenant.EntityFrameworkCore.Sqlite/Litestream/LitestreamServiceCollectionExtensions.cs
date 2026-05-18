@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -34,6 +35,8 @@ public static class LitestreamServiceCollectionExtensions
     ///   <item>A named <see cref="HttpClient"/> for the health check
     ///   (<see cref="LitestreamHealthCheck.HttpClientName"/>).</item>
     ///   <item><see cref="LitestreamConfigGenerator"/> as a singleton.</item>
+    ///   <item><see cref="LitestreamRegenCoordinator"/> as a singleton — the shared
+    ///   exclusion-set state and regen-signal channel.</item>
     ///   <item><see cref="LitestreamHealthCheck"/> as a health check tagged
     ///   <c>polar-sql</c> and <c>polar-litestream</c>.</item>
     ///   <item><see cref="LitestreamConfigAutoRegeneratorHostedService"/> as an
@@ -41,6 +44,9 @@ public static class LitestreamServiceCollectionExtensions
     ///   <see cref="LitestreamOptions.UseLitestream"/> or
     ///   <see cref="LitestreamOptions.AutoRegenerateOnTenantChange"/> is
     ///   <see langword="false"/>, so the registration is always safe.</item>
+    ///   <item><see cref="LitestreamTenantLifecycleHandler"/> via MediatR assembly
+    ///   scanning so <c>TenantStatusChangedNotification</c> events drive exclusion-set
+    ///   updates. MediatR de-duplicates assembly scans across registrations.</item>
     /// </list>
     /// </remarks>
     /// <example>
@@ -70,6 +76,7 @@ public static class LitestreamServiceCollectionExtensions
         services.AddHttpClient(LitestreamHealthCheck.HttpClientName);
 
         services.TryAddSingleton<LitestreamConfigGenerator>();
+        services.TryAddSingleton<LitestreamRegenCoordinator>();
 
         services.AddHealthChecks()
             .AddCheck<LitestreamHealthCheck>(
@@ -79,6 +86,14 @@ public static class LitestreamServiceCollectionExtensions
 
         // Self-disables when UseLitestream OR AutoRegenerateOnTenantChange is false; always safe to register.
         services.AddHostedService<LitestreamConfigAutoRegeneratorHostedService>();
+
+        // Register the MediatR notification handler that drives exclusion-set updates from
+        // TenantStatusChangedNotification events. MediatR de-duplicates assembly scans, so
+        // this is safe to call even if the host already registered MediatR with their own
+        // assemblies (or if PolarSharp.MultiTenant.Lifecycle registered this same assembly
+        // via a different code path).
+        services.AddMediatR(cfg =>
+            cfg.RegisterServicesFromAssembly(typeof(LitestreamTenantLifecycleHandler).Assembly));
 
         return services;
     }

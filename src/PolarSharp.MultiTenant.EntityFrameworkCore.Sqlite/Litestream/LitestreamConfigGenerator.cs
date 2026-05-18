@@ -64,6 +64,60 @@ public sealed class LitestreamConfigGenerator
     /// </code>
     /// </example>
     public string Generate(string databaseDirectory, LitestreamOptions options)
+        => Generate(databaseDirectory, options, excludeTenantIds: null);
+
+    /// <summary>
+    /// Generates a <c>litestream.yml</c> content string for the given database directory
+    /// and resolved Litestream options, optionally excluding specified tenants from the
+    /// generated config.
+    /// </summary>
+    /// <param name="databaseDirectory">
+    /// The SQLite database directory (where <c>master_SaaS.db</c> and per-tenant
+    /// <c>{tenantId}.db</c> files live). Must be an existing directory.
+    /// </param>
+    /// <param name="options">
+    /// The resolved Litestream options. Must have
+    /// <see cref="LitestreamOptions.UseLitestream"/> set to <see langword="true"/>;
+    /// otherwise an <see cref="InvalidOperationException"/> is thrown.
+    /// </param>
+    /// <param name="excludeTenantIds">
+    /// Optional set of tenant IDs to EXCLUDE from the generated config. Each excluded
+    /// tenant's <c>{tenantId}.db</c> file (if present) is omitted from the <c>dbs:</c>
+    /// array, so Litestream stops replicating it on the next config reload. Pass
+    /// <see langword="null"/> or an empty set to include all <c>.db</c> files.
+    /// </param>
+    /// <returns>Valid YAML content matching Litestream's config schema.</returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="databaseDirectory"/> is null, empty, or does not exist.
+    /// </exception>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="LitestreamOptions.UseLitestream"/> is <see langword="false"/>.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// A <c>.db</c> file whose stem parses as a <see cref="Guid"/> that appears in
+    /// <paramref name="excludeTenantIds"/> is omitted from the <c>dbs:</c> array, and a
+    /// YAML comment is emitted in its would-be location noting the exclusion. Files whose
+    /// stem does not parse as a <see cref="Guid"/> (e.g., <c>master_SaaS.db</c>) are
+    /// always included regardless of the exclusion set.
+    /// </para>
+    /// <para>
+    /// Per the Stage C design decision, existing snapshots on the replica target are NOT
+    /// removed when a tenant is excluded — they remain subject to the configured
+    /// <see cref="LitestreamOptions.RetentionDays"/>. Excluding a tenant only stops new
+    /// WAL changes from being pushed.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var generator = new LitestreamConfigGenerator();
+    /// var excluded = new HashSet&lt;Guid&gt; { Guid.Parse("3fa85f64-5717-4562-b3fc-2c963f66afa6") };
+    /// var yaml = generator.Generate("/var/lib/polarsharp/tenants/", options, excluded);
+    /// File.WriteAllText("/etc/litestream/litestream.yml", yaml);
+    /// </code>
+    /// </example>
+    public string Generate(string databaseDirectory, LitestreamOptions options, IReadOnlySet<Guid>? excludeTenantIds)
     {
         ArgumentException.ThrowIfNullOrEmpty(databaseDirectory);
         ArgumentNullException.ThrowIfNull(options);
@@ -88,7 +142,7 @@ public sealed class LitestreamConfigGenerator
 
         var sb = new StringBuilder();
         AppendHeader(sb, options);
-        AppendDbs(sb, options, dbFiles);
+        AppendDbs(sb, options, dbFiles, excludeTenantIds);
         return sb.ToString();
     }
 
@@ -103,11 +157,27 @@ public sealed class LitestreamConfigGenerator
         sb.AppendLine("dbs:");
     }
 
-    private static void AppendDbs(StringBuilder sb, LitestreamOptions options, IReadOnlyList<string> dbFiles)
+    private static void AppendDbs(
+        StringBuilder sb,
+        LitestreamOptions options,
+        IReadOnlyList<string> dbFiles,
+        IReadOnlySet<Guid>? excludeTenantIds)
     {
+        var hasExclusions = excludeTenantIds is { Count: > 0 };
+
         foreach (var dbFile in dbFiles)
         {
             var fileName = Path.GetFileNameWithoutExtension(dbFile);
+
+            if (hasExclusions
+                && Guid.TryParse(fileName, out var tenantId)
+                && excludeTenantIds!.Contains(tenantId))
+            {
+                sb.AppendLine(CultureInfo.InvariantCulture,
+                    $"  # tenant {tenantId} excluded from replication (suspended/inactive/deleted)");
+                continue;
+            }
+
             sb.AppendLine(CultureInfo.InvariantCulture, $"  - path: {dbFile}");
             sb.AppendLine(CultureInfo.InvariantCulture,
                 $"    sync-interval: {options.SyncIntervalSeconds.ToString(CultureInfo.InvariantCulture)}s");
