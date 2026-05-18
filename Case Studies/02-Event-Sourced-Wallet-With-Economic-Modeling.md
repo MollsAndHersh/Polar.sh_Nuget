@@ -81,22 +81,22 @@ JSON-LD structured data (invisible on GitHub render; consumed by web crawlers + 
 # Case Study 02 — Event-Sourced Wallet with Comprehensive Economic Modeling
 
 > **Author**: Mark Chipman — Molls and Hersh, LLC.
-> **Date**: 2026-05-15
+> **Date**: 2026-05-18
 > **Status**: Stable. Reference implementation: PolarSharp.PrepaidWallets v1.3 (36 packages; 10 wallet-core tables; 4 exclusive settlement modes; 3 fee-handling modes; recursive TenantPrefundedWallet meta-tenant pattern).
 > **License**: © Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution.
 > **Related files**: [`PrepaidWalletsLiftAndShift.md`](../PrepaidWalletsLiftAndShift.md); the wallet design subsection in the v1.3.0 plan.
 
 ## TL;DR
 
-A prepaid-token wallet is built on an event-sourced aggregate (immutable event log + projections + snapshot strategy) with FULL economic modeling baked into the design from day one: configurable fee-handling modes (who pays processing costs), 4 mutually-exclusive SaaS-revenue settlement modes (including a recursive meta-tenant "the tenants are themselves wallet customers" model), dormancy hedging (refund eligibility windows, surcharges, monthly maintenance fees on stagnant balances), B2B purchase-order admin (tenants accept POs from their own customers and credit wallets against them), and refund-as-credit (refunds route back to wallet tokens rather than the original payment instrument to save processor fees). Every fund/debit/credit/refund/maintenance-fee event records the FULL economic breakdown immutably — customer charged, processor fee, SaaS profit, tenant absorbed (if any), tenant net, tokens credited, funding-terms snapshot — so every audit question is answerable from the event log alone.
+A prepaid-token wallet is designed as an event-sourced aggregate (immutable event log + projections + snapshot strategy) built on top of the established CQRS / aggregate / MediatR pipeline. Economic modeling is baked into the design from day one: three configurable fee-handling modes, four mutually-exclusive SaaS-revenue settlement modes (including the recursive meta-tenant Option D where tenants are themselves wallet customers), dormancy hedging, refund-as-credit, and B2B purchase-order admin. Every fund/debit/credit/refund/maintenance-fee event is designed to record the FULL economic breakdown immutably — customer charged, processor fee, SaaS profit, tenant absorbed, tenant net, tokens credited, funding-terms snapshot — so every audit question is answerable from the event log alone. The Polar.sh funding on-ramp is both the SaaS's primary tenant-prepayment path and the unique enabler of the Option D recursion.
 
 ## Historical context / inspiration / prior art
 
-The event-sourcing portion draws from established work: Greg Young's CQRS + Event Sourcing patterns (early 2010s), Vaughn Vernon's *Implementing Domain-Driven Design* (2013), and the practical Marten + Postgres event-store work that Jeremy Miller and the JasperFx team have shipped over the past decade. **Hannes Lowette's Dometrain course on Event Sourcing in .NET** is the canonical modern reference for the exact aggregate / command-handler / projection / snapshot pattern this case study adopts.
+The event-sourcing portion draws from established work: Greg Young's CQRS + Event Sourcing patterns (early 2010s), Vaughn Vernon's *Implementing Domain-Driven Design* (2013), and the practical Marten + Postgres event-store work that Jeremy Miller and the JasperFx team have shipped over the past decade. Hannes Lowette's Dometrain course on Event Sourcing in .NET is the canonical modern reference for the exact aggregate / command-handler / projection / snapshot pattern this case study adopts; readers without Dometrain access should reach for Greg Young's freely-available CQRS/ES talks (multiple, 2010-2017, YouTube), Vaughn Vernon's *Implementing Domain-Driven Design* (the red book), and Martin Fowler's foundational Event Sourcing article on martinfowler.com.
 
 The economic-modeling portion is original. Most prepaid wallet implementations treat fees as a cost-of-doing-business absorbed silently, leaving the customer and the merchant to discover the actual numbers via their card statement (customer) or their monthly merchant statement (merchant). The "everything is in the event log including the fee breakdown" approach inverts that — economic transparency is a design goal of equal weight to functional correctness, and it composes naturally with event sourcing because events are already immutable and auditable.
 
-The recursive **TenantPrefundedWallet** ("Option D") meta-tenant design — where each tenant is itself a wallet-holding customer in the SaaS's meta-tenant context, and platform fees debit the tenant's wallet in real time — is original and is the most novel piece of the design. The closest analogs are Twilio's prepaid balance + AWS Credits, but neither inverts the SaaS billing relationship into a recursive use of the same wallet system the SaaS sells to its own customers. The recursion is what makes the design elegant: the wallet machinery is used twice, once at the customer→tenant level and once at the tenant→SaaS level.
+The recursive **TenantPrefundedWallet** ("Option D") meta-tenant design — where each tenant is itself a wallet-holding customer in the SaaS's meta-tenant context, and platform fees debit the tenant's wallet in real time — is original and is the most novel piece of the design. The closest analogs are Twilio's prepaid balance + AWS Credits, but neither inverts the SaaS billing relationship into a recursive use of the same wallet system the SaaS sells to its own customers. The recursion is what makes the design elegant: the wallet machinery is designed to be used twice, once at the customer→tenant level and once at the tenant→SaaS level.
 
 The dormancy-hedging pattern (180-day refund cutoff + 10% surcharge + monthly maintenance fee on stagnant balances) is borrowed from the prepaid-card / gift-card industry where it's universal. The contribution here is integrating it into an event-sourced ledger with per-funding-event terms snapshotting, so a customer's specific refund eligibility is locked at funding time and protected from later tenant policy changes.
 
@@ -140,7 +140,7 @@ Projections subscribe to events and update read models.
 Snapshot strategy: persist aggregate state every N events; replay from snapshot + delta.
 ```
 
-The aggregate enforces invariants (balance >= 0, no double-debit on same idempotency key, no funding while frozen, no debit on closed wallet). The event log is the audit trail.
+The aggregate is designed to enforce invariants (balance >= 0, no double-debit on same idempotency key, no funding while frozen, no debit on closed wallet). The event log is the audit trail.
 
 ### 2. The wallet event with full economic breakdown
 
@@ -167,19 +167,21 @@ public sealed record WalletFunded(
 );
 ```
 
-This is not an audit *view* — it's the *event itself*. The fields are part of the immutable record. Years later, anyone can query "show me the breakdown of customer X's $271.36 payment on April 22" and get the exact numbers because they're in the event.
+This is not an audit *view* — it's the *event itself*. The fields are designed to be part of the immutable record. Years later, anyone can query "show me the breakdown of customer X's $271.36 payment on April 22" and get the exact numbers because they're in the event.
 
 ### 3. Three configurable fee-handling modes
 
-`TenantBusinessProfile.WalletFundingFeeHandlingMode` selects one of three modes:
+`TenantBusinessProfile.WalletFundingFeeHandlingMode` selects one of three modes. Each is a different answer to the question "who eats the processing costs, and how is that surfaced to the customer?" `AbsorbAndMarkup` charges the customer the round-dollar face value and lets the tenant take the loss on each funding event (which the tenant is expected to recoup via product markup). `TransparentGrossUp` grosses the customer charge up so that the tenant nets exactly the face value after fees. `DollarFirstShowTokens` keeps the customer thinking in round dollars but credits proportionally fewer tokens so that the math nets out the same as `TransparentGrossUp`.
 
-| Mode | Customer pays | Customer receives | Card statement | Tenant behavior |
-|---|---|---|---|---|
-| `AbsorbAndMarkup` | $250 face value | Exactly 25,000 tokens | $250 (matches button) | Tenant absorbs ~$19.67 in fees from margin. Marks up product pricing to recoup. Optional dual-price display on products. |
-| `TransparentGrossUp` | $263.13 (computed) | Exactly 25,000 tokens | $263.13 (matches button) | Tenant nets $250 to back tokens. Quote step shows breakdown before customer commits. |
-| `DollarFirstShowTokens` | $250 (entered) | 23,033 tokens (computed) | $250 (matches button) | Same economics as TransparentGrossUp; different framing. |
+> Numbers in this table assume example rates of 3% processor fee + 2% SaaS cut (5% combined). Actual rates are per-tenant configurable via `TenantBusinessProfile.SaaSFeeRates` (`FundingCutPercent`, `MaintenanceFeeCutPercent`, etc.) and are set only by AppMasterAdmin per the `PolarPermission.ManageTenantBilling` permission described in the "Implementation mechanics" section.
 
-In all three modes, the WalletFunded event records the full breakdown. The mode is purely about UX framing + who eats which costs.
+| Mode | Customer charged | Processor fee | SaaS cut | Tenant absorbs | Tenant net | Tokens credited | Card statement |
+|---|---|---|---|---|---|---|---|
+| `AbsorbAndMarkup` | $250.00 | $7.50 | $5.00 | $12.50 | $237.50 | 25,000 (face value) | $250.00 (matches button) |
+| `TransparentGrossUp` | $263.16 | $7.89 | $5.26 | — | $250.01 | 25,000 (face value) | $263.16 (matches button) |
+| `DollarFirstShowTokens` | $250.00 | $7.50 | $5.00 | — | $237.50 | 23,750 (computed) | $250.00 (matches button) |
+
+In all three modes, the WalletFunded event is designed to record the full breakdown. The mode is purely about UX framing + who eats which costs.
 
 ### 4. Four mutually-exclusive SaaS revenue settlement modes
 
@@ -203,9 +205,9 @@ Modes are mutually exclusive — SaaS picks ONE platform-wide; `IValidateOptions
 - `DormancyPeriodDays` (default 90)
 - `DormancyWarningDays` (default 30)
 
-These are SNAPSHOTTED on every `WalletFunded` event in `FundingTermsSnapshotJson`. If the tenant later changes their terms, existing tokens keep the original eligibility window, surcharge, and fee schedule. Contract immutability.
+These are designed to be SNAPSHOTTED on every `WalletFunded` event in `FundingTermsSnapshotJson`. If the tenant later changes their terms, existing tokens keep the original eligibility window, surcharge, and fee schedule. Contract immutability.
 
-`WalletMaintenanceFeeService` is a daily IHostedService that walks active wallets, computes days-since-last-activity per wallet, fires `WalletMaintenanceFeeApplied` events for wallets past the dormancy threshold. Customer gets a notification N days before fees start (`WalletApproachingDormancy`).
+`WalletMaintenanceFeeService` is designed as a daily IHostedService that walks active wallets, computes days-since-last-activity per wallet, fires `WalletMaintenanceFeeApplied` events for wallets past the dormancy threshold. Customer gets a notification N days before fees start (`WalletApproachingDormancy`).
 
 Refund workflow: `RequestWalletRefundCommand` from customer → system computes eligible refund (within window, minus surcharge per the snapshotted terms) → tenant operator approves/denies → `WalletRefundCompleted` event → refund executed via original funding processor → tokens debited.
 
@@ -225,7 +227,7 @@ Per-tenant `RefundConversionPolicy` configures behavior for hybrid orders (paid 
 
 Generic `IBalanceEscalationPolicy` abstraction (reusable for both tenant-wallet and customer-wallet low-balance scenarios). Default tenant policy has 5 stages (Normal → Warning → Urgent → Critical → Suspended); default customer policy has 3 stages. Each stage configures threshold, notification frequency, channel set, message template. Auto-resets to Normal + fires `BalanceRestored` on top-up.
 
-`WalletBalanceEscalationService` IHostedService runs hourly, applies the policy per wallet, fires notifications through the existing notification dispatcher (no parallel infrastructure — full reuse of the wallet's notification machinery).
+`WalletBalanceEscalationService` IHostedService is designed to run hourly, apply the policy per wallet, and fire notifications through the existing notification dispatcher (no parallel infrastructure — full reuse of the wallet's notification machinery).
 
 ## Funding flow: Polar.sh as the primary on-ramp
 
@@ -320,9 +322,38 @@ Implement the policy as an abstraction so both tenant-wallet (5-stage default) a
 
 ### Step 7: Per-tenant SaaSFeeRates settable only by AppMasterAdmin
 
-Tenants must NOT be able to view or modify their own SaaS fee rates (those are the SaaS's pricing decisions). Gate the API with a `PolarPermission.ManageTenantBilling` permission that only AppMasterAdmin users hold.
+Gate the mutation API for `SaaSFeeRates` with a permission attribute that only AppMasterAdmin users carry. The mechanics:
+
+```csharp
+// In PolarSharp.MultiTenant.Identity.PolarPermission (already exists in v1.3):
+public enum PolarPermission
+{
+    // ... existing values
+    ManageTenantBilling,  // AppMasterAdmin-only; gates SaaSFeeRates mutation
+}
+
+// On the admin controller / Minimal API endpoint:
+[RequirePolarPermission(PolarPermission.ManageTenantBilling)]
+public async Task<IActionResult> UpdateTenantSaaSFeeRates(
+    Guid tenantId, SaaSFeeRatesDto rates, CancellationToken ct)
+{
+    // PolarPermission middleware has already verified the caller is
+    // AppMasterAdmin; if not, the request short-circuits with 403.
+    await _businessProfileService.UpdateSaaSFeeRatesAsync(tenantId, rates, ct);
+    return NoContent();
+}
+
+// Tenants cannot read or write their own fee rates — there is no API
+// surface for tenant-scoped users to access SaaSFeeRates. They simply
+// see the resulting per-funding economic breakdown after the fact via
+// the WalletFunded event audit log.
+```
+
+The point is structural — tenants have no API surface to read or write their own SaaS fee rates. AppMasterAdmin holds the only key. This prevents tenants from negotiating rates through API back-channels and ensures every rate change goes through the AppMasterAdmin audit trail.
 
 ## Worked example (from PolarSharp)
+
+The following is the v1.3.0 reference implementation at full scope — a complete inventory of what the pattern produces when executed in production-class shape. Readers using this case study to design a smaller-scope adaptation should treat the inventory as a ceiling (an idea of what's possible), not a floor (a list of what's required). A loyalty-points wallet, a simple gift-card system, or a metered-billing system can adopt the pattern with far fewer packages, tables, and channels and still capture the core architectural value.
 
 The PolarSharp.PrepaidWallets v1.3.0 implementation is the reference:
 
