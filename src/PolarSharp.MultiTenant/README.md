@@ -145,6 +145,21 @@ Two flags are intentionally separate so an audit trail captures whether you glob
 
 The verification flow itself — generating a one-time link, delivering it, processing the click — is deferred to a future v1.2.x release. In the interim, hosts can manually set `SiteManagerEmailVerified = true` for tenants they trust (e.g., onboarded via a back-office process).
 
+## DI wiring (no manual MediatR registration needed)
+
+`AddPolarMultiTenant(...)` and `AddPolarTenantLifecycle(...)` register MediatR internally for this package's own assembly. Host code does **not** need to call `services.AddMediatR(...)` directly — the lifecycle notification pipeline (`TenantStatusChangedNotification` and its handlers) is wired up by the package itself. The correct DI wiring from a host application is just:
+
+```csharp
+builder.Services
+    .AddPolarInfrastructure(builder.Configuration)
+    .AddPolarMultiTenant()                                     // registers MT services + MediatR (this package's assembly)
+    .AddPolarTenantLifecycle(builder.Configuration);           // adds ITenantStatusService + lifecycle handler discovery
+```
+
+If the host application **also** uses MediatR for its own handlers, calling `services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(MyHostAssemblyMarker).Assembly))` from host code composes cleanly with the PolarSharp registration. MediatR's `AddMediatR` is idempotent across multiple calls — handlers from every registered assembly are discoverable, so multiple PolarSharp packages and the host can each register their own assemblies without conflict.
+
+For the full decision tree on which `AddPolarXxx(...)` extensions to call in which scenario, see the [`Choosing your PolarSharp DI wiring`](../../../docs/articles/narratives/choosing-your-polarsharp-di-wiring.md) Implementation Narrative.
+
 ## Documentation
 
 - [Multi-Tenancy Guide](https://mollsandhersh.github.io/Polar.sh_Nuget/articles/multi-tenancy.html)

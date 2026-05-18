@@ -6,7 +6,7 @@ author:
   name: "Mark Chipman"
   organization: "Molls and Hersh, LLC"
 date_published: 2026-05-15
-date_modified: 2026-05-18
+date_modified: 2026-05-19
 status: stable
 license: "© Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution."
 reference_implementation: "PolarSharp.PrepaidWallets v1.3 + PolarSharp.EcommerceStorefronts v1.4 (planned)"
@@ -22,6 +22,11 @@ keywords:
   - EF Core query filters
   - tenant isolation
   - dual-mode libraries
+  - single-tenant upgrade
+  - master_SaaS
+  - Litestream
+  - tenant lifecycle
+  - site manager notifications
 related_case_studies:
   - "01-Lift-And-Shift-Architecture"
   - "02-Event-Sourced-Wallet-With-Economic-Modeling"
@@ -50,9 +55,9 @@ JSON-LD structured data (invisible on GitHub render; consumed by web crawlers + 
     }
   },
   "datePublished": "2026-05-15",
-  "dateModified": "2026-05-18",
+  "dateModified": "2026-05-19",
   "inLanguage": "en",
-  "keywords": "multi-tenancy, single-tenant deployment, mode-agnostic abstractions, library design, tenant scope, optional multi-tenancy, audience scope, Finbuckle.MultiTenant, EF Core query filters, tenant isolation, dual-mode libraries",
+  "keywords": "multi-tenancy, single-tenant deployment, mode-agnostic abstractions, library design, tenant scope, optional multi-tenancy, audience scope, Finbuckle.MultiTenant, EF Core query filters, tenant isolation, dual-mode libraries, single-tenant upgrade, master_SaaS, Litestream, tenant lifecycle, site manager notifications",
   "about": [
     "optional multi-tenancy",
     "mode-agnostic library design",
@@ -74,7 +79,7 @@ JSON-LD structured data (invisible on GitHub render; consumed by web crawlers + 
 # Case Study 05 — Multi-Tenancy as Optional for Library Authors
 
 > **Author**: Mark Chipman — Molls and Hersh, LLC.
-> **Date**: 2026-05-18
+> **Date**: 2026-05-19
 > **Status**: Stable. Reference implementation: PolarSharp.PrepaidWallets v1.3 + PolarSharp.EcommerceStorefronts v1.4 (planned).
 > **License**: © Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution.
 > **Related files**: PolarSharp v1.3 plan, "Multi-tenancy is OPTIONAL" subsection in the PrepaidWallets section.
@@ -235,6 +240,199 @@ internal sealed class WalletGraphQLConfigurationCheck : IHostedService
 ```
 
 This makes "picking the wrong bridge package" a recoverable startup warning rather than a confusing silent misbehavior.
+
+## Single-tenant -> multi-tenant upgrade flow
+
+The hardest part of "ship a mode-agnostic library" is not deciding the abstraction — it's the data migration when a host that has been running in single-tenant mode for months or years flips on multi-tenant mode for the first time. Existing rows have no `TenantId` (or a null one), and the new MT query filter would silently hide every row from every user. PolarSharp ships first-class infrastructure for this transition under `PolarSharp.MultiTenant.EntityFrameworkCore` plus per-provider migrator implementations.
+
+### The contract: `ISingleTenantUpgradeMigrator`
+
+A small per-provider interface — one implementation per supported EF Core provider — that performs the one-time backfill plus idempotency bookkeeping. Each provider's migrator knows the right native technique for high-throughput row stamping in its store and the right idiom for temporarily bypassing tenant-row-level-security.
+
+### Options: `SingleTenantUpgradeOptions` (`PolarSharp:MultiTenant:SingleTenantUpgrade`)
+
+| Key | Type | Default | Notes |
+|-----|------|---------|-------|
+| `EnableAutomaticUpgrade` | `bool` | `true` | When true, the hosted service runs the upgrade on first MT-mode boot. Set false to drive the upgrade explicitly via the CLI during a chosen maintenance window. |
+| `DefaultTenantStrategy` | enum | `LiteralDefault` | One of `LiteralDefault` (auto-create a single named tenant), `FirstUserOrganization` (resolve from the Identity package's user-to-org mapping), `HostSupplied` (delegate to an `IDefaultTenantResolver` the host registers). |
+| `LiteralDefaultTenantSlug` | string | `"default"` | Slug for the auto-created tenant under `LiteralDefault`. |
+| `LiteralDefaultTenantName` | string | `"Default Tenant"` | Display name for the auto-created tenant under `LiteralDefault`. |
+| `RequireGracefulQuiescence` | `bool` | `true` | Refuses to run unless the host has signalled quiescence. Set false only on low-traffic systems where briefly serving partially-stamped reads is acceptable. |
+| `MaxRunDuration` | `TimeSpan` | 30 min | Hard wall-clock cap; bigger datasets need a bigger value. |
+
+### Orchestration: `SingleTenantUpgradeHostedService`
+
+An `IHostedService` registered by `services.AddPolarSingleTenantUpgrade(configuration)` that runs at app startup. The hosted service:
+
+1. Reads `polar_upgrade_history` to short-circuit if the upgrade already completed for the active configuration.
+2. Resolves the default tenant per the configured strategy.
+3. Calls into the registered `ISingleTenantUpgradeMigrator` to do the per-provider work.
+4. Writes the completion marker to `polar_upgrade_history`.
+5. Surfaces failures as startup exceptions — a failed upgrade prevents the app from booting in a half-migrated state.
+
+### Per-provider behavior
+
+| Provider | Approach |
+|----------|----------|
+| SQLite | The file layout (one `.db` per tenant under a shared directory plus a separate `master_SaaS.db` for the registry) already encodes tenant structure, so there is no row-backfill — the migrator only adds the default tenant to the registry and renames any legacy `data.db` / `app.db` to `{defaultTenantId}.db`. See the SQLite refinement section below. |
+| SqlServer | Backfills `TenantId` on every tenant-owned table using `ExecuteUpdateAsync`, temporarily bypassing tenant RLS policies via the `SESSION_CONTEXT('polar_upgrade')` session key — the RLS predicate checks for that key and short-circuits during the upgrade. |
+| Postgres | Same shape as SqlServer, but uses `SET LOCAL polar.upgrade_in_progress = 'true'` inside the transaction and `current_setting('polar.upgrade_in_progress', true)` in the RLS predicate. |
+| MariaDb | Simplest of the relational providers — no native row-level-security to bypass, so the migrator only runs the bulk update statements. |
+| CosmosDb | Cannot use `ExecuteUpdateAsync` (Cosmos has no in-place update); the migrator iterates documents and uses a Replace-Item pattern with a per-batch RU-budget guard so the upgrade never accidentally exhausts the container's throughput. The completion marker is recorded by a hosted-service provisioner rather than via an EF Core migration — Cosmos has no DDL story for the `polar_upgrade_history` table, so a dedicated container is created on first run. |
+
+### The `polar_upgrade_history` table
+
+Single row per (provider, default-tenant-strategy) combination. Subsequent boots check the table first; only an empty result triggers the work. Operators who want to force a re-run delete the row manually (and supply a reason in the matching audit log) — the library never automatically purges or rewrites history.
+
+### Wiring
+
+```csharp
+builder.Services
+    .AddPolarInfrastructure(builder.Configuration)
+    .AddPolarMultiTenant()
+    .UseSqlite("/var/lib/polarsharp/tenants/");
+
+builder.Services.AddPolarSingleTenantUpgrade(builder.Configuration);
+```
+
+That is the entire host code change — one extension method call. The hosted service, the options binding, the validator, and the provider's migrator implementation are all registered transitively.
+
+## SQLite-specific refinement: master_SaaS.db + per-tenant .db files
+
+The SQLite provider in v1.2.x adopts a deliberate file-naming convention that makes the platform / tenant boundary obvious to operators inspecting the filesystem:
+
+- `master_SaaS.db` — platform-level data: the tenant registry (`polar_tenants`), AppMasterAdmins, audit logs, SaaS-level configuration, the `polar_upgrade_history` table from the section above, and any future cross-tenant platform tables as they ship.
+- `{tenantId}.db` — one file per tenant, holding all tenant-scoped data (catalog, identity, orders, whatever the tenant owns).
+
+The convention applies in **both** single-tenant mode and multi-tenant mode. A single-tenant deployment ships `master_SaaS.db` plus one `{defaultTenantId}.db`. A multi-tenant deployment ships `master_SaaS.db` plus N tenant files. The structural shape is identical — single-tenant deployments are structurally MT-ready from day one, which is exactly what makes the single-tenant -> MT upgrade above a non-event for SQLite (no row backfill required — only a registry insert and a file rename).
+
+### WAL journal mode is enabled by default
+
+`master_SaaS.db` is opened with `journal_mode = WAL` by default. WAL is required for Litestream replication (see the next section), so making it the default avoids a foot-gun where opting into Litestream silently failed. WAL also gives better concurrency for any non-trivial workload — multiple readers + one writer instead of the rollback-journal mode's exclusive-lock semantics — so it is the right default even when Litestream is off.
+
+### Backward-compat fallback for `__tenants.db`
+
+Pre-v1.2 deployments named the registry file `__tenants.db`. On startup the SQLite provider checks for the canonical `master_SaaS.db` first; if absent and `__tenants.db` is present, the provider falls back to the legacy filename for the current run, logs a Warning, and recommends a rename during the next maintenance window. The single-tenant upgrade migrator (above) renames as part of its work, so hosts running the upgrade get the rename for free.
+
+### Scope: SQLite-specific
+
+The other providers (SqlServer / Postgres / MariaDb / Cosmos) keep the shared-database pattern from v1.2 — every tenant's data lives in one schema-shared database with tenant isolation enforced via RLS / query filters. The `master_SaaS.db` naming + per-tenant `.db` file pattern is specifically a SQLite refinement because SQLite's natural unit of isolation is the file, not the schema.
+
+## Optional Litestream integration (SQLite only)
+
+[Litestream](https://litestream.io) is an external Go binary that continuously streams the SQLite WAL to S3, Azure Blob Storage, Google Cloud Storage, SFTP, or a local directory. It watches the `.db` files at the filesystem level — the application never talks to Litestream directly. PolarSharp does NOT bundle the binary; v1.2.x ships **integration affordances** so a host that already runs Litestream as a sidecar gets startup validation, a health check, a `litestream.yml` template generator, and an optional auto-regenerator.
+
+### Opt-in via configuration
+
+The entire integration is gated by `PolarSharp:MultiTenant:Sqlite:Litestream:UseLitestream`:
+
+```json
+{ "PolarSharp": { "MultiTenant": { "Sqlite": { "Litestream": { "UseLitestream": true } } } } }
+```
+
+With the toggle off (default), the validator returns success without inspecting any sub-fields, the health check reports "not enabled", and the config generator is inert. Hosts that never want Litestream support pay zero runtime cost beyond a handful of unused DI registrations.
+
+### Replica targets
+
+Five replica target types ship in v1.2.x — one chosen at a time via `ReplicaTargetType`:
+
+| Type | Sub-options object | Notes |
+|------|--------------------|-------|
+| `S3` | `LitestreamS3Options` | Bucket + Region + PathPrefix + AccessKeyId/SecretAccessKey via env-var names. Also covers MinIO / Backblaze B2 / Wasabi via `EndpointUrl` + `ForcePathStyle`. |
+| `AzureBlob` | `LitestreamAzureBlobOptions` | AccountName + Container + AccessKey via env-var name. |
+| `GoogleCloudStorage` | `LitestreamGoogleCloudStorageOptions` | Bucket + CredentialsJsonPath pointing at a service-account JSON file. |
+| `Sftp` | `LitestreamSftpOptions` | Host + Port + User + Path + PrivateKeyPath. |
+| `LocalDisk` | `LitestreamLocalDiskOptions` | Path. Primarily for tests and development. |
+
+### Credentials live in environment variables, never in appsettings
+
+The options object holds the **names** of the env vars Litestream reads at runtime — never the secret values themselves. This keeps the appsettings file safe to commit. Supply the actual credentials via systemd `EnvironmentFile=`, Docker secrets, AWS Secrets Manager, or whatever the platform uses. The validator logs a warning at startup if a referenced env var is unset, but does not fail — secrets often arrive after process start through indirection.
+
+### IValidateOptions fails fast
+
+When the toggle is on, an `IValidateOptions<LitestreamOptions>` implementation runs at startup and rejects incomplete configurations (e.g., `ReplicaTargetType = S3` with an empty `S3.Bucket`, an out-of-range `SyncIntervalSeconds`, a `LocalDisk.Path` that cannot be created). Misconfiguration fails the boot rather than producing a silently-broken replica.
+
+### The auto-regenerator (Option D)
+
+The default model is one `litestream.yml` regenerated by hand and a Litestream process restarted on demand. For hosts that prefer a hands-off model, the package ships an opt-in `IHostedService` (Stage C.1 + Stage C.4) that:
+
+1. Watches the SQLite database directory via `FileSystemWatcher` for `.db` Created/Deleted events.
+2. **Also subscribes to MediatR `TenantStatusChangedNotification` events** (Stage C.4) so suspended / inactive / deleted tenants are excluded from the regenerated YAML on the next reload — and reactivated tenants are re-included.
+3. Debounces bursts (default 2s window) to collapse "bulk tenant onboarding" into a single regeneration.
+4. Writes the new YAML atomically (temp-file + rename).
+5. Signals Litestream to reload its config via `SIGHUP` on POSIX hosts (Windows logs a Warning instead — operators restart Litestream manually).
+
+Snapshot retention for excluded tenants is preserved on the replica target, subject to the configured `RetentionDays`, so a tenant reactivated within the retention window restores from the last full snapshot rather than starting from zero.
+
+### Health check
+
+A `litestream` health check tagged `polar-sql` + `polar-litestream` pings Litestream's `/metrics` endpoint and parses `litestream_replica_lag_seconds`. Surface in the host's `/health` endpoint:
+
+- `Healthy` — metrics reachable, max lag at or below `HealthCheckMaxLagSeconds`
+- `Degraded` — metrics reachable, max lag above threshold
+- `Unhealthy` — metrics endpoint unreachable (Litestream is likely not running)
+
+## Tenant lifecycle infrastructure
+
+Real-world multi-tenant deployments need more than just "tenant exists / does not exist." Tenants get suspended (payment failure, terms-of-service violation, operator-initiated pause), reactivated (issue resolved), deactivated (operator-initiated long-term inactivity), and soft-deleted (with a retention window before permanent removal). v1.2.x adds first-class lifecycle infrastructure to `PolarSharp.MultiTenant`.
+
+### `TenantStatus` enum on `PolarTenantInfo`
+
+```csharp
+public enum TenantStatus { Active = 0, Suspended = 1, Inactive = 2, Deleted = 3 }
+```
+
+`PolarTenantInfo.Status` (default `Active`) plus a computed `IsActive` shortcut.
+
+### Site manager contact info
+
+The tenant record gains two new columns capturing **who** receives lifecycle notifications:
+
+| Property | Type | Notes |
+|----------|------|-------|
+| `SiteManagerEmail` | `string` | Required. Recipient of lifecycle notifications. |
+| `SiteManagerEmailVerified` | `bool` | Default `false`. Gates suspension by default (see below). |
+| `SiteManagerPhone` | `string?` | Optional E.164 format (e.g., `+15555551234`) for SMS notifications. |
+
+### The canonical mutator: `ITenantStatusService`
+
+All lifecycle transitions go through this service. Mutating `Status` directly persists the change but skips the notification pipeline, so subscribers will not react. Prefer the service:
+
+```csharp
+public sealed class SuspendTenantHandler(ITenantStatusService status)
+{
+    public Task<TenantStatusChangeResult> Handle(Guid tenantId, string reason, CancellationToken ct)
+        => status.SuspendAsync(tenantId, reason, ct: ct);
+}
+```
+
+Methods: `SuspendAsync`, `ReactivateAsync`, `DeactivateAsync`, `DeleteAsync`. Each returns a `TenantStatusChangeResult` capturing previous + new status, an `IsIdempotentNoOp` flag (suspending an already-suspended tenant is a no-op and does NOT fire the notification), and a `FailureReason` for the not-allowed cases.
+
+### The lifecycle event: `TenantStatusChangedNotification`
+
+Status transitions publish a MediatR `INotification` carrying the tenant id + identifier + previous status + new status + reason + UTC timestamp. Subscribers compose by implementing `INotificationHandler<TenantStatusChangedNotification>`. MediatR has been added as a dependency of `PolarSharp.MultiTenant` for this purpose — host code does NOT need to call `services.AddMediatR(...)` separately; `AddPolarTenantLifecycle(configuration)` handles the registration internally.
+
+### Subscribers shipping with PolarSharp
+
+Two first-party subscribers ship with the framework:
+
+1. **Litestream auto-regenerator (Stage C.4)** — excludes suspended / inactive / deleted tenants from the regenerated `litestream.yml`, re-includes reactivated tenants. See the Litestream section above.
+2. **`PolarSharp.MultiTenant.Notifications` package (Stage C.3)** — opt-in package that dispatches templated email + SMS + webhook notifications to the tenant's site manager when status changes. Three channels: SendGrid (email), Twilio (SMS), generic HMAC-signed webhook. Each channel runs in its own task; failures are logged + isolated and never propagate back through MediatR into `ITenantStatusService`.
+
+Host code can register additional subscribers from its own assembly via the standard `AddMediatR(...)` call — MediatR de-duplicates assembly scans, so PolarSharp's internal registration and the host's registration compose into one handler set.
+
+### Pre-suspend gate: verified-email policy
+
+By default, `ITenantStatusService.SuspendAsync` refuses to suspend a tenant whose `SiteManagerEmailVerified` is `false` — the suspension notification would be unverifiable and the tenant would have no way to know they were suspended. Two flags relax the policy:
+
+- `RequireVerifiedEmailForSuspension = false` — globally drop the verification requirement.
+- `SuspendUnverifiedTenantsAnyway = true` — preserve the global requirement but override on a per-call basis.
+
+The two flags are deliberately separate so the audit trail captures **which** form of relaxation was applied.
+
+### Email verification flow: deferred
+
+The verification flow itself — generating a one-time link, delivering it, processing the click — is deferred to v1.2.x.+1. The flow naturally belongs in the onboarding wizard, which lands in the same release window. In the interim, hosts can manually set `SiteManagerEmailVerified = true` for tenants they trust (e.g., onboarded via a back-office process), or relax the verified-email pre-suspend gate via the flags above.
 
 ## Implementation mechanics
 
@@ -417,7 +615,7 @@ Two integration test apps: `PolarPrepaidWalletsTestApp.MultiTenant` (uses Polar 
 - Some of those projects are single-tenant (one company using the feature for themselves).
 - Other projects are multi-tenant (a SaaS where end-users are tenants).
 - You don't want to maintain two parallel codebases.
-- You want users to be able to upgrade from single-tenant to multi-tenant without switching libraries.
+- You want users to be able to upgrade from single-tenant to multi-tenant without switching libraries. **PolarSharp ships first-class support for this upgrade path as of v1.2.x** — `ISingleTenantUpgradeMigrator` plus per-provider implementations (SQLite / SqlServer / Postgres / MariaDb / Cosmos) means hosts can register `AddPolarSingleTenantUpgrade(...)` and switch deployment modes without external scripts or a downtime window of their own design. See the "Single-tenant -> multi-tenant upgrade flow" section below for the full pattern.
 
 **Signs this pattern is overkill:**
 
@@ -446,7 +644,7 @@ Two integration test apps: `PolarPrepaidWalletsTestApp.MultiTenant` (uses Polar 
 
 - **Should the library expose `IsMultiTenantMode` as a public read-only property?** Helpful for downstream code that needs to make mode-aware decisions. But it leaks an internal concern. Compromise: expose via `ILibraryIdentityProvider` (which is already a public abstraction) and treat as advanced API.
 - **What about hybrid mode — single-tenant most of the time, MT for specific scenarios?** E.g., a library used by a single-tenant host that occasionally needs to query a "shared" external tenant's data. The pattern doesn't directly address this; would require a third "ExternalTenantContext" abstraction layered on top.
-- **How to handle data migration from single-tenant to MT?** Single-tenant data has no TenantId column (or has a null one). MT-mode requires TenantId. The library should ship a migration helper that backfills TenantId on existing rows on first MT-mode startup, but the helper does not yet exist at the time of this case study. Design considerations the helper would need to address: idempotency (running twice should not double-stamp); downtime tolerance (whether the host can take maintenance windows for the backfill or needs an online migration); in-flight transactions (mid-backfill data state); how to choose the default tenant (the first user's organization? A literal "default" tenant? Configurable?); how to handle entities that span the single-tenant → MT transition mid-write. Worth dedicated treatment in v1.x.
+- **How to handle data migration from single-tenant to MT?** Resolved in v1.2.x via `ISingleTenantUpgradeMigrator`. See the "Single-tenant -> multi-tenant upgrade flow" section below for the full pattern (per-provider migrators, the `polar_upgrade_history` idempotency marker, the three default-tenant strategies, the hosted-service orchestration).
 - **Is `Option<T>` better than `Nullable<T>` for the tenant ID?** Stylistic. C# `Nullable<Guid>` is shorter; `Option<Guid>` is more explicit about the "this is meaningfully absent" semantics. PolarSharp uses `Option<T>` for consistency with its functional-style API surface.
 - **Cross-feature consistency.** If a host installs Library A in single-tenant mode and Library B in MT mode, the mismatch is bad. Libraries can detect this at startup and emit a Warning, but enforcement is host-developer responsibility.
 

@@ -16,6 +16,12 @@ Before doing any work, read these files (from the home directory `/Users/mollsan
 4. `PROGRESS.md` — completed work log
 5. `DECISIONS.md` — locked architecture decisions
 6. `ZoranHorvat.md` — required for all .NET/C#/NuGet work in this repo
+7. The 5 Architectural Case Studies in `Case Studies/`:
+   - `01-Lift-And-Shift-Architecture.md` — visible namespace separator + CI dependency guard pattern for monorepo features designed for eventual extraction
+   - `02-Event-Sourced-Wallet-With-Economic-Modeling.md` — wallet design + economic transparency + Polar.sh as the SaaS-tenant on-ramp
+   - `03-Embed-Anywhere-Web-Components.md` — Stencil + Shadow DOM + 11-layer server-as-source-of-truth fraud prevention for embeddable widgets
+   - `04-Audience-Scoped-Schema-Slicing.md` — LLM-driven query generation with audience-scoped schema slices as structural defense-in-depth
+   - `05-Multi-Tenancy-As-Optional.md` — mode-agnostic library design for serving both single-tenant and multi-tenant deployments from one codebase
 
 ## Build and Test
 
@@ -122,3 +128,13 @@ When the `PolarSharp.UI.Components.Maui` RCL + `PolarMauiDemo` flagship land in 
 Style: the conceptual framing parts (why workloads exist, when you need them, what's optional vs. required) follow the Implementation Narratives style — friendly, audience-friendly, analogies for hard concepts ("think of each workload as a separate language pack you install based on which platforms you want to target"). The reference parts (exact commands, exact CLI flags, exact prerequisite versions) stay precise and copy-pasteable.
 
 This standard is encoded here so it carries forward across sessions, contributors, and feature waves without needing to be re-asked.
+
+## Architectural notes that apply to all work
+
+### DI extension methods auto-wire MediatR
+
+When a PolarSharp package needs MediatR (currently: PolarSharp.MultiTenant + PolarSharp.MultiTenant.Notifications + PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite + the wallet's notification dispatcher), the package's `AddPolarXxx(...)` extension method registers MediatR internally for that package's own assembly. Host code does NOT need to call `services.AddMediatR(...)` separately. MediatR's `AddMediatR` is idempotent across multiple calls — multiple packages each calling `AddMediatR` with their own assembly compose into one MediatR instance with handlers from all assemblies discoverable. For the full decision tree on which PolarSharp extensions to call in which scenario, see `docs/articles/narratives/choosing-your-polarsharp-di-wiring.md`.
+
+### Required reading at session start
+
+Per the "Required Reading Order" section above, every session that touches PolarSharp code should load the 5 Case Studies. They contain the architectural patterns this codebase is built around (lift-and-shift, event sourcing, embeddable web components, audience-scoped schema slicing, optional multi-tenancy). Decisions in code reviews should reference the relevant case study where applicable.

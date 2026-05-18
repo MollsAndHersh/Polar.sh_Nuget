@@ -187,6 +187,25 @@ Beyond `.db` file Created/Deleted events, the auto-regenerator subscribes to Med
 
 **No-op when disabled.** The `LitestreamTenantLifecycleHandler` is registered unconditionally as part of `AddPolarSqliteLitestream(...)`, but checks `UseLitestream` and `AutoRegenerateOnTenantChange` on every notification and exits early when either is `false`. Hosts that have Litestream disabled pay only the cost of the MediatR dispatch.
 
+## DI wiring (no manual MediatR registration needed)
+
+`UseSqlite(...)` and the transitively-registered `AddPolarSqliteLitestream(...)` register MediatR internally for this package's own assembly so the `LitestreamTenantLifecycleHandler` is discovered and the Stage C.4 lifecycle integration works out of the box. Host code does **not** need to call `services.AddMediatR(...)` directly. The full DI wiring from a host application is:
+
+```csharp
+builder.Services
+    .AddPolarInfrastructure(builder.Configuration)
+    .AddPolarMultiTenant()                                     // registers MT services + MediatR (MultiTenant assembly)
+    .AddPolarTenantLifecycle(builder.Configuration)            // registers ITenantStatusService + lifecycle pipeline
+    .UseSqlite("/var/lib/polarsharp/tenants/");                // registers the SQLite provider + Litestream MediatR handler
+
+// Optional: single-tenant upgrade migrator
+builder.Services.AddPolarSingleTenantUpgrade(builder.Configuration);
+```
+
+MediatR's `AddMediatR` is idempotent across multiple calls — handlers from every registered assembly are discoverable, so PolarSharp.MultiTenant + PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite + any other PolarSharp packages using MediatR (PolarSharp.MultiTenant.Notifications, for example) compose into one MediatR instance with handlers from all assemblies visible. Hosts can install multiple PolarSharp packages that each use MediatR without conflict.
+
+For the full decision tree on which `AddPolarXxx(...)` extensions to call in which scenario, see the [`Choosing your PolarSharp DI wiring`](../../../docs/articles/narratives/choosing-your-polarsharp-di-wiring.md) Implementation Narrative.
+
 ## License
 
 MIT.

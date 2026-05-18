@@ -57,6 +57,21 @@ Secrets — the SendGrid API key, the Twilio Account SID + Auth Token, the webho
 
 v1.0.0 ships with PolarSharp v1.2.x as part of Stage C of the multi-tenant lifecycle work (see Case Study 05 — Multi-Tenancy as Optional).
 
+## DI wiring (no manual MediatR registration needed)
+
+`AddPolarMultiTenantNotifications(...)` registers MediatR internally for this package's own assembly so the `TenantStatusChangedNotificationHandler` is discovered and dispatched automatically. Host code does **not** need to call `services.AddMediatR(...)` directly. The full DI wiring for a host that wants the lifecycle pipeline + the notification dispatcher is just three extension calls:
+
+```csharp
+builder.Services
+    .AddPolarMultiTenant()                                     // registers MT services + MediatR (PolarSharp.MultiTenant assembly)
+    .AddPolarTenantLifecycle(builder.Configuration)            // registers ITenantStatusService + lifecycle MediatR handlers
+    .AddPolarMultiTenantNotifications(builder.Configuration);  // registers the notification dispatcher + MediatR (this package's assembly)
+```
+
+MediatR's `AddMediatR` is idempotent across multiple calls — handlers from every registered assembly are discoverable, so PolarSharp.MultiTenant + PolarSharp.MultiTenant.Notifications + any other PolarSharp packages using MediatR (the wallet's notification dispatcher, for example) compose into one MediatR instance with handlers from all assemblies visible. Hosts can install multiple PolarSharp packages that each use MediatR without conflict.
+
+For the full decision tree on which `AddPolarXxx(...)` extensions to call in which scenario, see the [`Choosing your PolarSharp DI wiring`](../../../docs/articles/narratives/choosing-your-polarsharp-di-wiring.md) Implementation Narrative.
+
 ## See also
 
 - `PolarSharp.MultiTenant` — publishes the `TenantStatusChangedNotification` this package consumes.
