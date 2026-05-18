@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using PolarSharp;
 using PolarSharp.MultiTenant.EntityFrameworkCore.Extensions;
+using PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.Litestream;
 using PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.Upgrade;
 using PolarSharp.MultiTenant.EntityFrameworkCore.Upgrade;
 
@@ -68,6 +69,14 @@ public static class SqliteBuilderExtensions
     /// When <see langword="true"/> and the tenants table is empty on first startup, copies
     /// every <c>PolarSharp:MultiTenant:Tenants[*]</c> entry from <c>appsettings.json</c>.
     /// </param>
+    /// <param name="enableLitestream">
+    /// When <see langword="true"/> (default), registers the optional Litestream integration
+    /// services (options + validator + health check + config generator). The integration
+    /// remains <em>inert</em> unless the host also sets
+    /// <c>PolarSharp:MultiTenant:Sqlite:Litestream:UseLitestream = true</c> in appsettings.
+    /// When <see langword="false"/>, the Litestream services are never registered — useful
+    /// for hosts that want to guarantee no Litestream code path can ever execute.
+    /// </param>
     /// <returns>The same <see cref="PolarInfrastructureBuilder"/> for chaining.</returns>
     /// <remarks>
     /// <para>
@@ -77,6 +86,11 @@ public static class SqliteBuilderExtensions
     /// <c>services.AddPolarSingleTenantUpgrade(builder.Configuration)</c> — that registration
     /// is the gate, not this one. Registering the migrator unconditionally keeps the
     /// extension method side-effect-free with respect to whether the host has opted in.
+    /// </para>
+    /// <para>
+    /// The Litestream integration has a two-layer opt-in: the host calls <c>UseSqlite(...)</c>
+    /// with <paramref name="enableLitestream"/> <see langword="true"/> (the default) AND sets
+    /// the appsettings toggle. The services are no-ops with the toggle off.
     /// </para>
     /// </remarks>
     /// <example>
@@ -90,7 +104,8 @@ public static class SqliteBuilderExtensions
     public static PolarInfrastructureBuilder UseSqlite(
         this PolarInfrastructureBuilder builder,
         string databaseDirectory,
-        bool seedFromAppSettings = false)
+        bool seedFromAppSettings = false,
+        bool enableLitestream = true)
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentException.ThrowIfNullOrEmpty(databaseDirectory);
@@ -134,6 +149,11 @@ public static class SqliteBuilderExtensions
         if (usingLegacy)
         {
             builder.Services.AddHostedService<LegacyTenantsFileWarningHostedService>();
+        }
+
+        if (enableLitestream)
+        {
+            builder.Services.AddPolarSqliteLitestream(builder.Configuration);
         }
 
         return builder;
