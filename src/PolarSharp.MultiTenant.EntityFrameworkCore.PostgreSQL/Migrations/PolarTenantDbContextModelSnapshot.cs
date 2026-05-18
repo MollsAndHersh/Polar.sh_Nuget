@@ -56,6 +56,9 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<int>("LifecycleStatus")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset?>("ModifiedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -75,6 +78,18 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL.Migrations
 
                     b.Property<string>("Server")
                         .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("SiteManagerEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<bool>("SiteManagerEmailVerified")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SiteManagerPhone")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 

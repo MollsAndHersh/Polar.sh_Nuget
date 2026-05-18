@@ -129,6 +129,10 @@ public sealed class EfMultiTenantStore : IMultiTenantStore<PolarTenantInfo>
             Name = tenantInfo.Name ?? entity.Name,
             PolarAccessToken = tenantInfo.PolarAccessToken,
             Server = tenantInfo.Server,
+            LifecycleStatus = tenantInfo.Status,
+            SiteManagerEmail = tenantInfo.SiteManagerEmail,
+            SiteManagerEmailVerified = tenantInfo.SiteManagerEmailVerified,
+            SiteManagerPhone = tenantInfo.SiteManagerPhone,
         };
         _db.Entry(entity).CurrentValues.SetValues(updated);
 
@@ -163,6 +167,10 @@ public sealed class EfMultiTenantStore : IMultiTenantStore<PolarTenantInfo>
         Name = entity.Name,
         PolarAccessToken = entity.PolarAccessToken,
         Server = entity.Server,
+        Status = entity.LifecycleStatus,
+        SiteManagerEmail = entity.SiteManagerEmail,
+        SiteManagerEmailVerified = entity.SiteManagerEmailVerified,
+        SiteManagerPhone = entity.SiteManagerPhone,
     };
 
     private static PolarTenantInfoEntity ToEntity(PolarTenantInfo info) => new()
@@ -176,6 +184,10 @@ public sealed class EfMultiTenantStore : IMultiTenantStore<PolarTenantInfo>
         Identifier = info.Identifier ?? string.Empty,
         PolarAccessToken = info.PolarAccessToken,
         Server = info.Server,
+        LifecycleStatus = info.Status,
+        SiteManagerEmail = info.SiteManagerEmail,
+        SiteManagerEmailVerified = info.SiteManagerEmailVerified,
+        SiteManagerPhone = info.SiteManagerPhone,
     };
 
 }

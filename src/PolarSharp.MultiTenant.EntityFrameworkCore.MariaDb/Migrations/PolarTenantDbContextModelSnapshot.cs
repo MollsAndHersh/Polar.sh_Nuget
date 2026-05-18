@@ -53,6 +53,9 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.MariaDb.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("varchar(128)");
 
+                    b.Property<int>("LifecycleStatus")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset?>("ModifiedAt")
                         .HasColumnType("datetime");
 
@@ -72,6 +75,18 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.MariaDb.Migrations
 
                     b.Property<string>("Server")
                         .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.Property<string>("SiteManagerEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("varchar(320)");
+
+                    b.Property<bool>("SiteManagerEmailVerified")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("SiteManagerPhone")
                         .HasMaxLength(32)
                         .HasColumnType("varchar(32)");
 

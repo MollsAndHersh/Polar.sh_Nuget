@@ -1,5 +1,6 @@
 using Finbuckle.MultiTenant.Abstractions;
 using PolarSharp.BaseEntities;
+using PolarSharp.MultiTenant.Lifecycle;
 
 namespace PolarSharp.MultiTenant.EntityFrameworkCore;
 
@@ -67,4 +68,46 @@ public sealed record PolarTenantInfoEntity : PolarTenantBase, ITenantInfo
     /// The Polar-generated webhook signing secret (e.g. <c>"whsec_xxx"</c>). Treated as sensitive — never logged.
     /// </value>
     public string WebhookSecret { get; set; } = "";
+
+    /// <summary>Gets or sets the PolarSharp-internal lifecycle status of this tenant.</summary>
+    /// <value>
+    /// Default: <see cref="TenantStatus.Active"/>. Distinct from the inherited
+    /// <see cref="PolarTenantBase.Status"/> property (of type <see cref="PolarOrganizationStatus"/>),
+    /// which reports the merchant organization's status from Polar.sh's own API. This property
+    /// tracks PolarSharp-internal lifecycle state (suspended for billing dispute, soft-deleted
+    /// pending retention expiry, etc.) and drives PolarSharp-side enforcement (Litestream
+    /// replication exclusion, lifecycle notifications, audit logging).
+    /// </value>
+    /// <remarks>
+    /// Stored as an integer column. Update via <see cref="ITenantStatusService"/> rather than
+    /// direct mutation so MediatR lifecycle notifications fire and downstream subscribers see
+    /// the change.
+    /// </remarks>
+    public TenantStatus LifecycleStatus { get; set; } = TenantStatus.Active;
+
+    /// <summary>Gets or sets the email address of the tenant's site manager.</summary>
+    /// <value>
+    /// REQUIRED for new tenants. The destination for tenant lifecycle notifications
+    /// (suspension, reactivation, deactivation, deletion) and any other admin-level messages.
+    /// Must be a valid RFC 5322 email address. Stored as <c>nvarchar(320)</c>.
+    /// </value>
+    public string SiteManagerEmail { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the site manager email has been verified
+    /// via the verification flow (click-through link delivered to the address).
+    /// </summary>
+    /// <value>
+    /// Default: <c>false</c>. The <see cref="ITenantStatusService"/> can be configured to
+    /// refuse suspension on tenants whose email is unverified.
+    /// </value>
+    public bool SiteManagerEmailVerified { get; set; }
+
+    /// <summary>Gets or sets the optional E.164-format SMS phone number for the site manager.</summary>
+    /// <value>
+    /// Optional. When set, lifecycle notifications can also be delivered via SMS.
+    /// Format: E.164 with leading <c>+</c> (e.g. <c>+15555551234</c>). Stored as
+    /// <c>nvarchar(32)</c> nullable.
+    /// </value>
+    public string? SiteManagerPhone { get; set; }
 }

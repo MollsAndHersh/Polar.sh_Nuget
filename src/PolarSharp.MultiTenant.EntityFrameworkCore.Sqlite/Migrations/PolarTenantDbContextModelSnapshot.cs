@@ -51,6 +51,9 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("LifecycleStatus")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTimeOffset?>("ModifiedAt")
                         .HasColumnType("TEXT");
 
@@ -70,6 +73,18 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.Migrations
 
                     b.Property<string>("Server")
                         .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SiteManagerEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("SiteManagerEmailVerified")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SiteManagerPhone")
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
 

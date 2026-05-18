@@ -72,6 +72,11 @@ public class PolarTenantDbContext : DbContext
             e.Property(x => x.WebhookEndpointId).HasMaxLength(128);
             e.Property(x => x.WebhookSecret).HasMaxLength(256);
             e.Property(x => x.Server).HasConversion<string>().HasMaxLength(32);
+            // v1.3.x lifecycle columns:
+            e.Property(x => x.LifecycleStatus).HasConversion<int>();
+            e.Property(x => x.SiteManagerEmail).HasMaxLength(320).IsRequired();
+            e.Property(x => x.SiteManagerEmailVerified);
+            e.Property(x => x.SiteManagerPhone).HasMaxLength(32);
             e.Ignore(x => x.TenantId);   // computed property — not a column
         });
 

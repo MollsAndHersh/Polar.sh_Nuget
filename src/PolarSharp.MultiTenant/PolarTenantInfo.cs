@@ -1,4 +1,5 @@
 using Finbuckle.MultiTenant.Abstractions;
+using PolarSharp.MultiTenant.Lifecycle;
 
 namespace PolarSharp.MultiTenant;
 
@@ -105,4 +106,51 @@ public sealed class PolarTenantInfo : ITenantInfo
     /// </para>
     /// </remarks>
     public string? WebhookSecret { get; set; }
+
+    /// <summary>Gets or sets the tenant's current lifecycle status.</summary>
+    /// <value>
+    /// Default: <see cref="TenantStatus.Active"/>. Changing this property directly does NOT
+    /// fire lifecycle notifications — use <see cref="Lifecycle.ITenantStatusService"/> for
+    /// state changes that should trigger downstream effects (notifications, Litestream
+    /// reconfiguration, audit logging, etc.).
+    /// </value>
+    public TenantStatus Status { get; set; } = TenantStatus.Active;
+
+    /// <summary>Gets a value indicating whether the tenant is in the active state.</summary>
+    /// <value>
+    /// Computed shortcut: <c>Status == TenantStatus.Active</c>. Equivalent to checking
+    /// the property directly but more readable in conditional expressions.
+    /// </value>
+    public bool IsActive => Status == TenantStatus.Active;
+
+    /// <summary>Gets or sets the email address of the tenant's site manager.</summary>
+    /// <value>
+    /// REQUIRED. This is the address that receives tenant lifecycle notifications
+    /// (suspension, reactivation, deactivation, deletion) AND any other admin-level
+    /// messages from PolarSharp to the tenant. Must be a valid RFC 5322 email
+    /// address. Set at tenant onboarding; verified via the separate verification
+    /// flow (deferred to a future v1.2.x release per the plan).
+    /// </value>
+    public string SiteManagerEmail { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the site manager email has been verified
+    /// via the verification flow (click-through link delivered to the address).
+    /// </summary>
+    /// <value>
+    /// Default: <c>false</c>. The <see cref="Lifecycle.ITenantStatusService"/> can be
+    /// configured to refuse suspend operations on tenants whose email is unverified
+    /// (since the suspension notification would be unverifiable). Set to <c>true</c> by
+    /// the verification flow when the tenant clicks the verification link.
+    /// </value>
+    public bool SiteManagerEmailVerified { get; set; } = false;
+
+    /// <summary>Gets or sets the optional E.164-format SMS phone number for the site manager.</summary>
+    /// <value>
+    /// Optional. When set, lifecycle notifications can also be delivered via SMS in
+    /// addition to email. Format: E.164 with leading + (e.g., <c>+15555551234</c>).
+    /// Validated at registration time by the notifications package when SMS channel
+    /// is enabled.
+    /// </value>
+    public string? SiteManagerPhone { get; set; }
 }
