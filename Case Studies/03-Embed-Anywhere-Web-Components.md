@@ -61,7 +61,7 @@ JSON-LD structured data (invisible on GitHub render; consumed by web crawlers + 
     "embed-key scoping",
     "SignalR backbone for real-time updates",
     "server-as-source-of-truth fraud prevention",
-    "10-layer fraud defense",
+    "11-layer fraud defense",
     "per-tenant CORS enforcement",
     "real-time inter-component communication",
     "framework-preset theming"
@@ -78,14 +78,14 @@ JSON-LD structured data (invisible on GitHub render; consumed by web crawlers + 
 # Case Study 03 — Embed-Anywhere Web Components with Server-as-Source-of-Truth
 
 > **Author**: Mark Chipman — Molls and Hersh, LLC.
-> **Date**: 2026-05-15
+> **Date**: 2026-05-18
 > **Status**: Planned. Reference implementation: PolarSharp.EcommerceStorefronts.WebComponents v1.4 (in design).
 > **License**: © Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution.
 > **Related files**: PolarSharp v1.4 plan, "Storefronts" section.
 
 ## TL;DR
 
-A set of true Web Components (Custom Elements + Shadow DOM, built with Stencil for SCSS-friendly style scoping) is embeddable in ANY HTML page in ANY framework (React, Vue, Angular, plain HTML, Astro, WordPress, etc.) AND scoped per-tenant via dynamic embed keys validated at runtime by a shared SignalR hub. The components communicate with each other in real time via three layered mechanisms (DOM CustomEvents + shared pub-sub bus + shared SignalR connection). Crucially, the architecture treats the client purely as a VIEW — every state-mutating operation is authoritatively re-computed by the server, making the system fully resistant to client-side tampering (changing prices in dev tools, swapping product IDs, etc.) via 10 layered defenses. The pattern was inspired by SnipCart's embed model but moves it from a proprietary loader to a standards-based architecture, adds dynamic per-embed scoping with live updates, and bakes fraud prevention into the protocol from day one.
+The foundational technique is true Web Components — Custom Elements + Shadow DOM, compiled via Stencil's `shadow: 'scoped'` mode for SCSS-friendly style isolation — embeddable in ANY HTML page in ANY framework (React, Vue, Angular, plain HTML, Astro, WordPress, etc.). Dynamic per-tenant scoping is achieved via signed embed keys validated at runtime by a shared SignalR hub, so the same compiled bundle serves arbitrarily many tenants with arbitrarily different configurations. Real-time coordination across components on a page uses three layered communication mechanisms (DOM CustomEvents for browser-native interactions, a shared in-page pub-sub bus for cross-component data, and a shared SignalR connection for server-pushed state). Fraud resistance is structural: the client is purely a VIEW and 11 layered defenses (added below after CSRF protection) keep the server as the sole source of truth. Inspired by SnipCart's embed model, the pattern moves the contract from a proprietary loader to a standards-based architecture and bakes fraud prevention into the protocol from day one.
 
 ## Historical context / inspiration / prior art
 
@@ -99,7 +99,7 @@ A set of true Web Components (Custom Elements + Shadow DOM, built with Stencil f
 
 **SignalR** (Microsoft, 2013; .NET Core port 2016) provides real-time bidirectional client↔server communication over WebSockets (with fallback transports). The pattern of "browser embeds a Web Component; component connects to SignalR; server pushes updates" is straightforward but the GENERAL pattern of using SignalR to drive embedded Web Components on third-party websites is less common — most SignalR deployments push to first-party Blazor/JS apps, not embedded widgets.
 
-The **server-as-source-of-truth** pattern for fraud prevention is universal in ecommerce — Stripe, Square, PayPal, SnipCart all do it — but PolarSharp's contribution is articulating the FULL set of layered defenses (10 distinct layers) as a coherent design pattern rather than an ad-hoc collection of mitigations. The pattern is documented here so it can be applied to ANY embeddable widget product (not just commerce — embeddable calendars, surveys, scheduling tools, etc., all face the same fraud surface).
+The **server-as-source-of-truth** pattern for fraud prevention is universal in ecommerce — Stripe, Square, PayPal, SnipCart all do it — but PolarSharp's contribution is articulating the FULL set of layered defenses (11 distinct layers, after CSRF protection on the SignalR hub is added) as a coherent design pattern rather than an ad-hoc collection of mitigations. The pattern is documented here so it can be applied to ANY embeddable widget product (not just commerce — embeddable calendars, surveys, scheduling tools, etc., all face the same fraud surface).
 
 ## Problem
 
@@ -131,6 +131,7 @@ The SaaS must:
 5. **Server-as-source-of-truth means EVERY state mutation goes through the server.** Adding a stale "client thinks the price is $5" optimization breaks the fraud-prevention model. No client-side authority allowed.
 6. **The system must scale to thousands of concurrent customers per tenant.** Per-embed SignalR connections, per-tenant connection pools, fair queuing.
 7. **The architecture must be technology-stable for 5+ years.** Web Components, Stencil, SignalR, JSON are all mature standards. Avoid bleeding-edge technologies that might disappear.
+8. **AOT-compatibility for the .NET-hosted SignalR hub.** PolarSharp's codebase commits to AOT compatibility (per the v1.1.0 baseline). SignalR is AOT-compatible as of .NET 8+; Hot Chocolate is partially AOT-compatible but not fully as of late 2025. Hosts deploying the WC SignalR hub via AOT-published binaries should verify the AOT-warning surface of any GraphQL types co-located with the hub before shipping.
 
 ## The pattern
 
@@ -184,6 +185,8 @@ The key is:
 - **Rate-limited** — per-embed rate limits prevent abuse.
 - **Revocable** — tenant can deactivate keys; auto-revoke after fraud-strike threshold.
 
+The signature itself is stored server-side in the `hmac_signature` column of `wc_embed_configurations` and verified on every connection — the embed key string in the HTML carries only the identifier, not the signature; signature verification is server-side lookup, not in-band parsing of the key string.
+
 ```sql
 wc_embed_configurations
   id                       UNIQUEIDENTIFIER PK
@@ -236,22 +239,39 @@ Web Components on the same page need to coordinate. Three patterns layered toget
 
 The shared infrastructure (`@polarsharp/web-components-shared` npm module) manages all three transparently. Each WC auto-wires on `connectedCallback`.
 
-### Layer 5: 10-layer fraud prevention (server-as-source-of-truth)
+### Layer 5: 11-layer fraud prevention (server-as-source-of-truth)
 
 The complete defense set:
 
-| # | Layer | What it prevents |
-|---|---|---|
-| 1 | Cart operations send identifiers only — never prices/totals | DOM-edited prices being submitted as authoritative |
-| 2 | Embed-key scope enforcement on every request | Tampered productId pointing outside allowed scope |
-| 3 | Origin validation at SignalR handshake | Rogue site embedding stolen embed key |
-| 4 | Quantity + min-order enforcement server-side | Negative / zero / over-limit quantities |
-| 5 | Wallet balance verification on checkout | Customer attempting to purchase without sufficient prepaid balance |
-| 6 | Cart hash for offline-tampering detection | In-memory cart-object modification between requests |
-| 7 | Rate limiting per embed-key + per source IP | DDoS / brute-force / scraping |
-| 8 | Fraud-strike accumulation with auto-revoke | Persistent attackers |
-| 9 | Audit trail for all fraud-detected operations | Forensic investigation; pattern detection |
-| 10 | Customer-visible "prices have changed" UX at checkout | Confusing UX from stale cart contents |
+The list below groups the layers by where they enforce (structural = built into the protocol; operational = enforced at runtime; UX = transparency to the customer) and tags each as either **foundational** (the system is materially unsafe without this layer) or **belt-and-suspenders** (defense in depth; the system is still mostly safe without this layer). A reader designing a smaller-scope adaptation can use the tags to prioritize.
+
+**Structural defenses (built into the protocol itself):**
+
+| # | Tag | Layer | What it prevents |
+|---|---|---|---|
+| 1 | [Foundational] | Cart operations send identifiers only — never prices/totals | DOM-edited prices being submitted as authoritative |
+| 2 | [Foundational] | Embed-key scope enforcement on every request | Tampered productId pointing outside allowed scope |
+| 4 | [Foundational] | Quantity + min-order enforcement server-side | Negative / zero / over-limit quantities |
+| 5 | [Foundational] | Wallet balance verification on checkout | Customer attempting to purchase without sufficient prepaid balance |
+| 11 | [Foundational] | CSRF protection on SignalR hub | Third-party site invoking mutating hub methods via forged connections |
+
+Layer 11 detail: embedded WCs invoke mutating hub methods (`AddToCart`, `ApplyDiscount`, `StartCheckout`, etc.) over SignalR. Without CSRF protection, a malicious third-party page could open a SignalR connection using a stolen or guessed embed key and forge mutations. Mitigation: anti-forgery token per SignalR connection OR strict `Origin` / `Referer` check enforced before any mutating method is invoked. Anti-forgery is the more robust defense; `Origin`/`Referer` is the lighter-weight option that composes with Layer 3.
+
+**Operational defenses (enforced at runtime):**
+
+| # | Tag | Layer | What it prevents |
+|---|---|---|---|
+| 3 | [Foundational] | Origin validation at SignalR handshake | Rogue site embedding stolen embed key |
+| 7 | [Foundational] | Rate limiting per embed-key + per source IP | DDoS / brute-force / scraping |
+| 6 | [Belt-and-suspenders] | Cart hash for offline-tampering detection | In-memory cart-object modification between requests (Layer 1 already prevents the primary attack; this catches edge cases) |
+| 8 | [Belt-and-suspenders] | Fraud-strike accumulation with auto-revoke | Persistent attackers (rate limiting + audit log catch most; this provides escalation) |
+| 9 | [Foundational for forensics] | Audit trail for all fraud-detected operations | Forensic investigation; pattern detection (not security-foundational on its own, but required for compliance + investigation) |
+
+**UX-layer defenses (transparency, not enforcement):**
+
+| # | Tag | Layer | What it prevents |
+|---|---|---|---|
+| 10 | [Belt-and-suspenders] | Customer-visible "prices have changed" UX at checkout | Confusing UX from stale cart contents (the security is already enforced; this is UX clarity) |
 
 ### Layer 6: Framework-preset CSS theming
 
@@ -309,10 +329,13 @@ polar-login-button        — initiates customer auth flow
 polar-order-history-list  — paginated past orders
 polar-wallet-balance      — displays current wallet balance
 polar-wallet-topup-flow   — wallet funding UI
-polar-storefront-script   — Razor TagHelper for easy MVC embedding
 ```
 
 Each WC type has a config schema (JSON Schema documented) listing valid options. Tenant admin UI surfaces the config schema for guided embed creation.
+
+#### Related integration helpers (not Custom Elements)
+
+- `polar-storefront-script` — a Razor TagHelper for ASP.NET Core hosts (MVC + Blazor server) that emits the `<script>` / `<link>` tags for the WC bundle and theme preset in one cshtml directive. **Not** a Custom Element — a server-side helper that simplifies the snippet boilerplate when the host page is rendered by ASP.NET Core. For non-.NET hosts, the equivalent is hand-authoring the `<script>` + `<link>` tags directly.
 
 ### Step 3: Build the shared infrastructure module
 
@@ -359,9 +382,9 @@ CDN delivery is the third path: hosts can link to `https://cdn.polarsharp.io/sto
 
 ## Worked example (from PolarSharp)
 
-The PolarSharp.EcommerceStorefronts.WebComponents v1.4 implementation:
+The planned PolarSharp.EcommerceStorefronts.WebComponents v1.4 implementation:
 
-- **Stencil-compiled bundle** (~150KB minified + gzipped for all 13 WC types combined)
+- **Stencil-compiled bundle** (target: ~150KB minified + gzipped for all 12 WC types combined; actual size measured at v1.4 ship)
 - **5 framework preset CSS files** for Tailwind / Bootstrap / Materialize / Bulma / unstyled
 - **3 distribution channels**: NuGet bundle, npm package, CDN
 - **SignalR hub** on the .NET side with embed-key validation + scope enforcement
@@ -372,9 +395,11 @@ The PolarSharp.EcommerceStorefronts.WebComponents v1.4 implementation:
 
 Example tenant deployment:
 
+> URLs in the snippet below are illustrative placeholders; PolarSharp's actual CDN endpoint will be announced when v1.4 ships.
+
 ```html
-<script src="https://cdn.polarsharp.io/storefronts/v1.4/polar-storefront-webcomponents.js"></script>
-<link rel="stylesheet" href="https://cdn.polarsharp.io/storefronts/v1.4/theme-tailwind.css" />
+<script src="https://cdn.example.io/storefronts/v1.4/polar-storefront-webcomponents.js"></script>
+<link rel="stylesheet" href="https://cdn.example.io/storefronts/v1.4/theme-tailwind.css" />
 
 <header>
   <polar-mini-cart embed-key="ek_prod_acme_a1b2c3d4e5f6"></polar-mini-cart>
@@ -389,15 +414,15 @@ Example tenant deployment:
 </footer>
 ```
 
-The customer browses, adds to cart in the grid, watches the header mini-cart update in real time, clicks checkout, completes purchase. Same WC bundle works on Acme's main site, their landing page, and a partner blog — all with different embed keys configuring different scopes.
+When implemented, the customer browses, adds to cart in the grid, watches the header mini-cart update in real time, clicks checkout, completes purchase. Same WC bundle works on Acme's main site, their landing page, and a partner blog — all with different embed keys configuring different scopes.
 
 ## Trade-offs
 
 **What you give up:**
 
 1. **First-load latency.** WCs must fetch config from the SignalR hub before rendering — there's a brief "skeleton" state on first visit. Mitigations: server-render the WC's static skeleton via Razor TagHelper if the host is .NET; aggressive CDN caching of the JS bundle.
-2. **Bundle size.** 150KB for all 13 WC types combined is reasonable but not negligible. Per-WC dynamic imports (load only what's on the page) can reduce this.
-3. **Real-time means resource cost.** Per-connection SignalR overhead at scale (thousands of concurrent customers per tenant) needs infrastructure planning. Azure SignalR Service or self-hosted SignalR scale-out via Redis backplane.
+2. **Bundle size.** A target of ~150KB for all 12 WC types combined is reasonable but not negligible. Per-WC dynamic imports (load only what's on the page) can reduce this.
+3. **Real-time means resource cost.** Per-connection SignalR overhead at scale (thousands of concurrent customers per tenant) needs infrastructure planning. Azure SignalR Service or self-hosted SignalR scale-out via Redis backplane. Rough order of magnitude: a single Azure SignalR Service unit handles ~1000 concurrent connections at ~$50/month; self-hosted SignalR with Redis backplane scales further at lower marginal cost. A tenant with 100K active customers across 10K concurrent peak sessions needs ~10 Azure SignalR units (~$500/mo) OR a single Redis-backed scale-out cluster. Plan accordingly.
 4. **Shadow DOM theming has limits.** `shadow: 'scoped'` is the compromise between encapsulation and theming flexibility; pure-Shadow-DOM solutions and pure-light-DOM solutions both have edge cases the compromise doesn't perfectly address.
 5. **Admin complexity for tenants.** Managing multiple embed keys for multiple sites adds operational burden. The admin UI must be excellent.
 
@@ -447,7 +472,7 @@ The customer browses, adds to cart in the grid, watches the header mini-cart upd
 4. **Build ONE WC end-to-end** before building all of them. Pick the simplest (product card) and walk it through: render skeleton → connect SignalR → fetch config → fetch product → render full → handle add-to-cart → propagate to mini cart. Get this right before scaling.
 5. **Author the framework-preset CSS files** for your 3-5 target frameworks. Tailwind first (most popular in 2026); add Bootstrap and one CSS-only framework next.
 6. **Build the admin UI for embed-key management** before launching to tenants. Tenants need a way to create, view, edit, revoke keys + see audit logs.
-7. **Ship the 10-layer fraud-prevention from day one.** Adding fraud prevention later is harder than building it in; the design has to be fraud-aware throughout.
+7. **Ship the 11-layer fraud-prevention from day one.** Adding fraud prevention later is harder than building it in; the design has to be fraud-aware throughout.
 8. **Document the embed snippet format prominently.** Tenants copy-paste this into their HTML; the snippet is your product's customer-facing surface. Make it bulletproof.
 9. **Distribute via CDN AND npm AND NuGet.** CDN covers plain-HTML hosts; npm covers JS-build hosts; NuGet covers .NET hosts. All three matter.
 10. **Plan for SignalR scale from day one.** Test with realistic concurrent-connection counts. Plan the backplane (Azure SignalR Service or Redis) before you need it.
@@ -457,7 +482,8 @@ The customer browses, adds to cart in the grid, watches the header mini-cart upd
 ## Discussion / open questions
 
 - **Should embed keys expire by default?** Forcing periodic rotation reduces stolen-key risk but adds operational burden. Default null-expiry with optional `ExpiresAt` is the current design; revisit if abuse patterns suggest forced rotation would help.
-- **How to handle WC pre-rendering for SEO?** SignalR-dependent WCs render empty on first SSR pass (config not fetched yet); SEO crawlers see empty divs. Possible mitigation: server-rendered product cards via Razor TagHelper in .NET hosts; static rendering of the most-SEO-critical WCs at build time for non-.NET hosts; a separate `data-ssr-snapshot` attribute carrying server-rendered content for crawlers.
+- **How to handle WC pre-rendering for SEO?** SignalR-dependent WCs render empty on first SSR pass (config not fetched yet); SEO crawlers see empty divs. Possible mitigation: server-rendered product cards via Razor TagHelper in .NET hosts; static rendering of the most-SEO-critical WCs at build time for non-.NET hosts; a separate `data-ssr-snapshot` attribute carrying server-rendered content for crawlers. Note: v1.4's Phase 30 ships comprehensive SEO infrastructure (SSR product pages via Blazor SSR, sitemap.xml + robots.txt + structured data, AMP, image-CDN integration). The WC-specific SEO concerns above intersect with Phase 30 but are not subsumed by it — Phase 30 handles SSR for the storefront itself; this discussion item is about SSR for embedded WCs on third-party host pages, which is a strictly harder problem because the host page may have its own SSR pipeline.
+- **Accessibility / WCAG for embedded WCs.** Embedded WCs run on third-party host pages; the host cannot reach into Shadow DOM to fix accessibility issues. This means accessibility — keyboard navigation, screen-reader compatibility, focus management, color contrast — must be solved INSIDE the WC and inherited from any framework preset. This case study does not address accessibility in depth; it deserves dedicated treatment (likely a separate future case study). At a minimum, every WC must ship with: ARIA roles + labels appropriate to its semantic intent; full keyboard navigation; tested screen-reader compatibility on at least JAWS / NVDA / VoiceOver; framework presets that maintain WCAG AA color contrast.
 - **Should WCs work offline?** Service Worker + cached config + IndexedDB cart could enable offline browsing of products. Materially complex; consider only if tenants need progressive-web-app capability.
 - **Authentication for the customer.** The WC needs to know "who is this customer" for cart persistence + checkout. Options: (a) the host page passes a customer token via attribute; (b) the WC handles auth itself with a built-in login flow; (c) the WC defers to the host's session cookie if same-origin. PolarSharp uses (b) for embed-anywhere flexibility but supports (c) when same-origin.
 - **What about AMP / accelerated mobile pages?** AMP has its own restricted WC subset (`amp-`-prefixed elements). WC bundles intended for AMP need stricter constraints; out of scope for v1.4 but worth a future case study.
