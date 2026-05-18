@@ -124,6 +124,7 @@
     <Project Path="tests/PolarSharp.MultiTenant.Identity.Tests/PolarSharp.MultiTenant.Identity.Tests.csproj" />
     <Project Path="tests/PolarSharp.MultiTenant.Identity.KeyCloak.Tests/PolarSharp.MultiTenant.Identity.KeyCloak.Tests.csproj" />
     <Project Path="tests/PolarSharp.MultiTenant.Tests/PolarSharp.MultiTenant.Tests.csproj" />
+    <Project Path="tests/PolarSharp.MultiTenant.Notifications.Tests/PolarSharp.MultiTenant.Notifications.Tests.csproj" />
     <Project Path="tests/PolarSharp.Onboarding.Tests/PolarSharp.Onboarding.Tests.csproj" />
     <Project Path="tests/PolarSharp.EcommerceStoreManagement.Tests/PolarSharp.EcommerceStoreManagement.Tests.csproj" />
     <Project Path="tests/PolarSharp.EcommerceStoreManagement.Translation.Tests/PolarSharp.EcommerceStoreManagement.Translation.Tests.csproj" />

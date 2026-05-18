@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="PolarSharp.MultiTenant.Notifications.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PolarSharp.MultiTenant\PolarSharp.MultiTenant.csproj" />
     <PackageReference Include="MediatR" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
