@@ -1,8 +1,11 @@
 using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using PolarSharp;
 using PolarSharp.MultiTenant.EntityFrameworkCore.Extensions;
+using PolarSharp.MultiTenant.EntityFrameworkCore.MariaDb.Upgrade;
+using PolarSharp.MultiTenant.EntityFrameworkCore.Upgrade;
 
 namespace PolarSharp.MultiTenant.EntityFrameworkCore.MariaDb;
 
@@ -59,6 +62,10 @@ public static class MariaDbBuilderExtensions
             opts.UseMySQL(connectionString, mysql =>
                 mysql.MigrationsAssembly(typeof(MariaDbBuilderExtensions).Assembly.GetName().Name)));
         builder.Services.AddScoped<IMultiTenantStore<PolarTenantInfo>, EfMultiTenantStore>();
+
+        // MariaDB-specific single-tenant -> MT upgrade migrator. Always registered;
+        // only executed when the host has also called AddPolarSingleTenantUpgrade(...).
+        builder.Services.TryAddScoped<ISingleTenantUpgradeMigrator, MariaDbSingleTenantUpgradeMigrator>();
 
         builder.Services.AddHealthChecks()
             .AddDbContextCheck<PolarTenantDbContext>(

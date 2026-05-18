@@ -23,9 +23,29 @@ Stores PolarSharp's `PolarTenantInfo` registry in a MariaDB / MySQL database via
 
 Tenant isolation on this provider is **app-layer (EF Core global query filter) only** — MariaDB / MySQL do not expose Postgres-style `ROW LEVEL SECURITY`, so a bug or misconfiguration that bypasses the DbContext (e.g. raw `IDbConnection` queries) will NOT be caught by a database policy. That is the Postgres / SQL Server posture, not the MariaDB posture. The same single-layer posture applies to the SQLite provider in this family. Hosts that require defense-in-depth at the DB layer should choose Postgres or SQL Server. See Case Study 05 "Multi-Tenancy As Optional" for how the multi-tenant pieces opt in.
 
-## Status
+## Single-tenant -> multi-tenant upgrade
 
-v1.3.0 (scaffold + abstractions shipped; full implementation lands in Phase 13.x patches per the v1.3 plan).
+Hosts that started as single-tenant deployments can opt into the automated upgrade migrator:
+
+```csharp
+builder.Services
+    .AddPolarInfrastructure(builder.Configuration)
+    .AddPolarMultiTenant()
+    .UseMariaDb(connStr);
+
+builder.Services.AddPolarSingleTenantUpgrade(builder.Configuration);
+```
+
+On the next boot, the MariaDB migrator:
+
+1. Upserts the configured default tenant into `polar_tenants`.
+2. Iterates every entity in the model that implements `ITenantOwned` and issues a bulk `` UPDATE `table` SET `TenantId` = @p WHERE `TenantId` IS NULL OR `TenantId` = '' `` against each — no rows are loaded into memory.
+3. Records a row in `polar_upgrade_history` so subsequent boots short-circuit.
+4. Runs the whole backfill in a single transaction so a mid-flight failure rolls back cleanly.
+
+Because MariaDB / MySQL have no DB-layer RLS, there is no session variable to manipulate; the upgrade is simpler than on Postgres / SQL Server. The flip-side is that there is also no DB-layer policy enforcing tenant isolation after the upgrade — same posture as the rest of this provider.
+
+## Status
 
 ## See also
 

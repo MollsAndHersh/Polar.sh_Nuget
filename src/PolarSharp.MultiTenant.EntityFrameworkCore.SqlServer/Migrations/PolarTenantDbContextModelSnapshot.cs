@@ -108,6 +108,36 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer.Migrations
 
                     b.ToTable("polar_tenants", (string)null);
                 });
+
+            modelBuilder.Entity("PolarSharp.MultiTenant.EntityFrameworkCore.Upgrade.UpgradeHistoryEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ActorUserId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTimeOffset>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResultSummaryJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpgradeKind")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UpgradeKind");
+
+                    b.ToTable("polar_upgrade_history", (string)null);
+                });
 #pragma warning restore 612, 618
         }
     }

@@ -2,8 +2,11 @@ using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using PolarSharp;
 using PolarSharp.MultiTenant.EntityFrameworkCore.Extensions;
+using PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer.Upgrade;
+using PolarSharp.MultiTenant.EntityFrameworkCore.Upgrade;
 
 namespace PolarSharp.MultiTenant.EntityFrameworkCore.SqlServer;
 
@@ -54,6 +57,10 @@ public static class SqlServerBuilderExtensions
                     sql.MigrationsAssembly(typeof(SqlServerBuilderExtensions).Assembly.GetName().Name))
                 .AddInterceptors(sp.GetRequiredService<SqlServerTenantSessionInterceptor>()));
         builder.Services.AddScoped<IMultiTenantStore<PolarTenantInfo>, EfMultiTenantStore>();
+
+        // SQL Server-specific single-tenant -> MT upgrade migrator. Always registered;
+        // only executed when the host has also called AddPolarSingleTenantUpgrade(...).
+        builder.Services.TryAddScoped<ISingleTenantUpgradeMigrator, SqlServerSingleTenantUpgradeMigrator>();
 
         // EF Core health check
         builder.Services.AddHealthChecks()

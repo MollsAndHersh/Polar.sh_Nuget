@@ -1,8 +1,12 @@
 using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using PolarSharp;
+using PolarSharp.MultiTenant.EntityFrameworkCore.CosmosDb.Upgrade;
 using PolarSharp.MultiTenant.EntityFrameworkCore.Extensions;
+using PolarSharp.MultiTenant.EntityFrameworkCore.Upgrade;
 
 namespace PolarSharp.MultiTenant.EntityFrameworkCore.CosmosDb;
 
@@ -83,6 +87,8 @@ public static class CosmosDbBuilderExtensions
 
         builder.Services.AddScoped<IMultiTenantStore<PolarTenantInfo>, EfMultiTenantStore>();
 
+        RegisterCosmosUpgradeServices(builder.Services, builder.Configuration);
+
         builder.Services.AddHealthChecks()
             .AddDbContextCheck<PolarTenantDbContext>(
                 name: "polar-tenant-sql",
@@ -125,6 +131,8 @@ public static class CosmosDbBuilderExtensions
 
         builder.Services.AddScoped<IMultiTenantStore<PolarTenantInfo>, EfMultiTenantStore>();
 
+        RegisterCosmosUpgradeServices(builder.Services, builder.Configuration);
+
         builder.Services.AddHealthChecks()
             .AddDbContextCheck<PolarTenantDbContext>(
                 name: "polar-tenant-sql",
@@ -136,5 +144,30 @@ public static class CosmosDbBuilderExtensions
         }
 
         return builder;
+    }
+
+    /// <summary>
+    /// Registers Cosmos-specific upgrade services: the migrator, its options binding, and
+    /// the hosted-service container provisioner that stands in for the relational
+    /// providers' <c>AddUpgradeHistoryTable</c> EF migration (Cosmos has no migrations).
+    /// </summary>
+    /// <param name="services">The DI container.</param>
+    /// <param name="configuration">The application configuration root.</param>
+    private static void RegisterCosmosUpgradeServices(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddOptions<CosmosDbSingleTenantUpgradeOptions>()
+            .Bind(configuration.GetSection(CosmosDbSingleTenantUpgradeOptions.SectionName));
+
+        // Cosmos-specific single-tenant -> MT upgrade migrator. Always registered;
+        // only executed when the host has also called AddPolarSingleTenantUpgrade(...).
+        services.TryAddScoped<ISingleTenantUpgradeMigrator, CosmosDbSingleTenantUpgradeMigrator>();
+
+        // Cosmos-equivalent of the AddUpgradeHistoryTable migration shipped by the
+        // relational providers. Ensures the polar_upgrade_history container exists at
+        // host startup. Always registered; safe to run on every boot (EnsureCreated is
+        // a no-op when the container already exists).
+        services.AddHostedService<CosmosUpgradeHistoryContainerProvisioner>();
     }
 }

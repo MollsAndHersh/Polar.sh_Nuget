@@ -105,6 +105,36 @@ namespace PolarSharp.MultiTenant.EntityFrameworkCore.MariaDb.Migrations
 
                     b.ToTable("polar_tenants", (string)null);
                 });
+
+            modelBuilder.Entity("PolarSharp.MultiTenant.EntityFrameworkCore.Upgrade.UpgradeHistoryEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ActorUserId")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<DateTimeOffset>("CompletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ResultSummaryJson")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UpgradeKind")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UpgradeKind");
+
+                    b.ToTable("polar_upgrade_history", (string)null);
+                });
 #pragma warning restore 612, 618
         }
     }

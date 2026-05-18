@@ -1,8 +1,11 @@
 using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using PolarSharp;
 using PolarSharp.MultiTenant.EntityFrameworkCore.Extensions;
+using PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL.Upgrade;
+using PolarSharp.MultiTenant.EntityFrameworkCore.Upgrade;
 
 namespace PolarSharp.MultiTenant.EntityFrameworkCore.PostgreSQL;
 
@@ -49,6 +52,10 @@ public static class PostgreSqlBuilderExtensions
                     npg.MigrationsAssembly(typeof(PostgreSqlBuilderExtensions).Assembly.GetName().Name))
                 .AddInterceptors(sp.GetRequiredService<PostgreSqlTenantSessionInterceptor>()));
         builder.Services.AddScoped<IMultiTenantStore<PolarTenantInfo>, EfMultiTenantStore>();
+
+        // PostgreSQL-specific single-tenant -> MT upgrade migrator. Always registered;
+        // only executed when the host has also called AddPolarSingleTenantUpgrade(...).
+        builder.Services.TryAddScoped<ISingleTenantUpgradeMigrator, PostgreSqlSingleTenantUpgradeMigrator>();
 
         builder.Services.AddHealthChecks()
             .AddDbContextCheck<PolarTenantDbContext>(
