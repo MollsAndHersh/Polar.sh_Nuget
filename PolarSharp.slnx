@@ -44,6 +44,7 @@
     <Project Path="src/PolarSharp.MultiTenant.EntityFrameworkCore.MariaDb/PolarSharp.MultiTenant.EntityFrameworkCore.MariaDb.csproj" />
     <Project Path="src/PolarSharp.MultiTenant.Identity.CosmosDb/PolarSharp.MultiTenant.Identity.CosmosDb.csproj" />
     <Project Path="src/PolarSharp.MultiTenant.Identity.MariaDb/PolarSharp.MultiTenant.Identity.MariaDb.csproj" />
+    <Project Path="src/PolarSharp.MultiTenant.Notifications/PolarSharp.MultiTenant.Notifications.csproj" />
     <Project Path="src/PolarSharp.NaturalLanguageQuery/PolarSharp.NaturalLanguageQuery.csproj" />
     <Project Path="src/PolarSharp.NaturalLanguageQuery.CustomerGraph/PolarSharp.NaturalLanguageQuery.CustomerGraph.csproj" />
     <Project Path="src/PolarSharp.NaturalLanguageQuery.HotChocolate/PolarSharp.NaturalLanguageQuery.HotChocolate.csproj" />
