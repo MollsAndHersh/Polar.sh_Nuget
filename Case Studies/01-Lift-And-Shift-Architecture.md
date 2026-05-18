@@ -1,14 +1,86 @@
-# Case Study 01 — Lift-and-Shift Architecture for Composable .NET SDKs
+---
+title: "Lift-and-Shift Architecture for Composable Software Estates"
+short_title: "Lift-and-Shift Architecture"
+case_study_id: "01"
+author:
+  name: "Mark Chipman"
+  organization: "Molls and Hersh, LLC"
+date_published: 2026-05-15
+date_modified: 2026-05-18
+status: stable
+license: "© Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution."
+reference_implementation: "PolarSharp.PrepaidWallets v1.3 (28 lift-safe packages + 8 Polar bridges)"
+keywords:
+  - lift-and-shift architecture
+  - composable software estates
+  - monorepo extraction
+  - package liftability
+  - namespace separator pattern
+  - CI dependency guard
+  - anti-corruption layer
+  - hexagonal architecture
+  - bounded contexts
+  - .NET NuGet packages
+related_case_studies:
+  - "02-Event-Sourced-Wallet-With-Economic-Modeling"
+  - "05-Multi-Tenancy-As-Optional"
+related_patterns:
+  - "Anti-Corruption Layer (Domain-Driven Design)"
+  - "Hexagonal Architecture / Ports and Adapters"
+ecosystems:
+  primary: ".NET / NuGet"
+  generalizes_to: ["MAUI + RCLs", "MVC", "WPF / WinUI", "Blazor", "Python (pyproject.toml modules)", "JavaScript / TypeScript (npm / pnpm workspaces)", "Rust crates", "Go modules", "Ruby gems"]
+---
+<!--
+JSON-LD structured data (invisible on GitHub render; consumed by web crawlers + ontology-aware AI agents):
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Lift-and-Shift Architecture for Composable Software Estates",
+  "alternativeHeadline": "Lift-and-Shift Architecture",
+  "author": {
+    "@type": "Person",
+    "name": "Mark Chipman",
+    "affiliation": {
+      "@type": "Organization",
+      "name": "Molls and Hersh, LLC"
+    }
+  },
+  "datePublished": "2026-05-15",
+  "dateModified": "2026-05-18",
+  "inLanguage": "en",
+  "keywords": "lift-and-shift architecture, composable software estates, monorepo extraction, package liftability, namespace separator pattern, CI dependency guard, anti-corruption layer, hexagonal architecture, bounded contexts, .NET NuGet packages",
+  "about": [
+    "lift-and-shift architecture",
+    "composable software estates",
+    "namespace separator pattern",
+    "CI dependency guard",
+    "monorepo extraction",
+    "anti-corruption layer",
+    "hexagonal architecture",
+    "bounded contexts",
+    "package liftability"
+  ],
+  "isPartOf": {
+    "@type": "CreativeWorkSeries",
+    "name": "PolarSharp Architectural Case Studies"
+  },
+  "license": "© Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution.",
+  "proficiencyLevel": "Expert"
+}
+-->
+
+# Case Study 01 — Lift-and-Shift Architecture for Composable Software Estates
 
 > **Author**: Mark Chipman — Molls and Hersh, LLC.
-> **Date**: 2026-05-15
+> **Date**: 2026-05-18
 > **Status**: Stable. Reference implementation: PolarSharp.PrepaidWallets v1.3 (28 lift-safe packages + 8 Polar bridges).
 > **License**: © Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution.
 > **Related files**: [`PrepaidWalletsLiftAndShift.md`](../PrepaidWalletsLiftAndShift.md) (the operational lift procedure)
 
 ## TL;DR
 
-A feature lives inside a monorepo for ease of co-development but is **architected from day one** so that — at any point in the future — it can be lifted into its own GitHub repository with a 5-line script and no architectural rework. The boundary between "feature core" (which moves) and "monorepo integration" (which stays) is enforced by a visible namespace separator AND a CI dependency-graph guard that fails the build if forbidden coupling is introduced.
+A feature lives inside a monorepo for ease of co-development but is **architected from day one** so that — at any point in the future — it can be lifted into its own GitHub repository with a short script and no architectural rework. The boundary between "feature core" (which moves) and "monorepo integration" (which stays) is enforced by a visible namespace separator AND a CI dependency-graph guard that fails the build if forbidden coupling is introduced. Beyond the mechanics, this case study develops a mental model for the pattern, sets out naming conventions that have to be chosen before any code is written, enumerates the day-to-day benefits that accrue independently of whether extraction ever happens, and generalizes the approach beyond .NET / NuGet to other package-oriented ecosystems.
 
 ## Historical context / inspiration / prior art
 
@@ -16,17 +88,21 @@ Most modular monorepo strategies focus on internal *code organization* (Nx works
 
 This pattern emerged from an observation: most "we should split this out into its own repo" conversations happen 2–3 years into a project's life, by which point the coupling has metastasized and the extraction takes weeks of architectural surgery. By that time, the original reason for extraction (a second consumer wants the feature; the team wants independent release cadence; the feature outgrew the parent project) has often gone away because the cost was too high.
 
-The lift-and-shift architecture inverts the trade-off: pay the boundary-discipline cost up front (small ongoing tax during co-development), buy the option to extract cheaply (5-line script, days not weeks). The CI guard is the discipline that makes the option real — without mechanical enforcement, the boundary erodes silently over years.
+The lift-and-shift architecture inverts the trade-off: pay the boundary-discipline cost up front (small ongoing tax during co-development), buy the option to extract cheaply (short script, hours rather than weeks). The CI guard is the discipline that makes the option real — without mechanical enforcement, the boundary erodes silently over years.
 
 The closest prior art is the "anti-corruption layer" from Domain-Driven Design and the "ports and adapters" / hexagonal architecture pattern from Alistair Cockburn — both of which advocate for isolating a core domain behind explicit interface boundaries. The lift-and-shift pattern extends this with: (a) a *visible* boundary signaling mechanism (namespace separator), and (b) *mechanical* CI enforcement of the boundary as a first-class build gate.
 
+### A note on the name
+
+The term "lift and shift" is heavily overloaded in tech writing — most usages refer to a cloud-migration strategy (relocating an application to the cloud as-is, without re-architecting). This case study uses the term for a different architectural pattern: designing a feature for cheap eventual extraction from its parent repository while continuing to develop it in-place. The two patterns share a name and a "minimum-disruption move" sensibility, but they address entirely different problems. Readers looking for cloud-migration guidance should look elsewhere; readers looking for in-monorepo architectural discipline should continue here.
+
 ## Why this pattern is newly practical
 
-The lift-and-shift architecture is not a new idea in spirit — anyone could have designed a project with namespace-separated tiers and a custom MSBuild script that enforced dependency boundaries in 2010. What is new is that the *ongoing maintenance cost* of the pattern has fallen dramatically. The pattern's natural shape is to multiply the package count by 3–5x compared to a single-package monolith (interfaces split from implementations, providers split from cores, bridges split from feature cores), and each new package carries an ongoing tax: a csproj to maintain, a README to keep current, XML doc comments on every public member, NuGet metadata, version bumps, changelog entries, individual CI pack-and-publish steps.
+The lift-and-shift architecture is not a new idea in spirit — anyone could have designed a project with namespace-separated tiers and a custom MSBuild script that enforced dependency boundaries in 2010. What is new is that the *ongoing maintenance cost* of the pattern has fallen dramatically. The pattern's natural shape is to multiply the package count typically by 2-4x compared to a single-package monolith (interfaces split from implementations, providers split from cores, bridges split from feature cores), and each new package carries an ongoing tax: a csproj to maintain, a README to keep current, XML doc comments on every public member, NuGet metadata, version bumps, changelog entries, individual CI pack-and-publish steps.
 
-In an earlier era, that tax was real enough to make the pattern feel extravagant for most projects. The cost of keeping 30 small packages well-groomed was high enough that teams reasonably chose 5 large ones instead, accepting the extraction-cost penalty as a fair trade for the day-to-day maintenance savings. Recent generations of AI-assisted development tooling — frontier-model coding agents, scaffold generators, documentation synchronizers, dependency-graph auditors, multi-package consistency checkers — have shifted that arithmetic considerably. Scaffolding many packages consistently, keeping documentation synchronized across an estate, authoring and maintaining CI guardrails, and surfacing drift in package metadata are all dramatically cheaper than they were even a small number of years ago.
+In an earlier era, that tax was real enough to make the pattern feel extravagant for most projects. The cost of keeping many small packages well-groomed was high enough that teams reasonably chose a handful of large ones instead, accepting the extraction-cost penalty as a fair trade for the day-to-day maintenance savings. Recent generations of AI-assisted development tooling — frontier-model coding agents, scaffold generators, documentation synchronizers, dependency-graph auditors, multi-package consistency checkers — have shifted that arithmetic considerably. Scaffolding many packages consistently, keeping documentation synchronized across an estate, authoring and maintaining CI guardrails, and surfacing drift in package metadata are all dramatically cheaper than they were even a small number of years ago.
 
-The pattern itself did not improve; what changed is that the per-package overhead became affordable for projects that previously could not justify it. Teams evaluating whether to apply this pattern should weigh the costs against the maintenance tooling they actually have available today, not against the maintenance tooling of two or three years ago. A pattern that was correctly judged "extravagant for our team size" in 2020 may be correctly judged "worth the modest tax" in 2026 — same team, same project, different tooling economy.
+The pattern itself did not improve; what changed is that the per-package overhead became affordable for projects that previously could not justify it. Teams evaluating whether to apply this pattern should weigh the costs against the maintenance tooling they actually have available today, not against the maintenance tooling of two or three years ago. A pattern that was correctly judged "extravagant for our team size" in 2020 may be correctly judged "worth the modest tax" in 2026 — same team, same project, different tooling economy. Teams not using AI-assisted development tooling will still face the pre-AI maintenance economics described above; the cost-shift only accrues to teams who actually use the tooling that produces it.
 
 This shift matters in a second way that is sometimes overlooked: the *lift operation itself* — the namespace rename, the cross-repo migration, the rewiring of bridges from `ProjectReference` to `PackageReference`, the new repository's CI setup, the publication of the lifted family to its own NuGet feed — is also work that benefits from agent assistance. A pattern that was already cheap to *maintain* through agentic tooling becomes also cheap to *execute* through the same tooling when the time comes. The pattern's whole value proposition (cheap ongoing maintenance, cheap eventual extraction) becomes substantively cheaper at both ends than it was when this kind of work was largely manual.
 
@@ -36,9 +112,7 @@ A useful way to think about the prior and post states of a lift-and-shift is by 
 
 ### The unified household (pre-lift)
 
-Before a couple separates, everyone lives under one roof. House rules are stipulated and enforced top-down: bedtimes, chore charts, dietary expectations, the rule that everyone eats dinner at the same table. The arrangement makes certain kinds of work cheap. Coordinating schedules is trivial. Spotting when someone is unwell is immediate. A missing toothbrush gets noticed because it lives in a shared bathroom. The interdependence is the very thing that makes the dynamics legible and the rules enforceable.
-
-A single monorepo holding many interrelated packages under one unifying solution file behaves the same way. While the packages live together:
+Before a couple separates, everyone lives under one roof, and the interdependence is the very thing that makes the dynamics legible and the rules enforceable. A single monorepo holding many interrelated packages under one unifying solution file behaves the same way. While the packages live together:
 
 - **Cross-package boundaries are easy to discover** because every file is one IDE click away. A developer wondering "what calls this method?" answers the question in seconds across the entire estate.
 - **Gaps in coverage become visible** as soon as someone wires the packages together for a real scenario. A missing interface, an unhandled edge case, an undocumented assumption — all of these surface during integration because the integration happens in the same repository the developer is already working in.
@@ -47,17 +121,11 @@ A single monorepo holding many interrelated packages under one unifying solution
 - **The full specification can be developed and re-developed iteratively.** When a missing feature surfaces late, adding it across multiple packages happens in a single pull request. The team does not have to coordinate releases across six repositories to ship one logical change.
 - **Rules and expectations can be enforced through influence rather than contracts.** Code review, shared style guides, "we agreed last sprint not to do that" — these soft mechanisms work because everyone is in the same room. The closest analog in a multi-repo world is a written contract negotiated up front, which is much heavier.
 
-This is the **prior state**, and a great deal of the architectural value of the lift-shift pattern comes from doing the hard work of design, implementation, and comprehensive testing *while still in this state*. The unified household is the right venue for stipulating boundaries, codifying expectations, building comprehensive demo applications, and confirming through executable tests that the whole estate works end-to-end. The CI dependency guard described later in this document exists precisely so that this prior-state work can proceed with full coordination ergonomics while still preserving the option to separate cleanly later.
+A great deal of the architectural value of the lift-shift pattern comes from doing the hard work of design, implementation, and comprehensive testing while still in this prior state. The unified household is the right venue for stipulating boundaries, codifying expectations, building comprehensive demo applications, and confirming through executable tests that the whole estate works end-to-end — and the CI dependency guard described later in this document exists precisely so that this prior-state work can proceed with full coordination ergonomics while still preserving the option to separate cleanly later.
 
-### Families of packages move together
+### The new household (post-lift)
 
-When a household does separate, related members usually stay together. The spouse moving out typically takes the children, the family pet, and the household items that belong with them — not a random scattering of objects. The new household is recognizably *that part of the original household*, reassembled with its internal relationships intact.
-
-A lift-and-shift extraction works the same way. A feature family — a parent package and its supporting siblings, providers, adapters, and integrations — moves together to a single new repository. The packages that belonged together before the lift still belong together after the lift; the relationships between them are preserved verbatim. A wallet feature with a dozen storage providers and notification channels moves as one family. An ecommerce feature with its catalog providers, search adapters, theme presets, and pipeline stages moves as one family. Splitting a feature family across two new repositories during the lift would defeat the entire purpose of having designed the family as a cohesive unit in the first place.
-
-### Setting up the new household
-
-In the new home, things are different in ways that go beyond a change of address. The rules that one party had assumed were universal turn out to have been *house rules* — specific to the prior arrangement, not laws of nature. Coordinating with the other household now requires explicit messages instead of shouting across the kitchen. Schedules need to be agreed in advance instead of discovered ad hoc. The interdependence that made everything legible has been replaced by a clear boundary and intentional contact across it.
+When a household separates, related members usually stay together — the spouse moving out typically takes the children, the family pet, and the household items that belong with them, not a random scattering of objects. A lift-and-shift extraction works the same way: a feature family — a parent package and its supporting siblings, providers, adapters, and integrations — moves together to a single new repository, and the relationships between those packages are preserved verbatim. A wallet feature with a dozen storage providers and notification channels moves as one family; an ecommerce feature with its catalog providers, search adapters, theme presets, and pipeline stages moves as one family. Splitting a feature family across two new repositories during the lift would defeat the entire purpose of having designed the family as a cohesive unit in the first place.
 
 The first concrete act of the post-lift state mirrors moving into a new home: setting it up so the family that just arrived can actually live there. In the new repository, that means:
 
@@ -66,17 +134,9 @@ The first concrete act of the post-lift state mirrors moving into a new home: se
 3. **Wiring up the project references between the lifted packages.** Inside the new solution, every relationship that previously existed between the packages — `ProjectReference` to a sibling, shared interface implementations, transitive dependency chains — is recreated explicitly. The shape of the internal dependency graph is preserved exactly as it existed in the prior solution, but now bounded entirely within the new repository.
 4. **Verifying internal cohesion.** The new solution builds, tests, and publishes without reaching into the prior repository for anything. If a build error reveals a forgotten dependency on the prior estate, that dependency was a coupling the lift-shift design was meant to prevent — and it needs to be removed, abstracted away, or duplicated as a lift-safe equivalent before the new household is truly self-sufficient.
 
-### The new household after settlement
+Once settlement is complete, what was previously a `ProjectReference` from a sibling package in the parent monorepo becomes a normal NuGet `PackageReference` from a published feed, and the lifted family is consumed like any other third-party library. Including, critically, by the original parent project itself: the parent's integration bridges can be re-pointed at the published lifted library and continue to fulfill their role unchanged. The post-lift state is the beginning of a different kind of relationship — bounded by explicit contracts (published NuGet versions, semantic-versioning commitments, changelog entries) instead of in-monorepo intimacy — and done well, the parent project ends up *more* stable in this arrangement, because what was previously a tightly-coupled internal subsystem is now an externally-versioned dependency that can only change in ways the parent has explicitly opted into.
 
-What was previously a `ProjectReference` from a sibling package in the parent monorepo becomes a normal NuGet `PackageReference` from a published feed, and the lifted family is consumed like any other third-party library. Including, critically, by the original parent project itself: the parent's integration bridges can be re-pointed at the published lifted library and continue to fulfill their role unchanged. The family that left the household can come back as a guest — invited, useful, but no longer a resident, and bound now by the same external contract as any other consumer.
-
-The post-lift state is not the end of the relationship between the two estates. It is the beginning of a different kind of relationship: bounded by explicit contracts (published NuGet versions, semantic-versioning commitments, changelog entries) instead of in-monorepo intimacy. Done well, the parent project ends up *more* stable in this arrangement, because what was previously a tightly-coupled internal subsystem is now an externally-versioned dependency that can only change in ways the parent has explicitly opted into.
-
-### Why this framing matters
-
-The household analogy makes one thing visible that pure architectural framings tend to obscure: **the lift itself is not the goal**. The lift is an option, exercised when external circumstances make it the right call (a second consumer, an organizational change, a divergent release cadence, an acquisition, a deprecation). The *real* purpose of the pattern is to preserve the cheap-coordination, easy-testing, full-spec-development virtues of the unified household for as long as it serves the project, while leaving open the option of a cleanly-executed separation when the time comes.
-
-Designing for liftability is the same kind of forethought as a couple keeping their important documents organized, their financial accounts well-titled, and their household inventory clear from the start of the relationship. Most of the time it is a minor ongoing cost — a slight tax on day-to-day life. On the day it matters, it is the difference between a clean transition and a years-long ordeal. The mechanical enforcement described in the rest of this document (the namespace separator and the CI dependency guard) is the equivalent of the practical disciplines that make any such transition feasible: not assumed, but verified.
+The household analogy makes one thing visible that pure architectural framings tend to obscure: **the lift itself is not the goal**. The lift is an option, exercised when external circumstances make it the right call (a second consumer, an organizational change, a divergent release cadence, an acquisition, a deprecation). The *real* purpose of the pattern is to preserve the cheap-coordination, easy-testing, full-spec-development virtues of the unified household for as long as it serves the project, while leaving open the option of a cleanly-executed separation when the time comes. The mechanical enforcement described in the rest of this document is the equivalent of the practical disciplines that make any such transition feasible: not assumed, but verified.
 
 ## Problem
 
@@ -127,7 +187,7 @@ Feature packages live in one of two tiers, distinguishable by namespace:
 
 The `.Polar.*` infix is the entire visible-boundary contract. Any developer adding code with a namespace containing `.Polar.` knows they're in the bridge tier and can use PolarSharp internals freely. Any developer adding code without `.Polar.` in the namespace knows they're in the lift-safe core tier and PolarSharp internals are forbidden.
 
-The CI guard runs `dotnet list package --include-transitive` on every Tier A package and fails the build if any `PolarSharp.*` package (other than another Tier A package in the same feature family) appears in the dependency graph. The guard is a 30-line bash script run on every PR. It is the entire mechanical enforcement.
+The CI guard runs `dotnet list package --include-transitive` on every Tier A package and fails the build if any `PolarSharp.*` package (other than another Tier A package in the same feature family) appears in the dependency graph. The guard is roughly a ~70-line bash script run on every PR. It is the entire mechanical enforcement.
 
 ## Naming convention: the source-prefix that disappears on lift
 
@@ -205,7 +265,7 @@ echo "PASS: All Tier A packages are lift-safe."
 
 This script runs in CI on every PR. If a developer adds `using PolarSharp.SomeThing;` to a Tier A package, the build fails. The boundary is mechanically enforced from day one and stays enforced forever.
 
-### Step 4: The lift script (5 lines + CI rewiring)
+### Step 4: The lift script (~12 lines + CI rewiring)
 
 When the time comes to extract:
 
@@ -230,7 +290,7 @@ Back in the parent repo, the Tier B bridge packages bump their `<ProjectReferenc
 + <PackageReference Include="NewFeature.Abstractions" Version="1.0.0" />
 ```
 
-Public API surface of the bridge packages is unchanged. Hosts who consumed the bridges see no breaking changes. The extraction is complete in hours, not weeks.
+The public API surface of the bridge packages is unchanged by design. Hosts who consumed the bridges are expected to see no breaking changes, and the extraction is designed to complete in hours rather than weeks.
 
 ## Worked example (from PolarSharp)
 
@@ -239,9 +299,9 @@ PolarSharp.PrepaidWallets (v1.3) is the reference implementation:
 - **28 lift-safe packages** under `PolarSharp.PrepaidWallets.*` (no `.Polar.` infix). Categories include: Abstractions, event-sourced core, 5 EF Core storage providers, Marten storage provider, Reporting, AspNetCore.Identity (single-tenant integration), AspNetCore.GraphQL, Notifications + 6 channel providers (SendGrid / MailKit / Azure / AWS SES / Twilio / Webhook), 2 template engines (Scriban + Fluid), 2 funding processors (Stripe + PayPal), AspNetCore.SignalR, 2 Blazor RCLs (Customer + Admin), SaaSInvoicing, PrefundedTenant.
 - **8 Polar bridges** under `PolarSharp.PrepaidWallets.Polar.*`: Identity, Checkout, Reporting, GraphQL, PurchaseOrder, Notifications, Translation, SaaSInvoicing.
 - **CI guard**: `scripts/verify-prepaidwallets-no-polarsharp-deps.sh` runs on every PR.
-- **Lift procedure**: documented in [`PrepaidWalletsLiftAndShift.md`](../PrepaidWalletsLiftAndShift.md) — a 5-line bash script.
+- **Lift procedure**: documented in [`PrepaidWalletsLiftAndShift.md`](../PrepaidWalletsLiftAndShift.md) — a ~12-line bash script.
 
-The wallet feature can become its own standalone `PrepaidWallets/*` repo at any point. The 8 bridges stay in PolarSharp and rewire to consume the external library. Hosts using the bridges see no API change.
+The wallet feature is designed to become its own standalone `PrepaidWallets/*` repo at any point. The 8 bridges would stay in PolarSharp and rewire to consume the external library. Hosts using the bridges are expected to see no API change.
 
 ## Trade-offs
 
@@ -285,9 +345,7 @@ The lift-shift pattern is specifically targeted at projects where (a) co-develop
 
 **Mode 6: Stale assumptions about which sibling packages are still internal.** In a long-lived estate, multiple feature families may undergo lift-and-shift over a period of years. A feature being designed for liftability today may depend on a sibling feature that has *already* been lifted into its own external repository — meaning what looks like an internal sibling dependency is, in reality, an external NuGet dependency against a published feed. Teams new to the codebase, contributors working from outdated documentation, or AI agents working from stale context may assume every sibling is still internal and produce designs, allow-list entries, or lift scripts that quietly target packages which no longer exist inside the parent repository. The result is a CI guard that protects against the wrong boundary, a bridge package that references a moved sibling, or a lift script that fails partway through because it cannot find files that have not lived in the parent repo for months. **Detection**: before writing any cross-feature bridge code, before adding any entry to a CI guard's allow-list, and before drafting any lift script, audit every potentially-relevant sibling feature against the *current* state of the parent repository. A grep for the sibling's namespace prefix across the parent repo's `src/` directory is a fast first check; an authoritative `LIFTED.md` index (see Preventive measure below) is the durable answer. **Recovery**: if a bridge package mistakenly references a lifted-out sibling as `<ProjectReference>`, replace with `<PackageReference>` against the sibling's external NuGet feed; refresh the CI guard's allow-list to remove the now-external package name; verify the lift script for the in-progress feature does not try to move files that have already moved (the script's bash glob for "what moves" should not include packages that no longer live in the parent). **Preventive measure**: maintain a top-level `LIFTED.md` (or equivalent index file) in the parent repository enumerating every feature family that has been lifted out — each entry capturing the external repository URL, the current published NuGet identifier, the date of the lift, and a one-line note on which bridge packages in the parent still consume it. This index gives every new contributor and every AI agent a single authoritative source-of-truth for "which sibling families are external," eliminating the class of design errors that arise from assuming a sibling is still internal when it has, in fact, already moved out.
 
-## When to use this elsewhere
-
-**A note on scope:**
+## Scope: what this case study covers
 
 The pattern as described in this case study is presented in the specific context of .NET class libraries packaged as NuGet artifacts — `.csproj` projects organized inside a `.slnx` solution, distributed through `nuget.org` or private feeds, consumed by other .NET projects via `PackageReference`. The worked example, the namespace conventions, the CI guard implementation, and the lift script all assume that context.
 
@@ -298,7 +356,11 @@ The *principles* the pattern embodies — visible boundary signaling, mechanical
 
 Readers applying the pattern outside the .NET / NuGet context should treat the mechanics in this case study as illustrative rather than prescriptive, and substitute their ecosystem's equivalents. The case study uses .NET / NuGet because that is the worked example available; the underlying architectural principles are language-agnostic.
 
-**Signs this pattern fits your project:**
+## When this pattern fits your project
+
+Two short checklists. The first lists signals that the pattern is likely to pay for itself; the second lists signals that simpler patterns will serve better.
+
+Signs this pattern fits your project:
 
 - A subset of your codebase has clear standalone-product potential.
 - You expect the codebase to live for 5+ years.
@@ -307,7 +369,7 @@ Readers applying the pattern outside the .NET / NuGet context should treat the m
 - The parent project's release cadence might not match the feature's needs long-term.
 - The feature is being built by a contractor / acquired team / external dependency that might pivot.
 
-**Signs this pattern is overkill:**
+Signs this pattern is overkill:
 
 - The feature is genuinely inseparable from its parent (e.g., the parent's authentication system).
 - The parent project has a clearly-time-bounded lifetime (a 6-month proof-of-concept).
@@ -336,7 +398,7 @@ When applying this pattern to a new feature in a new project, follow these steps
 - **How does this interact with `InternalsVisibleTo`?** Tier A packages may grant InternalsVisibleTo to other Tier A packages in the same feature family. Granting InternalsVisibleTo to a PolarSharp.* package outside the family would itself be a forbidden coupling — the CI guard should check for this too.
 - **What about source-only packages?** A source-only package with content shipped under the consumer's namespace could blur the tier boundary. Recommend explicit prohibition on source-only packages in the lift-safe core.
 - **Should the Tier B bridge packages also have a CI guard?** They can use PolarSharp internals freely, so a guard isn't a contract enforcement — but a guard that verifies "this bridge package depends on at LEAST one PolarSharp.* package" prevents accidental misclassification (a "bridge" that doesn't actually bridge anything is suspicious).
-- **What about multi-feature lift?** Two features both lift-safe with their own CI guards — can they lift together to a single new repo? The current pattern handles them as independent lifts; cross-feature shared types would need to be in a third lift-safe shared package.
+- **Cross-feature shared types.** The `LIFTED.md` index and Failure mode 6 address the question of multiple sequential lifts where each family is independent. The unresolved sub-question is what to do when two prospective lift-safe families need to share a type that is neither obviously "core to family A" nor "core to family B." A third lift-safe shared package is the current best answer, but the governance question — who owns it, where does it live, what triggers a version bump — is still open.
 
 ## Related patterns
 
@@ -347,4 +409,4 @@ When applying this pattern to a new feature in a new project, follow these steps
 
 ## Citation format
 
-> Chipman, Mark. *Lift-and-Shift Architecture for Composable .NET SDKs*. PolarSharp Architectural Case Study 01. Molls and Hersh, LLC, 2026. https://github.com/mollsandhersh/Polar.sh_Nuget/tree/main/Case%20Studies
+> Chipman, Mark. *Lift-and-Shift Architecture for Composable Software Estates*. PolarSharp Architectural Case Study 01. Molls and Hersh, LLC, 2026. https://github.com/mollsandhersh/Polar.sh_Nuget/tree/main/Case%20Studies

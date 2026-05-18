@@ -34,7 +34,7 @@ A case study documents the WHY and the HOW behind a pattern in enough depth that
 
 | # | Title | Pattern documented | Status |
 |---|---|---|---|
-| 1 | [Lift-and-Shift Architecture for Composable .NET SDKs](./01-Lift-And-Shift-Architecture.md) | Two-tier package boundary via `.Polar.*` namespace separator + CI-enforced dependency guard | Stable (v1.3 PrepaidWallets reference implementation) |
+| 1 | [Lift-and-Shift Architecture for Composable Software Estates](./01-Lift-And-Shift-Architecture.md) | Two-tier package boundary via `.Polar.*` namespace separator + CI-enforced dependency guard | Stable (v1.3 PrepaidWallets reference implementation) |
 | 2 | [Event-Sourced Wallet with Comprehensive Economic Modeling](./02-Event-Sourced-Wallet-With-Economic-Modeling.md) | Aggregate + MediatR + CQRS + projections + snapshots; configurable fee handling; dormancy hedging; B2B PO admin; recursive meta-tenant billing | Stable (v1.3 PrepaidWallets reference implementation) |
 | 3 | [Embed-Anywhere Web Components with Server-as-Source-of-Truth](./03-Embed-Anywhere-Web-Components.md) | Stencil-compiled true Web Components + dynamic per-embed scoping + 3-layer real-time communication + 10-layer fraud prevention + framework-preset theming | Planned (v1.4 EcommerceStorefronts reference implementation) |
 | 4 | [Audience-Scoped Schema Slicing for LLM-Driven Query Generation](./04-Audience-Scoped-Schema-Slicing.md) | Permission-derived schema slice per audience + structured-output enforcement + dry-run authz gating + cost/complexity gates + audit trail | Planned (v1.3 NaturalLanguageQuery reference implementation) |
