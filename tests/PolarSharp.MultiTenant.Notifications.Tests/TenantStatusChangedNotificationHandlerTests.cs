@@ -7,7 +7,7 @@ namespace PolarSharp.MultiTenant.Notifications.Tests;
 /// <summary>
 /// Tests for <see cref="TenantStatusChangedNotificationHandler"/> — the MediatR bridge
 /// from <see cref="TenantStatusChangedNotification"/> into <see cref="ITenantStatusNotifier"/>.
-/// The handler must defensively swallow every non-cancellation exception so dispatch failures
+/// The handler must defensively swallow every non-cancellation, non-fatal exception so dispatch failures
 /// never propagate back through MediatR into the originating <c>ITenantStatusService</c>.
 /// </summary>
 public sealed class TenantStatusChangedNotificationHandlerTests
@@ -68,20 +68,14 @@ public sealed class TenantStatusChangedNotificationHandlerTests
     }
 
     [Fact]
-    public async Task Handle_does_not_swallow_OperationCanceledException()
+    public async Task Handle_propagates_OperationCanceledException_so_host_shutdown_completes_cleanly()
     {
         // Per standard async cancellation semantics, an OCE tied to the supplied token
-        // should propagate so callers can react to cancellation. The handler's catch-all
-        // is wide (Exception), but the production code is wide on purpose — we test the
-        // observed behaviour: when a cancelled token causes the notifier to throw an OCE
-        // wrapping that token, the handler currently DOES catch it because the catch is
-        // unconditional. We pin that behaviour here so any future change to the catch
-        // (e.g., excluding OperationCanceledException) is a deliberate, test-visible
-        // decision rather than a silent regression.
-        //
-        // The standing rule today: dispatcher must never bubble back into MediatR. That
-        // applies even if the bubble is an OCE -- the status change has already been
-        // persisted by the time we get here. So the contract IS "swallow everything".
+        // MUST propagate so the host's graceful-shutdown path can observe the cancellation.
+        // Swallowing OCE would (a) make the handler report success when work was actually
+        // canceled, and (b) prevent IHostedService.StopAsync paths from completing their
+        // observation of the cancellation chain. The catch-all in the handler intentionally
+        // excludes OCE for this reason.
         var cts = new CancellationTokenSource();
         cts.Cancel();
         var notifier = new RecordingNotifier
@@ -92,9 +86,8 @@ public sealed class TenantStatusChangedNotificationHandlerTests
             notifier,
             NullLogger<TenantStatusChangedNotificationHandler>.Instance);
 
-        // The handler's wide catch swallows the OCE just like any other exception.
-        // Verify it does not propagate.
-        await sut.Handle(TestHelpers.Notification(), cts.Token);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => sut.Handle(TestHelpers.Notification(), cts.Token));
     }
 
     // --- Test doubles ------------------------------------------------------------------

@@ -23,6 +23,15 @@ namespace PolarSharp.MultiTenant.Notifications;
 /// <c>ITenantStatusService</c> call (which would mislead the caller into thinking the
 /// underlying status change failed).
 /// </para>
+/// <para>
+/// <strong>Exception handling exception (intentional):</strong>
+/// <see cref="OperationCanceledException"/> is NOT swallowed — it is rethrown unchanged so
+/// that host shutdown can complete cleanly. When the host is shutting down, the cancellation
+/// token passed to <c>Handle</c> fires; treating the resulting OCE as a normal completion
+/// would (a) make the handler report success when work was actually canceled, and (b) prevent
+/// the host's graceful-shutdown path from observing the cancellation. Standard async-handler
+/// practice — see Microsoft.Extensions.Hosting guidance on IHostedService cancellation semantics.
+/// </para>
 /// </remarks>
 public sealed class TenantStatusChangedNotificationHandler : INotificationHandler<TenantStatusChangedNotification>
 {
@@ -51,7 +60,13 @@ public sealed class TenantStatusChangedNotificationHandler : INotificationHandle
         {
             await _notifier.NotifyAsync(notification, cancellationToken).ConfigureAwait(false);
         }
-#pragma warning disable CA1031 // Notification dispatch must never bubble back into ITenantStatusService.
+        catch (OperationCanceledException)
+        {
+            // DO NOT swallow OCE — propagate so host shutdown can observe the cancellation
+            // and complete cleanly. See class XML <remarks> for rationale.
+            throw;
+        }
+#pragma warning disable CA1031 // Other exceptions: notification dispatch must never bubble back into ITenantStatusService.
         catch (Exception ex)
 #pragma warning restore CA1031
         {
