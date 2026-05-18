@@ -28,4 +28,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="PolarSharp.MultiTenant.EntityFrameworkCore.Sqlite.Tests" />
+  </ItemGroup>
+
 </Project>
