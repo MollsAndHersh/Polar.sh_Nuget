@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PolarSharp.MultiTenant.EntityFrameworkCore.Upgrade;
 
 namespace PolarSharp.MultiTenant.EntityFrameworkCore;
 
@@ -28,6 +29,19 @@ public class PolarTenantDbContext : DbContext
 
     /// <summary>Gets the tenant registry table.</summary>
     public DbSet<PolarTenantInfoEntity> Tenants => Set<PolarTenantInfoEntity>();
+
+    /// <summary>
+    /// Gets the one-time upgrade history table — the persistent completion-marker store
+    /// read by <see cref="ISingleTenantUpgradeMigrator.HasUpgradeCompletedAsync(CancellationToken)"/>
+    /// implementations.
+    /// </summary>
+    /// <remarks>
+    /// Lives alongside the tenant registry because both are platform-scoped, not tenant-scoped:
+    /// they describe the deployment itself rather than any one tenant's data. On SQLite the
+    /// table physically resides in <c>master_SaaS.db</c>; on the other providers it shares
+    /// the same database as the <c>polar_tenants</c> table.
+    /// </remarks>
+    public DbSet<UpgradeHistoryEntity> UpgradeHistory => Set<UpgradeHistoryEntity>();
 
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -59,6 +73,18 @@ public class PolarTenantDbContext : DbContext
             e.Property(x => x.WebhookSecret).HasMaxLength(256);
             e.Property(x => x.Server).HasConversion<string>().HasMaxLength(32);
             e.Ignore(x => x.TenantId);   // computed property — not a column
+        });
+
+        modelBuilder.Entity<UpgradeHistoryEntity>(e =>
+        {
+            e.ToTable("polar_upgrade_history");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.UpgradeKind).HasMaxLength(64).IsRequired();
+            e.Property(x => x.CompletedAt).IsRequired();
+            e.Property(x => x.ActorUserId).HasMaxLength(64);
+            e.Property(x => x.Message);
+            e.Property(x => x.ResultSummaryJson);
+            e.HasIndex(x => x.UpgradeKind);
         });
     }
 }
