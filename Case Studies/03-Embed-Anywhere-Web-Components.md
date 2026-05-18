@@ -1,3 +1,80 @@
+---
+title: "Embed-Anywhere Web Components with Server-as-Source-of-Truth"
+short_title: "Embed-Anywhere Web Components"
+case_study_id: "03"
+author:
+  name: "Mark Chipman"
+  organization: "Molls and Hersh, LLC"
+date_published: 2026-05-15
+date_modified: 2026-05-18
+status: planned
+license: "© Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution."
+reference_implementation: "PolarSharp.EcommerceStorefronts.WebComponents v1.4 (in design)"
+keywords:
+  - web components
+  - Stencil
+  - shadow DOM
+  - embed-anywhere
+  - SignalR hub
+  - fraud prevention
+  - server-as-source-of-truth
+  - per-embed scoping
+  - framework-preset theming
+  - real-time inter-component communication
+  - embed-key validation
+  - CORS enforcement
+  - cart tampering prevention
+related_case_studies:
+  - "01-Lift-And-Shift-Architecture"
+  - "04-Audience-Scoped-Schema-Slicing"
+related_patterns:
+  - "Stencil.js (compiled web components)"
+  - "CustomElement / Shadow DOM (W3C Web Components)"
+  - "Anti-Tampering / Defense-in-Depth"
+  - "Hub-and-Spoke real-time messaging"
+ecosystems:
+  primary: "Web Components (Stencil)"
+  generalizes_to: ["npm distribution", "CDN delivery", "ASP.NET Core SignalR hubs", "Razor TagHelpers", "Tailwind/Bootstrap/Materialize/Bulma framework presets"]
+---
+<!--
+JSON-LD structured data (invisible on GitHub render; consumed by web crawlers + ontology-aware AI agents):
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Embed-Anywhere Web Components with Server-as-Source-of-Truth",
+  "alternativeHeadline": "Embed-Anywhere Web Components",
+  "author": {
+    "@type": "Person",
+    "name": "Mark Chipman",
+    "affiliation": {
+      "@type": "Organization",
+      "name": "Molls and Hersh, LLC"
+    }
+  },
+  "datePublished": "2026-05-15",
+  "dateModified": "2026-05-18",
+  "inLanguage": "en",
+  "keywords": "web components, Stencil, shadow DOM, embed-anywhere, SignalR hub, fraud prevention, server-as-source-of-truth, per-embed scoping, framework-preset theming, real-time inter-component communication, embed-key validation, CORS enforcement, cart tampering prevention",
+  "about": [
+    "Stencil web components",
+    "scoped shadow DOM",
+    "embed-key scoping",
+    "SignalR backbone for real-time updates",
+    "server-as-source-of-truth fraud prevention",
+    "10-layer fraud defense",
+    "per-tenant CORS enforcement",
+    "real-time inter-component communication",
+    "framework-preset theming"
+  ],
+  "isPartOf": {
+    "@type": "CreativeWorkSeries",
+    "name": "PolarSharp Architectural Case Studies"
+  },
+  "license": "© Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution.",
+  "proficiencyLevel": "Expert"
+}
+-->
+
 # Case Study 03 — Embed-Anywhere Web Components with Server-as-Source-of-Truth
 
 > **Author**: Mark Chipman — Molls and Hersh, LLC.

@@ -1,3 +1,77 @@
+---
+title: "Multi-Tenancy as Optional for Library Authors"
+short_title: "Multi-Tenancy as Optional"
+case_study_id: "05"
+author:
+  name: "Mark Chipman"
+  organization: "Molls and Hersh, LLC"
+date_published: 2026-05-15
+date_modified: 2026-05-18
+status: stable
+license: "© Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution."
+reference_implementation: "PolarSharp.PrepaidWallets v1.3 + PolarSharp.EcommerceStorefronts v1.4 (planned)"
+keywords:
+  - multi-tenancy
+  - single-tenant deployment
+  - mode-agnostic abstractions
+  - library design
+  - tenant scope
+  - optional multi-tenancy
+  - audience scope
+  - Finbuckle.MultiTenant
+  - EF Core query filters
+  - tenant isolation
+  - dual-mode libraries
+related_case_studies:
+  - "01-Lift-And-Shift-Architecture"
+  - "02-Event-Sourced-Wallet-With-Economic-Modeling"
+related_patterns:
+  - "Strategy Pattern (Gang of Four)"
+  - "Null Object Pattern"
+  - "Optional / Maybe / Option types"
+  - "Configuration as Code"
+  - "Feature Flags"
+ecosystems:
+  primary: ".NET / NuGet"
+  generalizes_to: ["Finbuckle.MultiTenant", "ASP.NET Core Identity", "EF Core global query filters", "Hot Chocolate GraphQL schema variants", "single-tenant SaaS / multi-tenant SaaS"]
+---
+<!--
+JSON-LD structured data (invisible on GitHub render; consumed by web crawlers + ontology-aware AI agents):
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Multi-Tenancy as Optional for Library Authors",
+  "alternativeHeadline": "Multi-Tenancy as Optional",
+  "author": {
+    "@type": "Person",
+    "name": "Mark Chipman",
+    "affiliation": {
+      "@type": "Organization",
+      "name": "Molls and Hersh, LLC"
+    }
+  },
+  "datePublished": "2026-05-15",
+  "dateModified": "2026-05-18",
+  "inLanguage": "en",
+  "keywords": "multi-tenancy, single-tenant deployment, mode-agnostic abstractions, library design, tenant scope, optional multi-tenancy, audience scope, Finbuckle.MultiTenant, EF Core query filters, tenant isolation, dual-mode libraries",
+  "about": [
+    "optional multi-tenancy",
+    "mode-agnostic library design",
+    "single-tenant fallback",
+    "audience-tier collapse",
+    "query-filter conditionality",
+    "schema-mode auto-detection",
+    "dual-mode deployments"
+  ],
+  "isPartOf": {
+    "@type": "CreativeWorkSeries",
+    "name": "PolarSharp Architectural Case Studies"
+  },
+  "license": "© Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution.",
+  "proficiencyLevel": "Expert"
+}
+-->
+
 # Case Study 05 — Multi-Tenancy as Optional for Library Authors
 
 > **Author**: Mark Chipman — Molls and Hersh, LLC.

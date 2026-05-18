@@ -1,3 +1,83 @@
+---
+title: "Event-Sourced Wallet with Comprehensive Economic Modeling"
+short_title: "Event-Sourced Wallet"
+case_study_id: "02"
+author:
+  name: "Mark Chipman"
+  organization: "Molls and Hersh, LLC"
+date_published: 2026-05-15
+date_modified: 2026-05-18
+status: stable
+license: "© Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution."
+reference_implementation: "PolarSharp.PrepaidWallets v1.3 (36 packages; 10 wallet-core tables; 4 exclusive settlement modes; 3 fee-handling modes; recursive TenantPrefundedWallet meta-tenant pattern)"
+keywords:
+  - event sourcing
+  - CQRS
+  - MediatR
+  - aggregate pattern
+  - projections
+  - snapshots
+  - wallet ledger
+  - token economics
+  - fee handling
+  - dormancy hedging
+  - refund-as-credit
+  - B2B purchase orders
+  - meta-tenant billing
+  - recursive tenancy
+  - prepaid wallet
+related_case_studies:
+  - "01-Lift-And-Shift-Architecture"
+  - "05-Multi-Tenancy-As-Optional"
+related_patterns:
+  - "Domain-Driven Design — Aggregate"
+  - "CQRS / Command Query Responsibility Segregation"
+  - "Event Sourcing (Greg Young / Vaughn Vernon)"
+  - "Optimistic Concurrency Control"
+ecosystems:
+  primary: ".NET / NuGet"
+  generalizes_to: ["Marten (Postgres)", "EF Core providers", "multi-currency systems", "B2B billing systems"]
+---
+<!--
+JSON-LD structured data (invisible on GitHub render; consumed by web crawlers + ontology-aware AI agents):
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Event-Sourced Wallet with Comprehensive Economic Modeling",
+  "alternativeHeadline": "Event-Sourced Wallet",
+  "author": {
+    "@type": "Person",
+    "name": "Mark Chipman",
+    "affiliation": {
+      "@type": "Organization",
+      "name": "Molls and Hersh, LLC"
+    }
+  },
+  "datePublished": "2026-05-15",
+  "dateModified": "2026-05-18",
+  "inLanguage": "en",
+  "keywords": "event sourcing, CQRS, MediatR, aggregate pattern, projections, snapshots, wallet ledger, token economics, fee handling, dormancy hedging, refund-as-credit, B2B purchase orders, meta-tenant billing, recursive tenancy, prepaid wallet",
+  "about": [
+    "event sourcing",
+    "aggregate pattern",
+    "MediatR + CQRS pipeline",
+    "wallet ledger",
+    "configurable fee handling",
+    "dormancy hedging",
+    "refund-as-credit",
+    "B2B purchase-order management",
+    "recursive meta-tenant billing",
+    "progressive balance escalation"
+  ],
+  "isPartOf": {
+    "@type": "CreativeWorkSeries",
+    "name": "PolarSharp Architectural Case Studies"
+  },
+  "license": "© Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution.",
+  "proficiencyLevel": "Expert"
+}
+-->
+
 # Case Study 02 — Event-Sourced Wallet with Comprehensive Economic Modeling
 
 > **Author**: Mark Chipman — Molls and Hersh, LLC.

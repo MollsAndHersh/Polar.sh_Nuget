@@ -1,3 +1,79 @@
+---
+title: "Audience-Scoped Schema Slicing for LLM-Driven Query Generation"
+short_title: "Audience-Scoped Schema Slicing"
+case_study_id: "04"
+author:
+  name: "Mark Chipman"
+  organization: "Molls and Hersh, LLC"
+date_published: 2026-05-15
+date_modified: 2026-05-18
+status: planned
+license: "© Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution."
+reference_implementation: "PolarSharp.NaturalLanguageQuery + PolarSharp.NaturalLanguageQuery.HotChocolate v1.3 (in design)"
+keywords:
+  - natural language query
+  - LLM-driven query generation
+  - schema slicing
+  - audience scoping
+  - GraphQL
+  - Hot Chocolate
+  - structured output
+  - prompt injection prevention
+  - query complexity gates
+  - defense in depth
+  - RAG
+  - AI-assisted database queries
+related_case_studies:
+  - "01-Lift-And-Shift-Architecture"
+  - "03-Embed-Anywhere-Web-Components"
+related_patterns:
+  - "Constrained Output / Tool Use (LLM design pattern)"
+  - "Defense-in-Depth (security)"
+  - "GraphQL Schema Federation"
+  - "Audience-Based Authorization"
+  - "Anti-Corruption Layer (DDD)"
+ecosystems:
+  primary: "GraphQL / Hot Chocolate"
+  generalizes_to: ["OpenAI / Anthropic / Gemini / Grok LLM providers", "structured output / tool use APIs", "REST query generation", "SQL query generation", "RAG retrieval pipelines"]
+---
+<!--
+JSON-LD structured data (invisible on GitHub render; consumed by web crawlers + ontology-aware AI agents):
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Audience-Scoped Schema Slicing for LLM-Driven Query Generation",
+  "alternativeHeadline": "Audience-Scoped Schema Slicing",
+  "author": {
+    "@type": "Person",
+    "name": "Mark Chipman",
+    "affiliation": {
+      "@type": "Organization",
+      "name": "Molls and Hersh, LLC"
+    }
+  },
+  "datePublished": "2026-05-15",
+  "dateModified": "2026-05-18",
+  "inLanguage": "en",
+  "keywords": "natural language query, LLM-driven query generation, schema slicing, audience scoping, GraphQL, Hot Chocolate, structured output, prompt injection prevention, query complexity gates, defense in depth, RAG, AI-assisted database queries",
+  "about": [
+    "audience-scoped schema slicing",
+    "LLM-driven query generation",
+    "structured-output enforcement",
+    "multi-tier authorization gates",
+    "prompt injection prevention",
+    "query complexity guards",
+    "cost amplification guards",
+    "three-audience model (SaaSAdmin / Tenant / Customer)"
+  ],
+  "isPartOf": {
+    "@type": "CreativeWorkSeries",
+    "name": "PolarSharp Architectural Case Studies"
+  },
+  "license": "© Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution.",
+  "proficiencyLevel": "Expert"
+}
+-->
+
 # Case Study 04 — Audience-Scoped Schema Slicing for LLM-Driven Query Generation
 
 > **Author**: Mark Chipman — Molls and Hersh, LLC.
