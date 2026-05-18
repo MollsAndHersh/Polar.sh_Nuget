@@ -296,7 +296,7 @@ The public API surface of the bridge packages is unchanged by design. Hosts who 
 
 PolarSharp.PrepaidWallets (v1.3) is the reference implementation:
 
-- **28 lift-safe packages** under `PolarSharp.PrepaidWallets.*` (no `.Polar.` infix). Categories include: Abstractions, event-sourced core, 5 EF Core storage providers, Marten storage provider, Reporting, AspNetCore.Identity (single-tenant integration), AspNetCore.GraphQL, Notifications + 6 channel providers (SendGrid / MailKit / Azure / AWS SES / Twilio / Webhook), 2 template engines (Scriban + Fluid), 2 funding processors (Stripe + PayPal), AspNetCore.SignalR, 2 Blazor RCLs (Customer + Admin), SaaSInvoicing, PrefundedTenant.
+- **28 lift-safe packages** under `PolarSharp.PrepaidWallets.*` (no `.Polar.` infix). Categories include: Abstractions, event-sourced core, 5 EF Core storage providers, Marten storage provider, Reporting, AspNetCore.Identity (single-tenant integration), AspNetCore.GraphQL, Notifications + 6 channel providers (SendGrid / MailKit / Azure / AWS SES / Twilio / Webhook), 2 template engines (Scriban + Fluid), 2 lift-safe funding processors (Stripe + PayPal — Polar.sh itself is a third funding path that lives in the `Polar.Checkout` bridge enumerated below), AspNetCore.SignalR, 2 Blazor RCLs (Customer + Admin), SaaSInvoicing, PrefundedTenant.
 - **8 Polar bridges** under `PolarSharp.PrepaidWallets.Polar.*`: Identity, Checkout, Reporting, GraphQL, PurchaseOrder, Notifications, Translation, SaaSInvoicing.
 - **CI guard**: `scripts/verify-prepaidwallets-no-polarsharp-deps.sh` runs on every PR.
 - **Lift procedure**: documented in [`PrepaidWalletsLiftAndShift.md`](../PrepaidWalletsLiftAndShift.md) — a ~12-line bash script.

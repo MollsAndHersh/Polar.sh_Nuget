@@ -119,7 +119,7 @@ A SaaS platform wants to give its tenants the ability to operate prepaid wallets
 
 1. **Audit immutability vs schema evolution.** Event-sourced systems must replay events into the current aggregate shape across years of schema changes. Up-casting old event shapes is tedious but the alternative (locking the event schema forever) is worse.
 2. **Projection eventual consistency vs query freshness.** Projections are eventually-consistent reads. UI components that need "current balance" can either query the aggregate (slow on long event histories) or query the projection (fast but might be stale by milliseconds). Snapshot strategy mediates this trade-off.
-3. **Configurability vs simplicity.** Three fee modes × four settlement modes × dormancy on/off × five funding processors = many combinations. Each combination has to work correctly with no surprising emergent behavior.
+3. **Configurability vs simplicity.** Three fee modes × four settlement modes × dormancy on/off × three currently-shipping funding processors (extensible to others via `IWalletFundingProcessor` for hosts wanting Square, Adyen, Braintree, etc.) = many combinations. Each combination has to work correctly with no surprising emergent behavior.
 4. **Fraud resistance vs UX friction.** Strong verification (idempotency keys on every operation, cart hash on every cart mutation, server-recomputed prices) protects against tampering but adds cognitive load for legitimate users if surfaced poorly.
 5. **SaaS revenue must not require taking custody of customer payment.** The SaaS cannot be the payment processor; it must take its cut via mechanisms that flow money from tenant → SaaS WITHOUT routing customer credit cards through the SaaS's infrastructure.
 6. **B2B vs B2C workflows in the same wallet.** Some tenants serve consumers (B2C); some serve businesses (B2B with POs); some serve both. The wallet must handle both without forcing a per-tenant fork.
@@ -227,6 +227,42 @@ Generic `IBalanceEscalationPolicy` abstraction (reusable for both tenant-wallet 
 
 `WalletBalanceEscalationService` IHostedService runs hourly, applies the policy per wallet, fires notifications through the existing notification dispatcher (no parallel infrastructure — full reuse of the wallet's notification machinery).
 
+## Funding flow: Polar.sh as the primary on-ramp
+
+The wallet defines `IWalletFundingProcessor` in `PolarSharp.PrepaidWallets.Abstractions` as the contract for "something that can accept a payment from a customer and report back when the funds have cleared." Three concrete implementations ship with the wallet:
+
+| Processor | Package | Tier | Use case |
+|---|---|---|---|
+| **Polar.sh** | `PolarSharp.PrepaidWallets.Polar.Checkout` | Polar bridge (stays on lift) | **Primary on-ramp for the SaaS tenant prepayment flow.** A tenant prepays for platform usage; the host creates a wallet-funding Polar Order via this processor; the customer (the tenant, in this context) completes payment on Polar.sh's hosted checkout; Polar fires the `order.paid` webhook; the bridge translates it into a `WalletFunded` event that credits the tenant's prepaid wallet at the configured token exchange rate. This processor is also the on-ramp for the entire Option D `TenantPrefundedWallet` settlement mode described in sub-pattern 4 above. |
+| **Stripe** | `PolarSharp.PrepaidWallets.Funding.Stripe` | Lift-safe (moves with the wallet on lift) | Stripe Charges + optional Stripe Connect `application_fee_amount`. Required when the host picks settlement mode A (`StripeConnect`) platform-wide. |
+| **PayPal** | `PolarSharp.PrepaidWallets.Funding.PayPal` | Lift-safe (moves with the wallet on lift) | PayPal Orders v2 + optional PayPal Payouts API. |
+
+Hosts wanting other processors (Square, Adyen, Braintree, etc.) implement `IWalletFundingProcessor` themselves against the wallet abstraction — no fork of the wallet is required.
+
+The Polar.sh path is uniquely important for the SaaS use case because it is the only one of the three shipped processors that is PolarSharp-coupled, and it is the on-ramp for the entire Option D recursive meta-tenant model. When the SaaS chooses Option D, every tenant prepays for platform usage via Polar.sh; those payments credit the tenant's own prepaid wallet; SaaS fees then debit that wallet in real time as the tenant operates and as the tenant's customers transact. The recursion is what makes Option D elegant — the wallet machinery is used twice, once at the customer-to-tenant level and once at the tenant-to-SaaS level — and the `PolarFundingProcessor` in `Polar.Checkout` is the on-ramp for both levels.
+
+The end-to-end flow, in pseudocode:
+
+```
+1. Tenant operator clicks "Top up platform balance" in the SaaS's admin UI.
+2. Host calls IWalletFundingProcessor.InitiatePaymentAsync(tenant.WalletId, amount).
+3. PolarFundingProcessor (in Polar.Checkout) creates a Polar Order with the
+   tenant's organization as the buyer + a wallet-funding metadata tag.
+4. Customer (= the tenant in this context) is redirected to Polar's hosted
+   checkout; pays with their chosen payment instrument.
+5. Polar fires the order.paid webhook → PolarSharp.Webhooks → Polar.Checkout
+   bridge handler.
+6. Handler translates Polar order details into a FundWalletCommand carrying
+   the full fee breakdown (customer charged amount, processor fee, SaaS profit,
+   tenant absorbed, tenant net, tokens credited).
+7. Wallet aggregate appends a WalletFunded event with all economic fields
+   snapshotted into FundingTermsSnapshotJson.
+8. WalletBalanceProjection updates; tenant sees the new balance in real time
+   via SignalR push.
+```
+
+See `src/PolarSharp.PrepaidWallets.Polar.Checkout/README.md` for the package's full feature surface, and `PrepaidWalletsLiftAndShift.md` for how this bridge's funding-processor role survives a future lift of the wallet core.
+
 ## Implementation mechanics
 
 ### Step 1: Choose the event-store backend (Marten preferred where Postgres is available)
@@ -295,7 +331,7 @@ The PolarSharp.PrepaidWallets v1.3.0 implementation is the reference:
 - **5 EF Core storage providers** (SqlServer, Sqlite, PostgreSQL, MariaDb, CosmosDb) + Marten provider.
 - **6 notification channel providers** (UI/in-app, SendGrid, MailKit, Azure Communication Email, AWS SES, Twilio, Webhook).
 - **2 template engines** (Scriban + Fluid; tenants choose per-template).
-- **2 funding processors** (Stripe + PayPal as lift-safe packages; Polar via Polar.Checkout bridge).
+- **3 funding processors**: Polar.sh (via the `Polar.Checkout` bridge — the primary on-ramp for the SaaS tenant prepayment flow; see the "Funding flow" section above), Stripe (`Funding.Stripe`, lift-safe), and PayPal (`Funding.PayPal`, lift-safe). Hosts wanting Square / Adyen / Braintree / etc. implement `IWalletFundingProcessor` themselves against the wallet abstraction — no wallet fork required.
 - **4 exclusive settlement modes** (StripeConnect, BundledMonthlyInvoice, StandalonePolarOrder, TenantPrefundedWallet).
 - **3 fee-handling modes** (AbsorbAndMarkup, TransparentGrossUp, DollarFirstShowTokens).
 - **Progressive 5-stage escalation framework** (tenant wallet) + 3-stage (customer wallet); generic `IBalanceEscalationPolicy`.
@@ -311,7 +347,7 @@ The wallet ships as part of the v1.3.0 PolarSharp release and is structured per 
 2. **Projection rebuild storms.** When a projection schema changes, you replay the entire event log into the new projection. For tenants with millions of events, this can be slow. Marten's projection daemon handles this online; EF Core requires a maintenance window.
 3. **Storage cost grows with event count.** Snapshots help (you can prune events older than the most recent snapshot) but storage is unbounded by default.
 4. **Concurrency conflicts require retry logic.** Optimistic concurrency means second-writer failures on contended wallets; MediatR retry mitigates but adds latency.
-5. **Configurability is testing surface.** 3 fee modes × 4 settlement modes × dormancy on/off × 5 funding processors = many test combinations. Need a matrix-based test strategy.
+5. **Configurability is testing surface.** 3 fee modes × 4 settlement modes × dormancy on/off × 3+ funding processors (open extension point via `IWalletFundingProcessor`) = many test combinations. Need a matrix-based test strategy.
 
 **Alternative patterns and why this one over those:**
 

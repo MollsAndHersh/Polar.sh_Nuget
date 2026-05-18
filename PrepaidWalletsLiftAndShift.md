@@ -81,6 +81,40 @@ PolarSharp's `CustomerTransactionContext` and the wallet's `IWalletTransactionCo
 
 ---
 
+## Funding processors: a special seam
+
+`IWalletFundingProcessor` in `PolarSharp.PrepaidWallets.Abstractions` defines the
+contract for "something that can accept a payment from a customer and report back
+when the funds have cleared." Three concrete implementations ship with the wallet,
+and the split across tiers matters for the lift:
+
+- `PolarSharp.PrepaidWallets.Funding.Stripe` — **lift-safe**; Stripe Charges +
+  optional Stripe Connect `application_fee_amount`. Moves with the wallet on lift.
+- `PolarSharp.PrepaidWallets.Funding.PayPal` — **lift-safe**; PayPal Orders v2 +
+  optional PayPal Payouts API. Moves with the wallet on lift.
+- `PolarSharp.PrepaidWallets.Polar.Checkout` — **Polar bridge (stays)**; the
+  `PolarFundingProcessor` inside this package is the primary on-ramp for the
+  SaaS tenant prepayment flow. When tenants prepay for platform usage, this is
+  the path their payment travels. It is also the on-ramp for the entire Option D
+  `TenantPrefundedWallet` settlement mode.
+
+This means that out of the three shipped processors, two move with the wallet on
+lift (Funding.Stripe + Funding.PayPal) and one stays in PolarSharp
+(Polar.Checkout). Post-lift, the Polar.Checkout bridge continues to consume the
+lifted wallet via `PackageReference` and its `PolarFundingProcessor` continues to
+fulfill the funding role for any PolarSharp host that uses it. Hosts wanting
+processors beyond these three (Square, Adyen, Braintree, etc.) implement
+`IWalletFundingProcessor` themselves against the wallet abstraction — no fork of
+the wallet is required, and the implementation can live in either the host
+codebase or in the post-lift wallet repo, depending on whether the host wants
+the processor to be lift-safe.
+
+For the end-to-end Polar.sh funding flow narrative, see
+`src/PolarSharp.PrepaidWallets.Polar.Checkout/README.md` and Case Study 02's
+"Funding flow: Polar.sh as the primary on-ramp" section.
+
+---
+
 ## The 5-line lift script
 
 When you decide to lift, here's exactly what happens:
