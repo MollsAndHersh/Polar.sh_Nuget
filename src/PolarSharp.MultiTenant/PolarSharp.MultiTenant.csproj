@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="PolarSharp.MultiTenant.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PolarSharp\PolarSharp.csproj" />
     <ProjectReference Include="..\PolarSharp.Webhooks\PolarSharp.Webhooks.csproj" />
     <PackageReference Include="Finbuckle.MultiTenant.AspNetCore" />

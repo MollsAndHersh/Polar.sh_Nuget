@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace PolarSharp.MultiTenant.Lifecycle;
 
@@ -45,6 +46,13 @@ public static class TenantLifecycleServiceCollectionExtensions
 
         services.Configure<TenantStatusServiceOptions>(
             configuration.GetSection(TenantStatusServiceOptions.SectionName));
+
+        // Activate the validator so startup fails fast on invalid TenantStatusServiceOptions
+        // (e.g., zero / negative / excessive DeletedTenantRetentionDays). TryAddEnumerable
+        // allows the host to stack additional IValidateOptions implementations without
+        // displacing this one.
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IValidateOptions<TenantStatusServiceOptions>, TenantStatusServiceOptionsValidator>());
 
         // MediatR de-duplicates assembly scans, so this is safe to call even if the host
         // already registered MediatR with their own assemblies elsewhere.
