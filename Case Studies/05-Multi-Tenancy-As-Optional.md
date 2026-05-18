@@ -26,11 +26,10 @@ related_case_studies:
   - "01-Lift-And-Shift-Architecture"
   - "02-Event-Sourced-Wallet-With-Economic-Modeling"
 related_patterns:
-  - "Strategy Pattern (Gang of Four)"
   - "Null Object Pattern"
   - "Optional / Maybe / Option types"
-  - "Configuration as Code"
   - "Feature Flags"
+  - "Configuration as Code"
 ecosystems:
   primary: ".NET / NuGet"
   generalizes_to: ["Finbuckle.MultiTenant", "ASP.NET Core Identity", "EF Core global query filters", "Hot Chocolate GraphQL schema variants", "single-tenant SaaS / multi-tenant SaaS"]
@@ -75,14 +74,14 @@ JSON-LD structured data (invisible on GitHub render; consumed by web crawlers + 
 # Case Study 05 — Multi-Tenancy as Optional for Library Authors
 
 > **Author**: Mark Chipman — Molls and Hersh, LLC.
-> **Date**: 2026-05-15
+> **Date**: 2026-05-18
 > **Status**: Stable. Reference implementation: PolarSharp.PrepaidWallets v1.3 + PolarSharp.EcommerceStorefronts v1.4 (planned).
 > **License**: © Mark Chipman / Molls and Hersh, LLC. 2026. Educational use permitted with attribution.
 > **Related files**: PolarSharp v1.3 plan, "Multi-tenancy is OPTIONAL" subsection in the PrepaidWallets section.
 
 ## TL;DR
 
-A library that needs to serve both single-tenant and multi-tenant host applications should architect its abstractions to be MODE-AGNOSTIC from day one. The library defines an `IIdentityProvider`-style interface with both `CurrentUserId` AND an `Option<TenantId>` that returns `None` in single-tenant mode, plus an explicit `IsMultiTenantMode` flag. Audience-tier enums collapse meaningfully ("Tenant" tier resolves to "HostOperator" tier in single-tenant deployments). Query filters skip the tenant clause when context is None. Bridges adapt the library's mode-agnostic abstractions to the host's actual identity / authorization / tenancy infrastructure. The result: the SAME library binary works in both deployment models without code forks, conditional compilation, or two separate NuGet packages.
+A library that needs to serve both single-tenant and multi-tenant host applications should architect its abstractions to be MODE-AGNOSTIC from day one. The library defines an `IIdentityProvider`-style interface with both `CurrentUserId` AND an `Option<TenantId>` that returns `None` in single-tenant mode, plus an explicit `IsMultiTenantMode` flag. Audience-tier enums collapse meaningfully ("Tenant" tier resolves to "HostOperator" tier in single-tenant deployments). Query filters skip the tenant clause when context is None. Bridges adapt the library's mode-agnostic abstractions to the host's actual identity / authorization / tenancy infrastructure. The result: the SAME library CORE binary works in both deployment models without code forks, conditional compilation, or two separate NuGet packages — the only thing that differs per deployment is which bridge package the host installs.
 
 ## Historical context / inspiration / prior art
 
@@ -104,13 +103,13 @@ The contribution of this case study is articulating mode-agnosticism as a FIRST-
 
 A library author wants to ship a meaningful feature (wallets, ecommerce storefronts, billing, analytics, anything) that some hosts will deploy as multi-tenant SaaS and other hosts will deploy as single-tenant single-org. The library author must decide:
 
-**Path A: ship two libraries.** `LibFoo.SingleTenant` and `LibFoo.MultiTenant`. Tenants pick the right one. Pros: each is simpler internally. Cons: doubled maintenance burden, shared bug fixes drift, documentation is twice as long, and upgrading from single-tenant to multi-tenant requires switching packages.
+**Path A: ship two libraries.** `LibFoo.SingleTenant` and `LibFoo.MultiTenant`. Tenants pick the right one. Pros: each is simpler internally. Cons: doubled maintenance burden, shared bug fixes drift, documentation is twice as long, and upgrading from single-tenant to multi-tenant requires switching packages. Examples: many ASP.NET Identity samples that ship a separate `Foo.MultiTenant` package alongside `Foo`; the original Hangfire Pro multi-tenant tier.
 
-**Path B: ship MT-only, force single-tenant hosts to use a null/identity tenant.** Pros: one binary. Cons: single-tenant hosts pay the MT overhead for no benefit; the abstraction feels heavy; some MT features (cross-tenant queries) don't even make sense in single-tenant land but their existence in the API surface is confusing.
+**Path B: ship MT-only, force single-tenant hosts to use a null/identity tenant.** Pros: one binary. Cons: single-tenant hosts pay the MT overhead for no benefit; the abstraction feels heavy; some MT features (cross-tenant queries) don't even make sense in single-tenant land but their existence in the API surface is confusing. Examples: Finbuckle.MultiTenant itself (single-tenant hosts use the null tenant strategy); Orchard Core's multi-tenancy module.
 
-**Path C: ship single-tenant-only, force MT hosts to wrap.** Pros: one binary; simple. Cons: MT hosts can't actually use the library without extensive wrapping; the wrapping is a recurring source of bugs and incompatibilities.
+**Path C: ship single-tenant-only, force MT hosts to wrap.** Pros: one binary; simple. Cons: MT hosts can't actually use the library without extensive wrapping; the wrapping is a recurring source of bugs and incompatibilities. Examples: most of Microsoft.Extensions.Identity (MT requires Finbuckle on top); Hangfire's open-source tier.
 
-**Path D: ship a mode-agnostic library that works correctly in both deployments.** Pros: one binary; correctly tuned for each deployment; no wrapping or forking. Cons: requires more careful abstraction design up front; some library types (`Option<TenantId>` instead of `TenantId`) have slightly more friction than the single-tenant-natural shape.
+**Path D: ship a mode-agnostic library that works correctly in both deployments.** Pros: one binary; correctly tuned for each deployment; no wrapping or forking. Cons: requires more careful abstraction design up front; some library types (`Option<TenantId>` instead of `TenantId`) have slightly more friction than the single-tenant-natural shape. Examples: MediatR (mode-agnostic by design because it has no built-in tenancy concept at all); EF Core's global query filters (per-entity opt-in rather than library-wide). PolarSharp's wallet aims to extend this pattern to features that DO have native tenancy semantics — typically the hardest case.
 
 Path D is the case study's recommendation when it's achievable. Most library features can be made mode-agnostic with modest design effort. The result is a library that captures both market segments AND lets single-tenant hosts upgrade to MT without switching packages.
 
@@ -163,12 +162,17 @@ protected void ApplyTenantFilter<T>(ModelBuilder mb) where T : class, ITenantOwn
         // Single-tenant: skip the tenant filter entirely
         return;
     }
-    var currentTenantId = _identityProvider.CurrentTenantId.Value;
-    mb.Entity<T>().HasQueryFilter(e => e.TenantId == currentTenantId);
+    // Capture an accessor lambda, NOT a value — the lambda is invoked per query,
+    // so EF Core's filter sees the current scope's tenant ID rather than the one
+    // that was current when OnModelCreating ran.
+    Func<Guid> getCurrentTenantId = () => _identityProvider.CurrentTenantId.Value;
+    mb.Entity<T>().HasQueryFilter(e => e.TenantId == getCurrentTenantId.Invoke());
 }
 ```
 
 In single-tenant mode, the global query filter is never registered. The library's data layer behaves as if there were no tenancy concept at all. No tenant-id column lookup on every query.
+
+The lambda is captured at registration time but invoked per query, so EF Core's filter sees the current scope's tenant ID rather than the one that was current when `OnModelCreating` ran. A captured value (`var tid = _identityProvider.CurrentTenantId.Value`) would silently use the registration-time tenant for every subsequent query — a common bug that produces a quiet data-corruption hazard.
 
 ### Component 4: Bridge schema/UI auto-adaptation
 
@@ -192,6 +196,45 @@ LibFoo.MultiTenant.Finbuckle        ← (the original MT-aware bridge for hosts 
 ```
 
 The bridges differ in HOW they populate `ILibraryIdentityProvider`; the library core doesn't care.
+
+**A note on naming**: the abstract example above uses `.SingleTenant.` and `.MultiTenant.` as explicit tier prefixes. PolarSharp's wallet implementation uses a variation — `PolarSharp.PrepaidWallets.AspNetCore.*` for the single-tenant bridges (no `.SingleTenant.` infix) and `PolarSharp.PrepaidWallets.Polar.*` for the multi-tenant Polar bridges. The variation exists because the wallet ALSO conforms to Case Study 01's lift-shift contract — packages without a `.Polar.` infix are lift-safe and move to a new repo on a future lift. The `.SingleTenant.` infix would itself be a PolarSharp-specific naming convention, which would conflict with the goal of the lift-safe core being conceptually free of PolarSharp branding. Both naming patterns are valid; pick the wallet variation (`AspNetCore.*` for ST bridges) if your library ALSO needs lift-shift readiness, and the `.SingleTenant.` / `.MultiTenant.` explicit prefix pattern if liftability is not a goal for your library.
+
+### Component 6: Auto-detection of MT registration (the "did the host opt in?" check)
+
+The bridges can auto-detect which mode the host is running in by inspecting the DI container at startup. The wallet's `Polar.GraphQL` bridge does this: at registration time, it checks whether `PolarSharp.MultiTenant.*` services are registered. If yes, it exposes the full MT schema (tenant fields + cross-tenant directive). If no, it auto-degrades to the single-tenant schema slice and emits a Warning Log recommending the lighter `AspNetCore.GraphQL` package for that deployment.
+
+The pattern: at bridge registration time, query `IServiceProvider` (or its build-time equivalent) for the marker service of the optional dependency. Branch behavior based on presence. Log a Warning if the bridge selection is suboptimal for the detected mode.
+
+```csharp
+// In the bridge's AddXxx extension:
+public static IServiceCollection AddPolarWalletGraphQLBridge(this IServiceCollection services)
+{
+    services.AddHostedService<WalletGraphQLConfigurationCheck>();
+    // ... main registration
+    return services;
+}
+
+// Hosted service runs at startup; detects mode + warns:
+internal sealed class WalletGraphQLConfigurationCheck : IHostedService
+{
+    private readonly IServiceProvider _services;
+    private readonly ILogger<WalletGraphQLConfigurationCheck> _logger;
+
+    public Task StartAsync(CancellationToken ct)
+    {
+        var mtRegistered = _services.GetService<IMultiTenantContextAccessor>() is not null;
+        if (!mtRegistered)
+        {
+            _logger.LogWarning(
+                "Polar.GraphQL bridge detected NO MultiTenant registration. Schema gracefully degrades to single-tenant slice. Consider installing the lighter PolarSharp.PrepaidWallets.AspNetCore.GraphQL instead.");
+        }
+        return Task.CompletedTask;
+    }
+    public Task StopAsync(CancellationToken ct) => Task.CompletedTask;
+}
+```
+
+This makes "picking the wrong bridge package" a recoverable startup warning rather than a confusing silent misbehavior.
 
 ## Implementation mechanics
 
@@ -228,13 +271,15 @@ Update all consumers to check `IsMultiTenantMode` (or `CurrentTenantId.HasValue`
 // Before:
 mb.Entity<Foo>().HasQueryFilter(e => e.TenantId == _currentTenantId);
 
-// After:
+// After: capture an accessor lambda, not a value
 if (_identityProvider.IsMultiTenantMode) {
-    var tid = _identityProvider.CurrentTenantId.Value;
-    mb.Entity<Foo>().HasQueryFilter(e => e.TenantId == tid);
+    Func<Guid> getCurrentTenantId = () => _identityProvider.CurrentTenantId.Value;
+    mb.Entity<Foo>().HasQueryFilter(e => e.TenantId == getCurrentTenantId.Invoke());
 }
 // In single-tenant mode: no filter; data layer is tenancy-unaware
 ```
+
+The lambda is captured at registration time but invoked per query, so EF Core's filter sees the current scope's tenant ID rather than the one that was current when `OnModelCreating` ran. A captured value (`var tid = _identityProvider.CurrentTenantId.Value`) would silently use the registration-time tenant for every subsequent query — a common bug that produces a quiet data-corruption hazard.
 
 ### Step 3: Refactor audience enums to support collapse
 
@@ -317,7 +362,7 @@ PolarSharp.PrepaidWallets v1.3 is the reference implementation:
 - `PolarSharp.PrepaidWallets.AspNetCore.Identity` — lift-safe single-tenant bridge; reads `HttpContext.User`; returns None for tenant; `IsMultiTenantMode = false`
 - `PolarSharp.PrepaidWallets.AspNetCore.GraphQL` — lift-safe single-tenant GraphQL bridge; schema elides tenant fields
 - `PolarSharp.PrepaidWallets.Polar.Identity` — Polar-coupled MT bridge using `PolarSharp.MultiTenant.Identity`; populates `CurrentTenantId.Some()` from Finbuckle context; `IsMultiTenantMode = true`
-- `PolarSharp.PrepaidWallets.Polar.GraphQL` — Polar-coupled MT bridge; inspects MT registration; auto-degrades to single-tenant schema slice + emits Warning Log if MT isn't registered
+- `PolarSharp.PrepaidWallets.Polar.GraphQL` — Polar-coupled MT bridge; inspects MT registration; auto-degrades to single-tenant schema slice + emits Warning Log if MT isn't registered (see Component 6 for the detection pattern itself)
 
 **Audience collapse:**
 - MT mode + AppMasterAdmin user → `WalletAudienceScope.HostOperator` (cross-tenant via opt-in)
@@ -330,18 +375,18 @@ The `Tenant` audience NEVER appears in single-tenant deployments. The reporting 
 
 **Query filter skip:**
 
-The wallet's EF Core DbContext applies tenant filter only when `IsMultiTenantMode = true`. Single-tenant deployments use the same DbContext without tenant filtering overhead.
+The wallet's EF Core DbContext is designed to apply tenant filter only when `IsMultiTenantMode = true`. Single-tenant deployments are designed to use the same DbContext without tenant filtering overhead.
 
 **Test matrix:**
 
-Two integration test apps: `PolarPrepaidWalletsTestApp.MultiTenant` (uses Polar bridges + PolarSharp.MultiTenant.*) and `PolarPrepaidWalletsTestApp.SingleTenant` (uses AspNetCore bridges; no MultiTenant.*). Both exercise the SAME core wallet feature set. CI runs both.
+Two integration test apps: `PolarPrepaidWalletsTestApp.MultiTenant` (uses Polar bridges + PolarSharp.MultiTenant.*) and `PolarPrepaidWalletsTestApp.SingleTenant` (uses AspNetCore bridges; no MultiTenant.*). Both are designed to exercise the SAME core wallet feature set; the multi-tenant test app exists today and the single-tenant test app is planned for v1.3.x.
 
 ## Trade-offs
 
 **What you give up:**
 
 1. **Slightly more friction in mostly-MT codebases.** Even MT-dominant projects must use `Option<TenantId>` rather than `TenantId`, and check `IsMultiTenantMode` in some paths. Marginal but real.
-2. **Two bridges to maintain.** Even if 90% of users are MT, the single-tenant bridge needs ongoing care.
+2. **Multiple bridges to maintain — scope-dependent.** For a simple library that just needs identity + UI integration, two bridges (one ST + one MT) may suffice. For a feature with many distinct concerns — catalog, payments, reporting, GraphQL, notifications, templates, etc. — the count grows to 8-12+ as each integration concern gets its own bridge package. The wallet ships 10 (8 Polar bridges spanning Identity / Checkout / Reporting / GraphQL / PurchaseOrder / Notifications / Translation / SaaSInvoicing + 2 single-tenant AspNetCore bridges for AspNetCore.Identity / AspNetCore.GraphQL). Plan the bridge inventory upfront so the maintenance scope is visible from day one.
 3. **Audience collapse logic is non-obvious.** New contributors need to learn "what does `Tenant` mean in single-tenant mode?" before working with the audience enum.
 4. **Test matrix doubles.** All behavioral tests run twice (once per mode).
 5. **Cross-mode bugs are subtle.** A bug that only manifests in one mode is easy to miss without disciplined test coverage.
@@ -363,8 +408,6 @@ Two integration test apps: `PolarPrepaidWalletsTestApp.MultiTenant` (uses Polar 
 **Mode 4: Single-tenant host pays MT overhead anyway.** Some library code unconditionally calls `_identityProvider.CurrentTenantId.Value` and throws. **Detection**: profiling; integration tests. **Recovery**: refactor to check `.HasValue` or `IsMultiTenantMode` first.
 
 **Mode 5: Schema elision incomplete.** Single-tenant GraphQL schema still exposes some tenant fields. **Detection**: schema-snapshot tests in both modes; visual review of generated schemas. **Recovery**: tighten the elision logic.
-
-**Mode 6: Upgrade from single-tenant to MT loses data.** Host runs the library in single-tenant mode for a year, then enables MT. Existing rows don't have a TenantId. **Detection**: integration test for the upgrade path. **Recovery**: ship a migration helper that assigns all existing rows to a default tenant; document the upgrade procedure.
 
 ## When to use this elsewhere
 
@@ -397,12 +440,13 @@ Two integration test apps: `PolarPrepaidWalletsTestApp.MultiTenant` (uses Polar 
 10. **Profile single-tenant deployments.** Verify the MT overhead is genuinely absent. Look for unnecessary tenant-id lookups, middleware execution, etc.
 11. **Don't expose `IsMultiTenantMode` to end users.** It's an internal library concern; users see different UI / API surfaces in each mode but they don't need to know the flag exists.
 12. **Plan for the eventual "yes, support multi-organization tenancy too" request.** Some hosts will eventually want THREE levels (host > organizations > users within org). Mode-agnostic libraries adapt to this gracefully; mode-locked libraries don't.
+13. **Targeted tests for the collapse logic.** Beyond running all tests in both modes (item 7), add specific tests asserting the collapse invariants: in single-tenant mode, no code path ever sees `AudienceScope.Tenant`; the query filter is never registered; the schema does not expose tenant fields; the cross-tenant route returns 404. Without these targeted tests, the collapse logic can quietly stop working and the both-mode test runs may not catch it (each mode's tests verify their own behavior in isolation).
 
 ## Discussion / open questions
 
 - **Should the library expose `IsMultiTenantMode` as a public read-only property?** Helpful for downstream code that needs to make mode-aware decisions. But it leaks an internal concern. Compromise: expose via `ILibraryIdentityProvider` (which is already a public abstraction) and treat as advanced API.
 - **What about hybrid mode — single-tenant most of the time, MT for specific scenarios?** E.g., a library used by a single-tenant host that occasionally needs to query a "shared" external tenant's data. The pattern doesn't directly address this; would require a third "ExternalTenantContext" abstraction layered on top.
-- **How to handle data migration from single-tenant to MT?** Single-tenant data has no TenantId column (or has a null one). MT-mode requires TenantId. The library should ship a migration helper that assigns existing rows to a default tenant on first MT-mode startup.
+- **How to handle data migration from single-tenant to MT?** Single-tenant data has no TenantId column (or has a null one). MT-mode requires TenantId. The library should ship a migration helper that backfills TenantId on existing rows on first MT-mode startup, but the helper does not yet exist at the time of this case study. Design considerations the helper would need to address: idempotency (running twice should not double-stamp); downtime tolerance (whether the host can take maintenance windows for the backfill or needs an online migration); in-flight transactions (mid-backfill data state); how to choose the default tenant (the first user's organization? A literal "default" tenant? Configurable?); how to handle entities that span the single-tenant → MT transition mid-write. Worth dedicated treatment in v1.x.
 - **Is `Option<T>` better than `Nullable<T>` for the tenant ID?** Stylistic. C# `Nullable<Guid>` is shorter; `Option<Guid>` is more explicit about the "this is meaningfully absent" semantics. PolarSharp uses `Option<T>` for consistency with its functional-style API surface.
 - **Cross-feature consistency.** If a host installs Library A in single-tenant mode and Library B in MT mode, the mismatch is bad. Libraries can detect this at startup and emit a Warning, but enforcement is host-developer responsibility.
 
@@ -412,6 +456,9 @@ Two integration test apps: `PolarPrepaidWalletsTestApp.MultiTenant` (uses Polar 
 - **Case Study 02 — Event-Sourced Wallet** — uses mode-agnostic identity abstractions; the entire wallet feature is built on this pattern.
 - **Case Study 04 — Audience-Scoped Schema Slicing** — uses the audience collapse logic (Tenant → HostOperator in single-tenant) to compute schema slices that adapt to the deployment mode.
 - **Ports and Adapters (Hexagonal Architecture)** — mode-agnostic abstractions are conceptually adjacent to ports; the bridges are the adapters. This pattern adds the mode-collapse + auto-adaptation dimensions.
+- **Null Object Pattern** — `Option<TenantId>` returning `None` in single-tenant mode is conceptually a Null Object for "the tenant scope that doesn't exist here." The library treats `None` as a valid value rather than as an error.
+- **Optional / Maybe / Option types** — the `Option<TenantId>` type is the foundation that lets mode-agnostic code stay clean. It forces every consumer to acknowledge the absence case rather than relying on sentinel values or null-reference checks scattered through the codebase.
+- **Feature Flags** — `IsMultiTenantMode` is conceptually a feature flag chosen at registration time (not runtime). The library's behavior diverges based on the flag value, the same way feature-flag-conditioned code diverges based on a flag's setting.
 
 ## Citation format
 
